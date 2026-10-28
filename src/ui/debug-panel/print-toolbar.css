@@ -1,0 +1,118 @@
+.print-workbench-container {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 16px 28px 48px;
+  box-sizing: border-box;
+}
+
+.print-console-card {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin-bottom: 0;
+}
+
+.print-tab-bar-extra {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.print-observability-panel {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 6px 14px;
+  margin: 10px 0 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.observability-status-tag {
+  background: #0f172a;
+  color: #f8fafc;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+}
+
+.observability-metrics {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #475569;
+  font-size: 12px;
+}
+
+.observability-metrics strong {
+  color: #0f172a;
+}
+
+.observability-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.legend-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legend-item-keep {
+  background: rgba(239, 68, 68, 0.08);
+  color: #b91c1c;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.legend-item-split {
+  background: rgba(245, 158, 11, 0.08);
+  color: #b45309;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.legend-item-break {
+  background: rgba(59, 130, 246, 0.08);
+  color: #1d4ed8;
+  border: 1px dashed rgba(59, 130, 246, 0.4);
+}
+
+.legend-item-ignore {
+  background: rgba(148, 163, 184, 0.12);
+  color: #475569;
+  border: 1px dashed rgba(148, 163, 184, 0.4);
+}
+
+.legend-item-line {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px dashed #ef4444;
+}
+
+.print-tab-custom .ant-tabs-nav {
+  margin-bottom: 0 !important;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+}

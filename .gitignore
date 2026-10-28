@@ -24,3 +24,6 @@ yarn-error.log*
 
 # generated artifacts
 /generated_images
+
+# local claude settings
+/.claude/settings.local.json

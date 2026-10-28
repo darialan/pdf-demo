@@ -1,0 +1,175 @@
+.mini-pdf-preview-widget {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 272px;
+  background: #0f172a;
+  border-radius: 10px;
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.12);
+  z-index: 1050;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.mini-preview-header {
+  height: 36px;
+  background: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  user-select: none;
+  cursor: pointer;
+}
+
+.mini-preview-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #f8fafc;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.mini-preview-badge {
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.mini-preview-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mini-preview-icon-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+  padding: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.mini-preview-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.mini-preview-body {
+  height: 380px;
+  background: #334155;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px 10px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+.mini-preview-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.mini-preview-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.mini-preview-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.mini-sheet-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.mini-sheet-label {
+  font-size: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: #94a3b8;
+  margin-bottom: 4px;
+  font-weight: 500;
+  align-self: flex-start;
+  padding-left: 6px;
+}
+
+.mini-page-sheet {
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  border-radius: 2px;
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.mini-sheet-header {
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+}
+
+.mini-sheet-viewport {
+  overflow: hidden;
+  position: relative;
+  flex: 1;
+}
+
+.mini-sheet-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+.mini-sheet-footer {
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  border-top: 1px solid rgba(226, 232, 240, 0.5);
+}
+
+.mini-sheet-page-num {
+  position: absolute;
+  color: #94a3b8;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-weight: 600;
+  user-select: none;
+  line-height: 1;
+}
+
+.mini-preview-loading {
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  font-size: 12px;
+}

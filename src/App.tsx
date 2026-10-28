@@ -1,9 +1,10 @@
-import PdfDownload from './pdf-demo';
+import { DEMO_SCENES } from './demo';
+import { PrintWorkbench } from './ui';
 
 function App() {
   return (
     <div>
-      <PdfDownload />
+      <PrintWorkbench scenes={DEMO_SCENES} />
     </div>
   );
 }
