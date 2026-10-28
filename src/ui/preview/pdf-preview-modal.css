@@ -133,8 +133,9 @@
 .html-sheet-body-viewport {
   overflow: hidden;
   position: relative;
-  flex: 1;
+  flex-shrink: 0;
   background: transparent;
+  box-sizing: content-box;
 }
 
 .html-sheet-body-content {
@@ -150,7 +151,7 @@
   position: relative;
   flex-shrink: 0;
   border-top: 1px solid rgba(226, 232, 240, 0.6);
-  margin-top: 4px;
+  margin-top: auto;
 }
 
 .html-sheet-page-number {

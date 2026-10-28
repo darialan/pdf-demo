@@ -3,7 +3,7 @@ import React from 'react';
 import { MiniPdfPreview } from './mini-pdf-preview';
 import { HtmlPreviewData } from './pdf-preview-modal';
 
-describe('MiniPdfPreview 组件 (检查分页浮动迷你纸张预览小窗)', () => {
+describe('MiniPdfPreview 组件 (带全屏与折叠控制)', () => {
   const mockData: HtmlPreviewData = {
     paperLabel: 'A4',
     pages: [
@@ -36,8 +36,8 @@ describe('MiniPdfPreview 组件 (检查分页浮动迷你纸张预览小窗)', (
 
     expect(screen.getByText('📄 纸张预览')).toBeInTheDocument();
     expect(screen.getByText('2 页')).toBeInTheDocument();
-    expect(screen.getByText('P.1 / 2 · A4')).toBeInTheDocument();
-    expect(screen.getByText('P.2 / 2 · A4')).toBeInTheDocument();
+    expect(screen.getByText(/P\.1 \/ 2 · A4/)).toBeInTheDocument();
+    expect(screen.getByText(/P\.2 \/ 2 · A4/)).toBeInTheDocument();
     expect(screen.getByText('1 / 2')).toBeInTheDocument();
     expect(screen.getByText('2 / 2')).toBeInTheDocument();
 
@@ -53,10 +53,28 @@ describe('MiniPdfPreview 组件 (检查分页浮动迷你纸张预览小窗)', (
     fireEvent.click(toggleBtn);
 
     // 折叠后 body 隐藏
-    expect(screen.queryByText('P.1 / 2 · A4')).not.toBeInTheDocument();
+    expect(screen.queryByText(/P\.1 \/ 2 · A4/)).not.toBeInTheDocument();
 
     // 再次点击展开
     fireEvent.click(screen.getByTitle('展开小窗'));
-    expect(screen.getByText('P.1 / 2 · A4')).toBeInTheDocument();
+    expect(screen.getByText(/P\.1 \/ 2 · A4/)).toBeInTheDocument();
+  });
+
+  test('支持一键切换全屏预览与退出全屏 (包含 Escape 快捷键)', () => {
+    const { container } = render(<MiniPdfPreview data={mockData} />);
+
+    // 点击全屏按钮 (FullscreenOutlined)
+    const fullscreenBtn = screen.getByTitle('全屏预览');
+    fireEvent.click(fullscreenBtn);
+
+    // 检查进入全屏状态 class 与切换为退出全屏按钮 (FullscreenExitOutlined)
+    expect(container.querySelector('.is-fullscreen')).toBeInTheDocument();
+    const exitBtn = screen.getByTitle('退出全屏 (Esc)');
+    expect(exitBtn).toBeInTheDocument();
+
+    // 触发 Escape 退出全屏
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(container.querySelector('.is-fullscreen')).not.toBeInTheDocument();
+    expect(screen.getByTitle('全屏预览')).toBeInTheDocument();
   });
 });

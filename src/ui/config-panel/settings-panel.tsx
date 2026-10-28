@@ -1,4 +1,4 @@
-import { Button, Form, InputNumber, Modal, Radio, Select, Switch } from 'antd';
+import { Button, Form, InputNumber, Modal, Radio, Select } from 'antd';
 import { useState } from 'react';
 import {
   DEFAULT_SETTINGS,
@@ -30,7 +30,6 @@ export function PrintSettingsButton({
   const [form] = Form.useForm<PrintSettings>();
   const paper = Form.useWatch('paper', form);
   const unit = Form.useWatch('unit', form) || 'mm';
-  const slicing = Form.useWatch('slicingMode', form);
 
   const numberRules = [{ required: true, type: 'number' as const, message: '请输入有效数值' }];
 
@@ -61,6 +60,7 @@ export function PrintSettingsButton({
       // 转换为系统底层统一存储的毫米 (mm) 单位
       const canonical: PrintSettings = {
         ...draft,
+        orientation: draft.orientation || value.orientation || 'portrait',
         unit: activeUnit,
         widthMm: Number((draft.widthMm * factor).toFixed(4)),
         heightMm: Number((draft.heightMm * factor).toFixed(4)),
@@ -178,6 +178,7 @@ export function PrintSettingsButton({
       >
         <Form
           form={form}
+          preserve={true}
           layout="vertical"
           initialValues={value}
           onValuesChange={handleValuesChange}
@@ -218,20 +219,18 @@ export function PrintSettingsButton({
               />
             </Form.Item>
           </div>
-          <div className="print-settings-grid">
-            <Form.Item name="orientation" label="纸张方向">
-              <Radio.Group
-                disabled={paper === 'custom'}
-                options={[
-                  { value: 'portrait', label: '纵向' },
-                  { value: 'landscape', label: '横向' },
-                ]}
-              />
-            </Form.Item>
-            <Form.Item name="slicingMode" label="细切片测试" valuePropName="checked">
-              <Switch />
-            </Form.Item>
-          </div>
+          {paper !== 'custom' && (
+            <div className="print-settings-grid">
+              <Form.Item name="orientation" label="纸张方向">
+                <Radio.Group
+                  options={[
+                    { value: 'portrait', label: '纵向' },
+                    { value: 'landscape', label: '横向' },
+                  ]}
+                />
+              </Form.Item>
+            </div>
+          )}
           <div className="print-settings-margins">
             {(['Top', 'Right', 'Bottom', 'Left'] as const).map((side, i) => (
               <Form.Item
@@ -244,19 +243,9 @@ export function PrintSettingsButton({
                   min={0}
                   step={1}
                   formatter={formatDisplayNumber}
-                  disabled={slicing}
                 />
               </Form.Item>
             ))}
-          </div>
-          <div className="print-settings-hint">
-            {slicing
-              ? '细切片测试：按高度直接切片，忽略内容完整性、边距和页眉页脚。'
-              : '检查分页和导出共用设置，保留行及签名完整性。'}
-            <br />
-            <strong>联动规则：</strong>标准纸张自带固定宽高与边距；自定义尺寸默认宽为 A4、高 200px、边距 2px。
-            <br />
-            <strong>单位换算：</strong>基准 96 px = 25.4 mm，切换尺寸单位自动换算。
           </div>
         </Form>
       </Modal>

@@ -26,7 +26,9 @@ test('打印设置联动：切换纸张尺寸自动载入预设宽高与边距�
   fireEvent.click(screen.getByRole('button', { name: '打印设置' }));
   expect(screen.getByRole('dialog')).toBeInTheDocument();
 
-  // 默认 A4: 宽 210, 高 297, 边距 10
+  // 默认 A4: 宽 210, 高 297, 边距 10，显示纸张方向，无细切片测试
+  expect(screen.getByText('纸张方向')).toBeInTheDocument();
+  expect(screen.queryByText('细切片测试')).not.toBeInTheDocument();
   const widthInput = screen.getByPlaceholderText('请输入宽度') as HTMLInputElement;
   const heightInput = screen.getByPlaceholderText('请输入高度') as HTMLInputElement;
   expect(widthInput.value).toBe('210');
@@ -38,6 +40,9 @@ test('打印设置联动：切换纸张尺寸自动载入预设宽高与边距�
   fireEvent.mouseDown(select);
   const customOption = screen.getByText('自定义尺寸');
   fireEvent.click(customOption);
+
+  // 自定义尺寸下不显示纸张方向（仅标准纸张有方向）
+  expect(screen.queryByText('纸张方向')).not.toBeInTheDocument();
 
   // 自定义尺寸下宽高输入框解禁，宽为 A4 宽 210，高默认为 200px (≈52.92mm)，边距为 2px (≈0.53mm)
   expect(widthInput).not.toBeDisabled();

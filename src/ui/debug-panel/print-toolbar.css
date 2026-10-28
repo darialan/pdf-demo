@@ -20,6 +20,20 @@
   gap: 10px;
 }
 
+.print-paper-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  user-select: none;
+}
+
 .print-observability-panel {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
@@ -32,16 +46,6 @@
   justify-content: space-between;
   gap: 12px;
   font-size: 12px;
-}
-
-.observability-status-tag {
-  background: #0f172a;
-  color: #f8fafc;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 3px;
-  letter-spacing: 0.5px;
 }
 
 .observability-metrics {
@@ -106,9 +110,9 @@
 }
 
 .legend-item-line {
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px dashed #ef4444;
+  background: #f5f3ff;
+  color: #7c3aed;
+  border: 1px dashed #7c3aed;
 }
 
 .print-tab-custom .ant-tabs-nav {

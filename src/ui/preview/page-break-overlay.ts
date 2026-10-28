@@ -145,7 +145,7 @@ export function visualizePageBreaks(
     return 'descend';
   });
 
-  // 绘制分页切割线与 page-break 指示标签
+  // 绘制分页切割线与 page-break 指示标签（使用高辨识度紫色，避免与 atomic 红色混淆）
   pages.slice(1).forEach((breakY, index) => {
     const lineY = breakY - borderTop;
     const lineContainer = document.createElement('div');
@@ -156,7 +156,7 @@ export function visualizePageBreaks(
       top: ${lineY}px;
       width: 100%;
       height: 0;
-      border-top: 2px dashed #dc2626;
+      border-top: 2px dashed #7c3aed;
       z-index: 990;
       pointer-events: none;
       box-sizing: border-box;
@@ -168,7 +168,7 @@ export function visualizePageBreaks(
       position: absolute;
       right: 16px;
       top: -11px;
-      background: #dc2626;
+      background: #7c3aed;
       color: #fff;
       font-size: 11px;
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -177,7 +177,7 @@ export function visualizePageBreaks(
       border-radius: 10px;
       font-weight: 600;
       letter-spacing: 0.2px;
-      box-shadow: 0 1px 4px rgba(220, 38, 38, 0.35);
+      box-shadow: 0 1px 4px rgba(124, 58, 237, 0.35);
       white-space: nowrap;
     `;
 

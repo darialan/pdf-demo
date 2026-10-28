@@ -1,4 +1,4 @@
-import { Button, Tag } from 'antd';
+import { Button } from 'antd';
 import { resolvePaper } from '../../core/geometry/paper';
 import { PrintSettings } from '../../core/types';
 import { PrintSettingsButton } from '../config-panel/settings-panel';
@@ -37,10 +37,9 @@ export function PrintToolbarActions({
 
   return (
     <div className="print-tab-bar-extra">
-      <Tag color="blue" style={{ margin: 0, padding: '2px 8px', fontSize: 12 }}>
+      <span className="print-paper-badge">
         📄 {paperLabel}
-        {settings.slicingMode ? ' · 细切片' : ''}
-      </Tag>
+      </span>
 
       <PrintSettingsButton value={settings} disabled={loading} onChange={onSettingsChange} />
 
@@ -50,7 +49,7 @@ export function PrintToolbarActions({
         onClick={onToggleDebug}
         disabled={loading}
       >
-        {debugActive ? '✓ 调试中 (点击关闭)' : '🔍 检查分页 (调试)'}
+        {debugActive ? '退出检查' : '🔍 检查分页'}
       </Button>
 
       <Button type="primary" onClick={onExport} loading={loading}>
@@ -69,30 +68,24 @@ export function PrintToolbarActions({
 export interface PrintObservabilityBannerProps {
   inspection: PrintInspectionResult | null;
   stats?: ObservabilityStats;
-  onClose: () => void;
+  onClose?: () => void;
 }
 
 export function PrintObservabilityBanner({
   inspection,
   stats,
-  onClose,
 }: PrintObservabilityBannerProps) {
   if (!inspection) return null;
 
   return (
     <div className="print-observability-panel">
       <div className="observability-metrics">
-        <span className="observability-status-tag">OBSERVABILITY</span>
         <span>
           Pages: <strong>{inspection.pages.length}</strong>
         </span>
         <span style={{ color: '#cbd5e1' }}>•</span>
         <span>
           Capacity: <strong>{Math.round(inspection.capacity)}px</strong>
-        </span>
-        <span style={{ color: '#cbd5e1' }}>•</span>
-        <span>
-          Timing: <strong>{inspection.timing.totalMs.toFixed(1)}ms</strong>
         </span>
       </div>
 
@@ -112,10 +105,6 @@ export function PrintObservabilityBanner({
         <span className="legend-item legend-item-line">
           ✂️ page-break
         </span>
-
-        <Button size="small" type="text" onClick={onClose} style={{ marginLeft: 6, fontSize: 11, color: '#64748b' }}>
-          ✕ Close
-        </Button>
       </div>
     </div>
   );

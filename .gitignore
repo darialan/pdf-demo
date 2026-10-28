@@ -27,3 +27,7 @@ yarn-error.log*
 
 # local claude settings
 /.claude/settings.local.json
+
+# debug & scratch scripts
+/src/scratch/
+

@@ -333,6 +333,7 @@ export function HtmlPageSheet({
           style={{
             width: printableWidthPx * zoom,
             height: sliceHeightPx * zoom,
+            maxHeight: sliceHeightPx * zoom,
           }}
         >
           <div
