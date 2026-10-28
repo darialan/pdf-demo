@@ -41,7 +41,7 @@ test('低代码 Tab 支持复杂 Web 物料添加、画布内直接调整宽度�
   fireEvent.click(screen.getByText('+ 自由尺寸容器'));
 
   // 在画布悬浮工具条中直接切换跨页保护策略和宽度
-  fireEvent.change(screen.getByLabelText('跨页保护策略'), { target: { value: 'keep-together' } });
+  fireEvent.change(screen.getByLabelText('跨页保护策略'), { target: { value: 'atomic' } });
   fireEvent.click(screen.getByText('1/2宽'));
-  expect(canvasRoot.querySelector('[data-pdf-keep-together="true"]')).not.toBeNull();
+  expect(canvasRoot.querySelector('[data-pdf-atomic="true"]')).not.toBeNull();
 });

@@ -1,5 +1,6 @@
 import { Button, Modal, Spin, Tag } from 'antd';
 import React, { useState } from 'react';
+import { cloneWithResolvedStyles } from '../../adapters/dom/snapshot';
 import { inspectPrintLayout } from '../../application/print-service';
 import { resolvePaper } from '../../core/geometry/paper';
 import { PageSlice, PrintSettings } from '../../core/types';
@@ -106,9 +107,10 @@ export async function buildHtmlPreviewData({
   // 2. 计算标准物理纸张与视窗缩放规格
   const geometry = calculateHtmlPaperGeometry(settings, contentElement, header, footer);
 
-  // 3. 克隆并剥离调试遮罩后的纯净 HTML 结构（耗时 < 1ms）
-  const clone = contentElement.cloneNode(true) as HTMLElement;
-  clone.querySelectorAll('[data-pdf-debug]').forEach(el => el.remove());
+  // 3. 克隆并冻结计算样式，剥离调试遮罩后的纯净 HTML 结构（确保与测量阶段尺寸完全一致）
+  const clone = cloneWithResolvedStyles(contentElement);
+  const headerClone = header ? cloneWithResolvedStyles(header) : null;
+  const footerClone = footer ? cloneWithResolvedStyles(footer) : null;
 
   const paper = resolvePaper(settings);
   const unitFactor = settings.unit === 'px' ? 96 / 25.4 : 1;
@@ -124,8 +126,8 @@ export async function buildHtmlPreviewData({
     pages: inspection.pages,
     geometry,
     sourceHtml: clone.outerHTML,
-    headerHtml: header ? header.outerHTML : undefined,
-    footerHtml: footer ? footer.outerHTML : undefined,
+    headerHtml: headerClone ? headerClone.outerHTML : undefined,
+    footerHtml: footerClone ? footerClone.outerHTML : undefined,
     totalMs: performance.now() - started,
     filename,
   };

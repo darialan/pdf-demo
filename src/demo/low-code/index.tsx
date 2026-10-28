@@ -15,7 +15,14 @@ export type WebMaterialType =
   | 'stamp-box'
   | 'free-box';
 
-export type BlockPolicy = 'default' | 'keep-together' | 'keep-or-split' | 'force-split';
+export type BlockPolicy =
+  | 'atomic'
+  | 'splittable'
+  | 'ignore'
+  | 'default'
+  | 'keep-together'
+  | 'keep-or-split'
+  | 'force-split';
 
 export interface LowCodeBlock {
   id: string;
@@ -46,7 +53,7 @@ export const WEB_MATERIALS: MaterialMeta[] = [
     badge: 'Bento',
     defaultWidth: 280,
     defaultHeight: 190,
-    defaultPolicy: 'keep-together',
+    defaultPolicy: 'atomic',
   },
   {
     type: 'chart-widget',
@@ -54,7 +61,7 @@ export const WEB_MATERIALS: MaterialMeta[] = [
     badge: 'Chart',
     defaultWidth: 580,
     defaultHeight: 220,
-    defaultPolicy: 'keep-together',
+    defaultPolicy: 'atomic',
   },
   {
     type: 'timeline-feed',
@@ -62,7 +69,7 @@ export const WEB_MATERIALS: MaterialMeta[] = [
     badge: 'Timeline',
     defaultWidth: 340,
     defaultHeight: 320,
-    defaultPolicy: 'keep-or-split',
+    defaultPolicy: 'atomic',
     extra: { itemCount: 4 },
   },
   {
@@ -71,7 +78,7 @@ export const WEB_MATERIALS: MaterialMeta[] = [
     badge: 'Float',
     defaultWidth: 520,
     defaultHeight: 240,
-    defaultPolicy: 'default',
+    defaultPolicy: 'splittable',
   },
   {
     type: 'complex-table',
@@ -79,7 +86,7 @@ export const WEB_MATERIALS: MaterialMeta[] = [
     badge: 'Table',
     defaultWidth: 880,
     defaultHeight: 260,
-    defaultPolicy: 'default',
+    defaultPolicy: 'splittable',
     extra: { rowCount: 5, oversizedRowLines: 8 },
   },
   {
@@ -88,7 +95,7 @@ export const WEB_MATERIALS: MaterialMeta[] = [
     badge: 'Matrix',
     defaultWidth: 540,
     defaultHeight: 180,
-    defaultPolicy: 'keep-together',
+    defaultPolicy: 'atomic',
   },
   {
     type: 'stamp-box',
@@ -96,7 +103,7 @@ export const WEB_MATERIALS: MaterialMeta[] = [
     badge: 'Stamp',
     defaultWidth: 320,
     defaultHeight: 180,
-    defaultPolicy: 'keep-together',
+    defaultPolicy: 'atomic',
   },
   {
     type: 'free-box',
@@ -104,7 +111,7 @@ export const WEB_MATERIALS: MaterialMeta[] = [
     badge: 'FreeBox',
     defaultWidth: 420,
     defaultHeight: 200,
-    defaultPolicy: 'keep-or-split',
+    defaultPolicy: 'splittable',
   },
 ];
 
@@ -117,7 +124,7 @@ export const INITIAL_STAGGERED_BLOCKS: LowCodeBlock[] = [
     id: 'init-bento',
     type: 'bento-card',
     label: '核心指标卡',
-    policy: 'keep-together',
+    policy: 'atomic',
     widthPx: 290,
     minHeightPx: 210,
   },
@@ -125,7 +132,7 @@ export const INITIAL_STAGGERED_BLOCKS: LowCodeBlock[] = [
     id: 'init-chart',
     type: 'chart-widget',
     label: '趋势统计图',
-    policy: 'keep-together',
+    policy: 'atomic',
     widthPx: 570,
     minHeightPx: 250,
   },
@@ -133,7 +140,7 @@ export const INITIAL_STAGGERED_BLOCKS: LowCodeBlock[] = [
     id: 'init-timeline',
     type: 'timeline-feed',
     label: '节点流转记录',
-    policy: 'keep-or-split',
+    policy: 'atomic',
     widthPx: 350,
     minHeightPx: 340,
     itemCount: 4,
@@ -142,7 +149,7 @@ export const INITIAL_STAGGERED_BLOCKS: LowCodeBlock[] = [
     id: 'init-float',
     type: 'float-media-text',
     label: '图文环绕批注',
-    policy: 'default',
+    policy: 'splittable',
     widthPx: 510,
     minHeightPx: 260,
   },
@@ -150,7 +157,7 @@ export const INITIAL_STAGGERED_BLOCKS: LowCodeBlock[] = [
     id: 'init-table',
     type: 'complex-table',
     label: '复合表头明细',
-    policy: 'default',
+    policy: 'splittable',
     widthPx: 874,
     minHeightPx: 280,
     rowCount: 5,
@@ -160,7 +167,7 @@ export const INITIAL_STAGGERED_BLOCKS: LowCodeBlock[] = [
     id: 'init-kv',
     type: 'kv-matrix',
     label: '异构参数矩阵',
-    policy: 'keep-together',
+    policy: 'atomic',
     widthPx: 530,
     minHeightPx: 185,
   },
@@ -168,16 +175,35 @@ export const INITIAL_STAGGERED_BLOCKS: LowCodeBlock[] = [
     id: 'init-stamp',
     type: 'stamp-box',
     label: '电子签章盒',
-    policy: 'keep-together',
+    policy: 'atomic',
     widthPx: 330,
     minHeightPx: 185,
   },
 ];
 
 function policyAttrs(block: LowCodeBlock): Record<string, string | undefined> {
-  if (block.policy === 'keep-together') return { 'data-pdf-keep-together': 'true', 'data-pdf-label': block.label };
-  if (block.policy === 'keep-or-split') return { 'data-pdf-keep-together': 'split', 'data-pdf-label': block.label };
-  if (block.policy === 'force-split') return { 'data-pdf-break': 'split' };
+  const policy = block.policy;
+  if (policy === 'atomic' || (policy as string) === 'keep-together') {
+    return {
+      'data-pdf-atomic': 'true',
+      'data-pdf-keep-together': 'true',
+      'data-pdf-label': block.label,
+    };
+  }
+  if (
+    policy === 'splittable' ||
+    (policy as string) === 'force-split' ||
+    (policy as string) === 'keep-or-split'
+  ) {
+    return {
+      'data-pdf-splittable': 'true',
+      'data-pdf-break': 'split',
+      'data-pdf-label': block.label,
+    };
+  }
+  if (policy === 'ignore') {
+    return { 'data-pdf-ignore': 'true' };
+  }
   return {};
 }
 
@@ -518,7 +544,7 @@ function renderMaterialContent(block: LowCodeBlock) {
               联合会签与电子印章区
             </div>
             <p style={{ margin: 0, fontSize: 12, color: '#475569', lineHeight: 1.6 }}>
-              默认开启整体保护（Keep-Together），严禁分页线将印章或签名劈成两半。
+              默认开启原子化保护（atomic），严禁分页线将印章或签名劈成两半。
             </p>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 12 }}>
@@ -961,10 +987,9 @@ export function LowCodePage() {
                             padding: '1px 4px',
                           }}
                         >
-                          <option value="default">默认规则</option>
-                          <option value="keep-together">整体保护</option>
-                          <option value="keep-or-split">超高可拆</option>
-                          <option value="force-split">自由拆分</option>
+                          <option value="atomic">atomic (原子化)</option>
+                          <option value="splittable">splittable (可分割)</option>
+                          <option value="ignore">ignore (忽略)</option>
                         </select>
 
                         <button

@@ -1,5 +1,6 @@
 import { message, Tabs } from 'antd';
 import { ReactNode, useRef, useState } from 'react';
+import { cloneWithResolvedStyles } from '../adapters/dom/snapshot';
 import { inspectPrintLayout, outputPDF, PrintInspectionResult } from '../application/print-service';
 import { DEFAULT_SETTINGS, resolvePaper } from '../core/geometry/paper';
 import { PrintSettings } from '../core/types';
@@ -83,10 +84,11 @@ export function PrintWorkbench({ scenes }: { scenes: PrintSceneItem[] }) {
       setInspection(result);
       setStats(observedStats);
 
-      // 同步生成悬浮小窗的纯 HTML 纸张切片预览（零开销，耗时 < 1ms）
+      // 同步生成悬浮小窗的纯 HTML 纸张切片预览（冻结计算样式，确保与页面断页线 100% 吻合）
       const geometry = calculateHtmlPaperGeometry(settings, el, headerEl, footerEl);
-      const clone = el.cloneNode(true) as HTMLElement;
-      clone.querySelectorAll('[data-pdf-debug]').forEach(n => n.remove());
+      const clone = cloneWithResolvedStyles(el);
+      const headerClone = headerEl ? cloneWithResolvedStyles(headerEl) : null;
+      const footerClone = footerEl ? cloneWithResolvedStyles(footerEl) : null;
 
       const paper = resolvePaper(settings);
       const unitFactor = settings.unit === 'px' ? 96 / 25.4 : 1;
@@ -102,8 +104,8 @@ export function PrintWorkbench({ scenes }: { scenes: PrintSceneItem[] }) {
         pages: result.pages,
         geometry,
         sourceHtml: clone.outerHTML,
-        headerHtml: headerEl ? headerEl.outerHTML : undefined,
-        footerHtml: footerEl ? footerEl.outerHTML : undefined,
+        headerHtml: headerClone ? headerClone.outerHTML : undefined,
+        footerHtml: footerClone ? footerClone.outerHTML : undefined,
         totalMs: result.timing.totalMs,
         filename: currentScene.label || 'document',
       });

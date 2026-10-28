@@ -15,47 +15,69 @@ export function copyResolvedStyle(source: Element, target: HTMLElement | SVGElem
   target.style.transition = 'none';
 }
 
+/**
+ * Clone DOM element and freeze resolved CSS so rendering outside its original context
+ * (e.g. inside detached print containers or preview widgets) does not alter typography,
+ * inherited line-heights, or layout dimensions.
+ */
+export function cloneWithResolvedStyles(source: HTMLElement): HTMLElement {
+  const target = source.cloneNode(true) as HTMLElement;
+
+  // Preserve form and canvas state that cloneNode does not copy.
+  const sources = [source, ...Array.from(source.querySelectorAll('*'))];
+  const targets = [target, ...Array.from(target.querySelectorAll('*'))];
+  sources.forEach((node, i) => {
+    const copy = targets[i];
+    if (!copy) return;
+    if (node instanceof HTMLInputElement && copy instanceof HTMLInputElement) {
+      copy.value = node.value;
+      copy.checked = node.checked;
+    }
+    if (node instanceof HTMLTextAreaElement && copy instanceof HTMLTextAreaElement) {
+      copy.value = node.value;
+    }
+    if (node instanceof HTMLSelectElement && copy instanceof HTMLSelectElement) {
+      copy.selectedIndex = node.selectedIndex;
+    }
+    if (node instanceof HTMLCanvasElement && copy instanceof HTMLCanvasElement) {
+      copy.width = node.width;
+      copy.height = node.height;
+      copy.getContext('2d')?.drawImage(node, 0, 0);
+    }
+    if (copy instanceof HTMLElement || copy instanceof SVGElement) {
+      copyResolvedStyle(node, copy);
+    }
+    if (copy instanceof HTMLImageElement) {
+      copy.loading = 'eager';
+      // Fail during preparation when a remote image cannot be used by canvas.
+      if (/^https?:/.test(copy.src) && new URL(copy.src).origin !== window.location.origin) {
+        copy.crossOrigin = 'anonymous';
+      }
+    }
+  });
+  target.querySelectorAll('[data-pdf-debug], [data-pdf-ignore="true"]').forEach(node => node.remove());
+
+  // Lock root target width to source element width so rendering outside original flow never shrink-wraps or alters line wrapping
+  const sourceWidth = source.getBoundingClientRect().width;
+  if (sourceWidth > 0) {
+    target.style.width = `${sourceWidth}px`;
+    target.style.maxWidth = 'none';
+    target.style.boxSizing = 'border-box';
+  }
+
+  return target;
+}
+
 /** Owns detached print DOM; callers dispose it on every success/error path. */
 export function createPrintSnapshot(width: number) {
   const host = document.createElement('div');
   host.setAttribute('data-pdf-snapshot', 'true');
   host.style.cssText = `position:absolute;left:-100000px;top:0;width:${width}px;pointer-events:none;background:white;`;
   const clone = (source: HTMLElement) => {
-    const target = source.cloneNode(true) as HTMLElement;
-
-    // Preserve form and canvas state that cloneNode does not copy.
-    const sources = [source, ...Array.from(source.querySelectorAll('*'))];
-    const targets = [target, ...Array.from(target.querySelectorAll('*'))];
-    sources.forEach((node, i) => {
-      const copy = targets[i];
-      if (node instanceof HTMLInputElement && copy instanceof HTMLInputElement) {
-        copy.value = node.value;
-        copy.checked = node.checked;
-      }
-      if (node instanceof HTMLTextAreaElement && copy instanceof HTMLTextAreaElement) {
-        copy.value = node.value;
-      }
-      if (node instanceof HTMLSelectElement && copy instanceof HTMLSelectElement) {
-        copy.selectedIndex = node.selectedIndex;
-      }
-      if (node instanceof HTMLCanvasElement && copy instanceof HTMLCanvasElement) {
-        copy.width = node.width;
-        copy.height = node.height;
-        copy.getContext('2d')?.drawImage(node, 0, 0);
-      }
-      if (copy instanceof HTMLElement || copy instanceof SVGElement) copyResolvedStyle(node, copy);
-      if (copy instanceof HTMLImageElement) {
-        copy.loading = 'eager';
-        // Fail during preparation when a remote image cannot be used by canvas.
-        if (/^https?:/.test(copy.src) && new URL(copy.src).origin !== window.location.origin) {
-          copy.crossOrigin = 'anonymous';
-        }
-      }
-    });
+    const target = cloneWithResolvedStyles(source);
     target.style.width = `${width}px`;
     target.style.maxWidth = 'none';
     target.style.boxSizing = 'border-box';
-    target.querySelectorAll('[data-pdf-debug], [data-pdf-ignore="true"]').forEach(node => node.remove());
     host.appendChild(target);
     return target;
   };

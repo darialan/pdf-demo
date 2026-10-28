@@ -117,9 +117,13 @@ export function visualizePageBreaks(
     }
 
     // 3. splittable (可分割流式项：段落、长文本流、自由容器，允许被物理分页线切断)
+    const isSplittableContainer = el.matches(
+      '[data-pdf-splittable="true"], .pdf-splittable, [data-pdf-break="split"], .pdf-force-split'
+    );
     const isSplittableFlow =
+      isSplittableContainer ||
       el.matches(
-        'p, blockquote, [data-pdf-splittable="true"], .pdf-splittable, [data-pdf-break="split"], .pdf-force-split, .ant-typography:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6)'
+        'p, blockquote, .ant-typography:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6)'
       ) ||
       (el.tagName === 'DIV' && el.childElementCount === 0 && Boolean(el.textContent?.trim()));
 
@@ -139,6 +143,9 @@ export function visualizePageBreaks(
           badgePosition: 'right',
         })
       );
+      if (isSplittableContainer && el.childElementCount > 0) {
+        return 'descend';
+      }
       return 'skip';
     }
 

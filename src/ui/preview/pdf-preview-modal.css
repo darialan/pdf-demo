@@ -144,6 +144,16 @@
   left: 0;
   pointer-events: none;
   user-select: text;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5714285714285714;
+  color: rgba(0, 0, 0, 0.88);
+}
+
+.html-sheet-body-content > * {
+  width: 100% !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
 }
 
 .html-sheet-footer-box {
