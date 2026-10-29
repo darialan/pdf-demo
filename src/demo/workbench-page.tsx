@@ -5,7 +5,7 @@ import '../landing/site.css';
 import '../landing/workbench-page.css';
 
 const InteractiveWorkbench = lazy(() => import('../landing/interactive-workbench'));
-const REPO = 'https://github.com/janice143/pdf-demo';
+const REPO = 'https://github.com/darialan/web-pdf-printer';
 
 export default function WorkbenchPage() {
   const [theme, setTheme] = useTheme();
