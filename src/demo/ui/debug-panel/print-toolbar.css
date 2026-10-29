@@ -1,8 +1,8 @@
 .print-workbench-container {
   width: 100%;
-  max-width: 100%;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 0 0 24px;
+  padding: 0 20px 36px;
   box-sizing: border-box;
 }
 
@@ -35,11 +35,12 @@
 }
 
 .print-observability-panel {
+  max-width: 1080px;
+  margin: 12px auto 16px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
-  padding: 6px 14px;
-  margin: 10px 0 16px;
+  padding: 8px 16px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -115,6 +116,29 @@
   border: 1px dashed #7c3aed;
 }
 
+.observability-close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid var(--line, #cbd5e1);
+  background: transparent;
+  color: var(--ink2, #64748b);
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+  padding: 0;
+  margin-left: 6px;
+  transition: all 0.15s ease;
+}
+
+.observability-close-btn:hover {
+  background: var(--bg2, #f1f5f9);
+  color: var(--ink, #0f172a);
+}
+
 .print-tab-custom .ant-tabs-nav {
   margin-bottom: 0 !important;
   background: var(--card, #fff);
@@ -162,3 +186,8 @@
     display: none;
   }
 }
+
+/* Keep scene navigation readable in both site themes. */
+.print-tab-custom .ant-tabs-tab { color:var(--ink2,#555c58); }
+.print-tab-custom .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn { color:var(--ink,#202321); }
+.print-tab-custom .ant-tabs-ink-bar { background:var(--accent,#32745d); }

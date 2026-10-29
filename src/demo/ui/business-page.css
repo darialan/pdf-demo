@@ -1,0 +1,94 @@
+/* Existing Ant Design is the business UI. 1080px canvas, 20px padding, 16px gaps.
+   Two equal columns: (available width - 16px) / 2; collapse below 720px.
+   Scoped to the four business demos so the low-code canvas keeps its existing styles. */
+.business-page { color-scheme:light; max-width:1080px; margin:0 auto; padding:20px; background:#f3f5f7; color:#20242a; font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; box-sizing:border-box; }
+.business-page * { box-sizing:border-box; }
+.business-page .ant-card, .business-page .ant-input, .business-page .ant-select, .business-page .ant-table { font-family:inherit; }
+.business-heading { margin-bottom:20px; }
+.business-breadcrumb { display:flex; gap:12px; align-items:center; margin:0 0 12px; color:#606873; font-size:12px; }
+.business-breadcrumb span { margin-left:auto; color:#68707b; }
+.business-title { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+.business-title h1 { margin:0; color:#20242a; font-size:22px; line-height:1.4; font-weight:600; }
+.business-meta { margin:8px 0 0; font-size:13px; color:#606873; }
+.business-page .business-section { margin-bottom:16px; background:#fff; border-color:#e7e9ec; border-radius:6px; box-shadow:none; color:#20242a; }
+.business-page .business-section > .ant-card-head { padding:0 20px; min-height:48px; border-color:#eef0f2; }
+.business-page .business-section > .ant-card-body { padding:20px; }
+.business-page .business-section h2 { margin:0; font-size:15px; font-weight:600; color:#20242a; }
+.business-section .ant-card-extra { color:#606873; font-size:12px; }
+.business-page .ant-form-item-label > label, .business-page .ant-descriptions-item-label { color:#606873; }
+.business-page .ant-form-item { margin-bottom:16px; }
+.business-page .ant-input[readonly] { background:#fafbfc; color:#30363d; }
+.business-page .ant-table { font-size:13px; line-height:20px; font-variant-numeric:tabular-nums; }
+.business-page .ant-table-thead > tr > th { background:#fafbfc; color:#606873; font-weight:500; }
+.business-page .ant-table-cell { overflow-wrap:anywhere; }
+.business-page .ant-table-summary { font-weight:600; }
+.business-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.business-grid > * { min-width:0; }
+.business-stats { display:flex; align-items:flex-start; flex-wrap:wrap; gap:24px; padding:0 0 20px; font-variant-numeric:tabular-nums; }
+.business-stats > div { flex:1; min-width:130px; }
+.business-stats dt { color:#606873; font-size:12px; }
+.business-stats dd { margin:4px 0 0; font-size:22px; color:#20242a; }
+.business-toolbar { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
+.business-toolbar .ant-input-search { width:260px; max-width:100%; }
+.business-toolbar .ant-input-affix-wrapper { width:100%; max-width:100%; }
+.business-toolbar .ant-select { min-width:180px; }
+.business-muted { line-height:18px; color:#606873; font-size:12px; }
+.business-total { display:flex; justify-content:flex-end; gap:24px; margin-top:16px; font-variant-numeric:tabular-nums; }
+.business-attachment { margin:0; border:1px solid #e7e9ec; border-radius:4px; overflow:hidden; background:#fff; }
+.business-attachment .ant-image { display:block; width:100%; }
+.business-attachment img { display:block; width:100%; height:210px; object-fit:contain; }
+.business-attachment figcaption { padding:10px 12px; font-size:13px; color:#30363d; }
+.business-attachment figcaption small { display:block; color:#606873; font-size:12px; }
+.business-text { margin:0 0 12px; line-height:1.9; }
+.business-note { padding:12px 16px; background:#fafbfc; border-left:3px solid #d7dce2; margin:0 0 16px; color:#606873; font-size:13px; }
+.business-timeline { margin:0; padding:0; list-style:none; }
+.business-timeline li { display:grid; grid-template-columns:145px 115px 1fr; gap:16px; padding:12px 0; border-bottom:1px solid #eef0f2; }
+.business-timeline li:last-child { border:0; }
+.business-timeline time { color:#606873; font-size:12px; }
+.business-iframe { width:100%; height:780px; display:block; border:1px solid #dce1e7; border-radius:4px; background:#fff; }
+.business-page .ant-btn-primary { background:#24292f; box-shadow:none; }
+.business-page .ant-btn-primary:hover { background:#40464e !important; }
+/* 长文章：图文混排的博客/教程排版，独立于表单卡片系统 */
+.business-article { max-width:1080px; margin:0 auto; padding:20px; background:#f3f5f7; color:#20242a; font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; box-sizing:border-box; }
+.business-article * { box-sizing:border-box; }
+.article-cover { margin:0 0 20px; }
+.article-cover h1 { margin:0 0 8px; font-size:26px; line-height:1.4; color:#20242a; }
+.article-meta { display:flex; gap:12px; flex-wrap:wrap; color:#606873; font-size:13px; margin:0 0 16px; }
+.article-digest { margin:0 0 16px; padding:12px 16px; background:#fafbfc; border-left:3px solid #d7dce2; color:#606873; font-size:13px; line-height:1.8; }
+.article-body { background:#fff; border:1px solid #e7e9ec; border-radius:6px; padding:32px 40px; }
+.article-body h2 { font-size:19px; margin:32px 0 14px; color:#20242a; }
+.article-body h2:first-child { margin-top:0; }
+.article-body h3 { font-size:16px; margin:24px 0 10px; color:#20242a; }
+.article-body p { margin:0 0 16px; line-height:1.9; color:#30363d; }
+.article-body ul, .article-body ol { margin:0 0 16px; padding-left:22px; line-height:1.9; color:#30363d; }
+.article-body li { margin-bottom:4px; }
+.article-body img { max-width:100%; height:auto; }
+.article-body pre { max-width:100%; overflow-x:auto; }
+@media(max-width:720px) {
+ .business-article { padding:16px; }
+ .article-body { padding:20px; }
+ .article-cover h1 { font-size:22px; }
+}
+@media(max-width:720px) {
+ .business-page { padding:16px; }
+ .business-grid { grid-template-columns:1fr; }
+ .business-title h1 { font-size:20px; }
+ .business-page .business-section > .ant-card-body { padding:14px; }
+ .business-page .business-section > .ant-card-head { padding:0 14px; }
+ .business-timeline li { grid-template-columns:1fr; gap:4px; }
+ .business-attachment img { height:230px; }
+ .business-toolbar { align-items:stretch; }
+ .business-toolbar .ant-input-affix-wrapper, .business-toolbar .ant-select { width:100%; }
+ .business-page .ant-table { font-size:12px; }
+ .business-page .ant-table-cell { padding:8px 4px !important; }
+ .business-section .ant-card-extra { max-width:48%; text-align:right; }
+}
+
+/* 自定义页眉页脚 demo：带品牌标识的典型企业文档页眉/页脚样式 */
+.brand-print-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 0; border-bottom:2px solid #1f6feb; }
+.brand-print-header-brand { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; color:#1f2a37; }
+.brand-print-header-doc { font-size:12px; color:#606873; }
+.brand-print-footer { padding:8px 0; border-top:1px solid #dce1e7; font-size:11px; color:#8a9099; }
+@media(max-width:720px) {
+ .brand-print-header { flex-wrap:wrap; }
+}

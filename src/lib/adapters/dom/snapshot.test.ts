@@ -73,3 +73,32 @@ test('snapshot does not turn auto physical/logical dimensions into fixed inline 
     mock.mockRestore();
   }
 });
+
+
+test('snapshot preserves media and table sizes defined by ancestor-dependent CSS', () => {
+  const values: Record<string, string> = { width: '640px', height: '210px', 'max-width': '100%', 'min-height': '48px' };
+  const mock = jest.spyOn(window, 'getComputedStyle').mockReturnValue({
+    length: Object.keys(values).length,
+    item: (i: number) => Object.keys(values)[i],
+    getPropertyValue: (key: string) => values[key],
+    getPropertyPriority: () => '',
+  } as unknown as CSSStyleDeclaration);
+  try {
+    for (const tag of ['img', 'table']) {
+      const source = document.createElement(tag);
+      const target = source.cloneNode(true) as HTMLElement;
+      copyResolvedStyle(source, target);
+      expect(target.style.width).toBe('640px');
+      expect(target.style.height).toBe('210px');
+      expect(target.style.maxWidth).toBe('100%');
+    }
+    const card = document.createElement('div');
+    const cardCopy = card.cloneNode(true) as HTMLElement;
+    copyResolvedStyle(card, cardCopy);
+    expect(cardCopy.style.width).toBe('');
+    expect(cardCopy.style.height).toBe('');
+    expect(cardCopy.style.minHeight).toBe('48px');
+  } finally {
+    mock.mockRestore();
+  }
+});

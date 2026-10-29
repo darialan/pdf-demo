@@ -211,3 +211,9 @@
   color: #94a3b8;
   font-size: 12px;
 }
+
+.mini-sheet-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.05));
+}

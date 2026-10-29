@@ -8,10 +8,11 @@ import {
   PrintInspectionResult,
   PrintSettings,
   resolvePaper,
+  resolvePrintElement,
   visualizePageBreaks,
 } from '@darialan/web-pdf-printer';
-import { message, Tabs, Tooltip } from 'antd';
-import { ReactNode, useRef, useState } from 'react';
+import { message, Tabs } from 'antd';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 import {
   PrintObservabilityBanner,
   PrintToolbarActions,
@@ -32,20 +33,13 @@ export interface PrintSceneItem {
 }
 
 function resolveWorkbenchElement(contentId: string): HTMLElement | null {
-  const el = document.getElementById(contentId);
-  if (!el) return null;
-  if (el.tagName.toLowerCase() === 'iframe') {
-    const iframeDoc = (el as HTMLIFrameElement).contentDocument || (el as HTMLIFrameElement).contentWindow?.document;
-    if (iframeDoc?.body) {
-      return (iframeDoc.getElementById('iframe-report-content') as HTMLElement) || iframeDoc.body;
-    }
-  }
-  return el;
+  return resolvePrintElement(document.getElementById(contentId));
 }
 
 export function PrintWorkbench({ scenes, initialSceneKey }: { scenes: PrintSceneItem[]; initialSceneKey?: string }) {
   const [loading, setLoading] = useState(false);
-  const [tab, setTab] = useState(() => scenes.find(scene => scene.key === initialSceneKey)?.key || scenes[0]?.key || 'anti-cutoff');
+  const [exporting, setExporting] = useState(false);
+  const [tab, setTab] = useState(() => scenes.find(scene => scene.key === initialSceneKey)?.key || scenes[0]?.key || 'purchase-order');
   const [settings, setSettings] = useState<PrintSettings>(DEFAULT_SETTINGS);
   const [debugActive, setDebugActive] = useState(false);
   const [inspection, setInspection] = useState<PrintInspectionResult | null>(null);
@@ -55,11 +49,13 @@ export function PrintWorkbench({ scenes, initialSceneKey }: { scenes: PrintScene
   const [miniPreviewData, setMiniPreviewData] = useState<HtmlPreviewData | null>(null);
 
   const busy = useRef(false);
+  const debugRoot = useRef<HTMLElement | null>(null);
   const controller = useRef<AbortController | null>(null);
 
   const handleTabChange = (key: string) => {
     if (busy.current) return;
-    clearPageBreaks();
+    clearPageBreaks(debugRoot.current || undefined);
+    debugRoot.current = null;
     setMiniPreviewData(null);
     setDebugActive(false);
     setInspection(null);
@@ -68,12 +64,29 @@ export function PrintWorkbench({ scenes, initialSceneKey }: { scenes: PrintScene
   };
 
   const handleCloseDebug = () => {
-    clearPageBreaks();
+    clearPageBreaks(debugRoot.current || undefined);
+    debugRoot.current = null;
     setMiniPreviewData(null);
     setDebugActive(false);
     setInspection(null);
     setStats(undefined);
   };
+
+  useEffect(() => {
+    const invalidate = () => {
+      clearPageBreaks(debugRoot.current || undefined);
+      debugRoot.current = null;
+      setMiniPreviewData(null);
+      setDebugActive(false);
+      setInspection(null);
+      setStats(undefined);
+    };
+    window.addEventListener('pdf-demo-content-change', invalidate);
+    return () => {
+      window.removeEventListener('pdf-demo-content-change', invalidate);
+      clearPageBreaks(debugRoot.current || undefined);
+    };
+  }, []);
 
   const handleToggleDebug = async () => {
     if (debugActive) {
@@ -83,14 +96,12 @@ export function PrintWorkbench({ scenes, initialSceneKey }: { scenes: PrintScene
     const currentScene = scenes.find(item => item.key === tab);
     if (!currentScene) return;
 
-    const el = resolveWorkbenchElement(currentScene.contentId);
-    if (!el) {
-      message.error('未找到待测量的打印区域');
-      return;
-    }
-
+    if (busy.current) return;
+    busy.current = true;
     setLoading(true);
     try {
+      const el = resolveWorkbenchElement(currentScene.contentId);
+      if (!el) throw new Error('未找到待测量的打印区域');
       const headerEl = currentScene.headerId ? document.getElementById(currentScene.headerId) : null;
       const footerEl = currentScene.footerId ? document.getElementById(currentScene.footerId) : null;
 
@@ -101,6 +112,7 @@ export function PrintWorkbench({ scenes, initialSceneKey }: { scenes: PrintScene
         settings,
       });
 
+      debugRoot.current = el;
       const observedStats = visualizePageBreaks(result.pageBreaks, el);
       setInspection(result);
       setStats(observedStats);
@@ -134,8 +146,11 @@ export function PrintWorkbench({ scenes, initialSceneKey }: { scenes: PrintScene
       setDebugActive(true);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
+      clearPageBreaks(debugRoot.current || undefined);
+      debugRoot.current = null;
       message.error(`检查分页失败：${msg}`);
     } finally {
+      busy.current = false;
       setLoading(false);
     }
   };
@@ -145,18 +160,15 @@ export function PrintWorkbench({ scenes, initialSceneKey }: { scenes: PrintScene
     const currentScene = scenes.find(item => item.key === tab);
     if (!currentScene) return;
 
-    const el = resolveWorkbenchElement(currentScene.contentId);
-    if (!el) {
-      message.error('找不到待导出的打印内容');
-      return;
-    }
-
     busy.current = true;
     setLoading(true);
+    setExporting(true);
     controller.current = new AbortController();
     const hideLoading = message.loading('正在排版、测量并逐页渲染 PDF…', 0);
 
     try {
+      const el = resolveWorkbenchElement(currentScene.contentId);
+      if (!el) throw new Error('找不到待导出的打印内容');
       const result = await outputPDF({
         element: el,
         header: currentScene.headerId ? document.getElementById(currentScene.headerId) : null,
@@ -176,6 +188,7 @@ export function PrintWorkbench({ scenes, initialSceneKey }: { scenes: PrintScene
       busy.current = false;
       controller.current = null;
       setLoading(false);
+      setExporting(false);
     }
   };
 
@@ -185,32 +198,10 @@ export function PrintWorkbench({ scenes, initialSceneKey }: { scenes: PrintScene
         <Tabs
           className="print-tab-custom"
           activeKey={tab}
-          items={scenes.map(({ key, label, scenario, problem, children }) => {
-            const hasTooltip = Boolean(scenario || problem);
-            const tooltipTitle = hasTooltip ? (
-              <div style={{ maxWidth: 260, padding: '2px 0', lineHeight: 1.5, fontSize: 12 }}>
-                {scenario && (
-                  <div style={{ color: '#f8fafc', fontWeight: 500, marginBottom: problem ? 4 : 0 }}>
-                    {scenario}
-                  </div>
-                )}
-                {problem && (
-                  <div style={{ color: '#94a3b8', fontSize: 11 }}>
-                    {problem}
-                  </div>
-                )}
-              </div>
-            ) : null;
-
+          items={scenes.map(({ key, label, children }) => {
             return {
               key,
-              label: hasTooltip ? (
-                <Tooltip title={tooltipTitle} placement="bottomLeft" mouseEnterDelay={0.45}>
-                  <span style={{ cursor: 'pointer', display: 'inline-block' }}>{label}</span>
-                </Tooltip>
-              ) : (
-                label
-              ),
+              label,
               children: (
                 <div>
                   {debugActive && (
@@ -220,7 +211,7 @@ export function PrintWorkbench({ scenes, initialSceneKey }: { scenes: PrintScene
                       onClose={handleCloseDebug}
                     />
                   )}
-                  <div style={{ padding: '12px 4px' }}>{children}</div>
+                  <div style={{ padding: '16px 12px 32px', pointerEvents: loading ? 'none' : undefined }} onChangeCapture={() => { if (debugActive) handleCloseDebug(); }} onClickCapture={event => { if (debugActive && (event.target as Element).closest('button, .ant-select')) handleCloseDebug(); }}>{children}</div>
                 </div>
               ),
             };
@@ -229,11 +220,12 @@ export function PrintWorkbench({ scenes, initialSceneKey }: { scenes: PrintScene
           tabBarExtraContent={
             <PrintToolbarActions
               loading={loading}
+              exporting={exporting}
               settings={settings}
               debugActive={debugActive}
               onExport={handleExport}
               onToggleDebug={handleToggleDebug}
-              onCancel={() => controller.current?.abort()}
+              onCancelExport={() => controller.current?.abort()}
               onSettingsChange={next => {
                 setSettings(next);
                 if (debugActive) handleCloseDebug();

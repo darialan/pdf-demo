@@ -10,21 +10,23 @@ import './print-toolbar.css';
 
 export interface PrintToolbarActionsProps {
   loading: boolean;
+  exporting: boolean;
   settings: PrintSettings;
   debugActive: boolean;
   onExport: () => void;
   onToggleDebug: () => void;
-  onCancel: () => void;
+  onCancelExport: () => void;
   onSettingsChange: (next: PrintSettings) => void;
 }
 
 export function PrintToolbarActions({
   loading,
+  exporting,
   settings,
   debugActive,
   onExport,
   onToggleDebug,
-  onCancel,
+  onCancelExport,
   onSettingsChange,
 }: PrintToolbarActionsProps) {
   const paper = resolvePaper(settings);
@@ -54,12 +56,12 @@ export function PrintToolbarActions({
         {debugActive ? '退出检查' : '🔍 检查分页'}
       </Button>
 
-      <Button type="primary" onClick={onExport} loading={loading}>
+      <Button type="primary" onClick={onExport} loading={exporting} disabled={loading && !exporting}>
         导出 PDF
       </Button>
 
-      {loading && (
-        <Button onClick={onCancel} danger>
+      {exporting && (
+        <Button onClick={onCancelExport} danger>
           取消
         </Button>
       )}
@@ -76,6 +78,7 @@ export interface PrintObservabilityBannerProps {
 export function PrintObservabilityBanner({
   inspection,
   stats,
+  onClose,
 }: PrintObservabilityBannerProps) {
   if (!inspection) return null;
 
@@ -83,30 +86,41 @@ export function PrintObservabilityBanner({
     <div className="print-observability-panel">
       <div className="observability-metrics">
         <span>
-          Pages: <strong>{inspection.pages.length}</strong>
+          总页数: <strong>{inspection.pages.length} 页</strong>
         </span>
-        <span style={{ color: '#cbd5e1' }}>•</span>
+        <span style={{ color: 'var(--line, #cbd5e1)' }}>•</span>
         <span>
-          Capacity: <strong>{Math.round(inspection.capacity)}px</strong>
+          版面容量: <strong>{Math.round(inspection.capacity)}px</strong>
+        </span>
+        <span style={{ color: 'var(--line, #cbd5e1)' }}>•</span>
+        <span>
+          测量耗时: <strong>{inspection.timing.totalMs.toFixed(1)}ms</strong>
         </span>
       </div>
 
       <div className="observability-legend">
         <span className="legend-item legend-item-keep">
           <span className="legend-dot" style={{ background: '#ef4444' }} />
-          atomic: {stats?.atomic ?? 0}
+          整行保护 (atomic): {stats?.atomic ?? 0}
         </span>
         <span className="legend-item legend-item-break">
           <span className="legend-dot" style={{ background: '#3b82f6' }} />
-          splittable: {stats?.splittable ?? 0}
-        </span>
-        <span className="legend-item legend-item-ignore">
-          <span className="legend-dot" style={{ background: '#94a3b8' }} />
-          ignore: {stats?.ignore ?? 0}
+          允许切分: {stats?.splittable ?? 0}
         </span>
         <span className="legend-item legend-item-line">
-          ✂️ page-break
+          ✂️ 换页切分线
         </span>
+        {onClose && (
+          <button
+            type="button"
+            className="observability-close-btn"
+            onClick={onClose}
+            title="退出检查"
+            aria-label="退出检查"
+          >
+            ✕
+          </button>
+        )}
       </div>
     </div>
   );
@@ -138,11 +152,12 @@ export function PrintDebugToolbar({
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0' }}>
       <PrintToolbarActions
         loading={loading}
+        exporting={loading}
         settings={settings}
         debugActive={false}
         onExport={onExport}
         onToggleDebug={onInspect}
-        onCancel={onCancel}
+        onCancelExport={onCancel}
         onSettingsChange={onSettingsChange}
       />
       <span role="status" style={{ color: '#64748b', fontSize: 12 }}>

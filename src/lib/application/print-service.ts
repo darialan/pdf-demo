@@ -84,6 +84,24 @@ export async function inspectPrintLayout({
   try {
     const pageBreaks = layout.pages.map(page => page.start);
     const sourceMeasurement = measureDocument(target!, layout.capacity, options.rules);
+    if (typeof document !== 'undefined') {
+      const cloneMeasurement = measureDocument(layout.root, layout.capacity, options.rules);
+      let dumpEl = document.getElementById('__pdf_debug_dump__');
+      if (!dumpEl) {
+        dumpEl = document.createElement('div');
+        dumpEl.id = '__pdf_debug_dump__';
+        dumpEl.style.display = 'none';
+        document.body.appendChild(dumpEl);
+      }
+      dumpEl.textContent = JSON.stringify({
+        pageBreaks,
+        cloneHeight: cloneMeasurement.height,
+        cloneRanges: cloneMeasurement.ranges,
+        sourceHeight: sourceMeasurement.height,
+        sourceRanges: sourceMeasurement.ranges,
+        capacity: layout.capacity,
+      });
+    }
     validatePageBreaks(layout.pages, sourceMeasurement.ranges);
     const result: PrintInspectionResult = {
       pageBreaks,

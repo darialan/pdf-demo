@@ -1,9 +1,8 @@
 import { configurePrint } from '@darialan/web-pdf-printer';
 import type { PrintSceneItem } from './ui';
-import { ANTI_CUTOFF_CONTENT_ID, AntiCutoffDemo } from './anti-cutoff';
-import { CUSTOM_FOOTER_ID, CUSTOM_HEADER_ID, HeaderFooterDemo, HEADER_FOOTER_CONTENT_ID } from './header-footer';
-import { IFRAME_PAGE_CONTENT_ID, IframePageDemo } from './iframe-page';
-import { LOW_CODE_CONTENT_ID, LOW_CODE_FOOTER_ID, LOW_CODE_HEADER_ID, LowCodePage } from './low-code';
+import { COMPLEX_MIXED_CONTENT_ID, ComplexMixedDemo } from './complex-mixed';
+import { CUSTOM_FOOTER_ID, CUSTOM_HEADER_ID, CustomHeaderFooterDemo, CUSTOM_HEADER_FOOTER_CONTENT_ID } from './custom-header-footer';
+import { LONG_ARTICLE_CONTENT_ID, LongArticleDemo } from './long-article';
 import { PurchaseOrderDemo, PURCHASE_ORDER_CONTENT_ID } from './purchase-order';
 
 export * from './ui';
@@ -16,47 +15,37 @@ configurePrint({
 
 export const DEMO_SCENES: PrintSceneItem[] = [
   {
-    key: 'anti-cutoff',
-    label: '防截断全景',
-    scenario: '工程交付验收报告 · 规范多页单据',
-    problem: '保护文字行、表格与签章不被跨页物理切断',
-    contentId: ANTI_CUTOFF_CONTENT_ID,
-    children: <AntiCutoffDemo />,
-  },
-  {
-    key: 'header-footer',
-    label: '自定义页眉页脚',
-    scenario: '企业红头公文 · 专项合规审计报告',
-    problem: '每页固定重复独立公文标头与页脚，动态注入精准页码',
-    contentId: HEADER_FOOTER_CONTENT_ID,
-    headerId: CUSTOM_HEADER_ID,
-    footerId: CUSTOM_FOOTER_ID,
-    children: <HeaderFooterDemo />,
-  },
-  {
     key: 'purchase-order',
-    label: '采购订单',
-    scenario: 'ERP 采购结算单 · 45 行多批次明细',
-    problem: '长表格连续跨页排版，末页电子签章区防分离',
+    label: '长表格',
+    scenario: '采购订单详情 · 门店补货与收货跟踪',
+    problem: '筛选后的长表格连续导出，保留整行及合计',
     contentId: PURCHASE_ORDER_CONTENT_ID,
     children: <PurchaseOrderDemo />,
   },
   {
-    key: 'lowcode',
-    label: '低代码',
-    scenario: '可视化搭建物料画布与动态表单',
-    problem: '物料高度变动时实时预测分页与跨页标线辅助调优',
-    contentId: LOW_CODE_CONTENT_ID,
-    headerId: LOW_CODE_HEADER_ID,
-    footerId: LOW_CODE_FOOTER_ID,
-    children: <LowCodePage />,
+    key: 'long-article',
+    label: '长文章',
+    scenario: '计算光学技术长文 · 公式推导、代码块与配图混排',
+    problem: '长篇正文的文字行防截断，公式图与代码块整体保护，支持切图分享',
+    contentId: LONG_ARTICLE_CONTENT_ID,
+    children: <LongArticleDemo />,
   },
   {
-    key: 'iframe',
-    label: 'iframe 嵌入',
-    scenario: '微前端独立子应用与第三方沙箱报表',
-    problem: '跨 Realm 穿透提取并全量深度冻结内部独立计算样式',
-    contentId: IFRAME_PAGE_CONTENT_ID,
-    children: <IframePageDemo />,
+    key: 'complex-mixed',
+    label: '复杂图文页面',
+    scenario: '售后工单详情 · 表单信息、现场照片、处理记录与检查表混排',
+    problem: '表单、图片、长段落与表格同时出现时的分页与整体保护',
+    contentId: COMPLEX_MIXED_CONTENT_ID,
+    children: <ComplexMixedDemo />,
+  },
+  {
+    key: 'custom-header-footer',
+    label: '自定义页眉页脚',
+    scenario: '差旅报销单 · 每页重复的自定义页眉与页脚',
+    problem: '自定义页眉页脚内容，跨页重复展示并自动计算页码',
+    contentId: CUSTOM_HEADER_FOOTER_CONTENT_ID,
+    headerId: CUSTOM_HEADER_ID,
+    footerId: CUSTOM_FOOTER_ID,
+    children: <CustomHeaderFooterDemo />,
   },
 ];

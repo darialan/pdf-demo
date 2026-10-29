@@ -10,11 +10,10 @@ const DOCS = `${REPO}#readme`;
 const INSTALL_CMD = 'npm install @darialan/web-pdf-printer html2canvas jspdf';
 
 const scenes = [
-  { key: 'anti-cutoff', title: '图文混排报告', description: '检查长段落、表格和插图在换页处的表现。', detail: '文字行与内容块保护', icon: 'file' },
-  { key: 'header-footer', title: '正式多页文档', description: '为每页配置页眉、页脚和当前页 / 总页数。', detail: '页眉页脚与动态页码', icon: 'sliders' },
-  { key: 'purchase-order', title: '45 行采购订单', description: '查看长表格分页，以及末页的金额和签章区域。', detail: '长表格与签章区域', icon: 'grid' },
-  { key: 'lowcode', title: '低代码画布', description: '添加物料、调整宽度，观察布局变化后的分页。', detail: '动态内容与分页标线', icon: 'code' },
-  { key: 'iframe', title: 'iframe 内的报表', description: '导出同源 iframe 中具有独立样式的文档。', detail: '同源隔离页面', icon: 'expand' },
+  { key: 'purchase-order', title: '45 行采购订单', description: '长表格明细清单，行数不可预测，天然跨页防表格行腰斩。', detail: '第一类：长表格', icon: 'grid' },
+  { key: 'long-article', title: '计算光学技术长文', description: '公式推导、代码块与配图混排，支持切图分享到社交平台。', detail: '第二类：长文章', icon: 'code' },
+  { key: 'complex-mixed', title: '售后工单详情', description: '表单信息、现场照片、长段落与检查表混排在一页。', detail: '第三类：复杂图文页面', icon: 'sliders' },
+  { key: 'custom-header-footer', title: '差旅报销单', description: '每页重复的自定义页眉页脚，带动态总页码。', detail: '第四类：自定义页眉页脚', icon: 'file' },
 ] as const;
 
 const codeExamples = {
@@ -206,7 +205,7 @@ export function LandingPage() {
               </div>
               <h3>换一页，保留完整的一行。</h3>
               <p>测量文字在页面里的实际位置，避开行内切割。表格行放不下时，优先整体移到下一页。</p>
-              <a href="#/playground?scene=anti-cutoff" className="text-link">查看防截断示例 <Icon name="arrow" size={15} /></a>
+              <a href="#/playground?scene=purchase-order" className="text-link">查看长表格示例 <Icon name="arrow" size={15} /></a>
             </article>
             <div className="feature-list">
               <article><Icon name="grid" size={21} /><div><h3>签字与盖章，一起保留</h3><p>用 <code>data-pdf-atomic</code> 标记签章或图表区域，在页尾放不下时整块换页。</p></div></article>
@@ -220,7 +219,7 @@ export function LandingPage() {
         <section id="playground" className="studio-section landing-container">
           <div className="section-heading">
             <div><p className="section-label">场景演示</p><h2>用一份完整单据，试试分页。</h2></div>
-            <p className="section-description">工作台提供五个演示场景。调整打印设置，查看分页标线，再导出核对。</p>
+            <p className="section-description">工作台提供四个演示场景。调整打印设置，查看分页标线，再导出核对。</p>
           </div>
           <div className="scene-list">
             {scenes.map(scene => (

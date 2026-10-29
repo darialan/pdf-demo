@@ -2,7 +2,7 @@ import { classifyPrintNode } from '../../core/rules/print-rules';
 import { Interval } from '../../core/types';
 import { walkPrintTree } from './traversal';
 
-export function createTextMeasurer(rootTop: number) {
+export function createTextMeasurer(rootTop: number, collapse: (y: number) => number = y => y) {
   const lineHeights = new WeakMap<Element, number>();
   const range = document.createRange();
   let characters = 0;
@@ -24,7 +24,7 @@ export function createTextMeasurer(rootTop: number) {
         // Existing leading approximation is retained here, isolated from element
         // rules. It is not a complete CSS line-box reconstruction for mixed fonts.
         const leading = Number.isFinite(lineHeight) ? Math.max(0, lineHeight - rect.height) / 2 : 0;
-        return { top: rect.top - rootTop - leading, bottom: rect.bottom - rootTop + leading };
+        return { top: collapse(rect.top - rootTop - leading), bottom: collapse(rect.bottom - rootTop + leading) };
       });
   };
 }

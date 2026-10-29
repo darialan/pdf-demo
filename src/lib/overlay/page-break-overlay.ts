@@ -48,6 +48,40 @@ export function visualizePageBreaks(
   const borderTop = computed ? (parseFloat(computed.borderTopWidth) || 0) : 0;
   const borderLeft = computed ? (parseFloat(computed.borderLeftWidth) || 0) : 0;
 
+  // Page-break coordinates come from measureDocument, which collapses out [data-pdf-ignore]
+  // subtrees (zero height, matching the real export where those nodes are removed). The overlay
+  // itself is drawn on the live, uncollapsed DOM, so collapsed-space breakY values must be mapped
+  // back to live coordinates before positioning the break line, otherwise the line drifts upward
+  // by the cumulative height of every ignored block above it.
+  const ignoredLiveRanges: { top: number; bottom: number }[] = [];
+  walkPrintTree(element, node => {
+    if (node.nodeType !== 1) return 'descend';
+    const el = node as HTMLElement;
+    if (el.hasAttribute('data-pdf-debug')) return 'skip';
+    const isIgnored =
+      el.matches(
+        '.ant-pagination, .ant-pagination-item, .ant-pagination-prev, .ant-pagination-next, [data-pdf-ignore="true"], .pdf-ignore, script, style, template, [hidden]'
+      ) || classifyPrintNode(el).kind === 'ignore';
+    if (!isIgnored) return 'descend';
+    const rect = el.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      // Same coordinate basis as measureDocument's `bounds.top` (no borderTop subtraction here;
+      // that correction is applied once, separately, when converting collapsed breakY to a live line position).
+      ignoredLiveRanges.push({ top: rect.top - rootRect.top, bottom: rect.bottom - rootRect.top });
+    }
+    return 'skip';
+  });
+  ignoredLiveRanges.sort((a, b) => a.top - b.top);
+  const expandToLiveY = (collapsedY: number) => {
+    // collapsedY is in the same basis as measureDocument (relative to bounds.top, pre-borderTop).
+    let y = collapsedY;
+    for (const range of ignoredLiveRanges) {
+      if (range.top <= y) y += range.bottom - range.top;
+      else break;
+    }
+    return y - borderTop;
+  };
+
   // 扫描当前打印区域内各节点，严格按照 3 种元素语义分类：
   // 1. ignore (不打印)
   // 2. atomic (不可分割最小原子项)
@@ -77,7 +111,7 @@ export function visualizePageBreaks(
             borderColor: '#94a3b8',
             borderStyle: 'dashed',
             backgroundColor: 'rgba(148, 163, 184, 0.08)',
-            badgeText: 'ignore',
+            badgeText: '不打印',
             badgeBg: '#64748b',
             badgePosition: 'left',
           })
@@ -115,7 +149,7 @@ export function visualizePageBreaks(
           borderColor: '#ef4444',
           borderStyle: 'solid',
           backgroundColor: 'rgba(239, 68, 68, 0.05)',
-          badgeText: 'atomic',
+            badgeText: '整行保护',
           badgeBg: '#ef4444',
           badgePosition: 'right',
         })
@@ -145,7 +179,7 @@ export function visualizePageBreaks(
           borderColor: '#3b82f6',
           borderStyle: 'dashed',
           backgroundColor: 'rgba(59, 130, 246, 0.04)',
-          badgeText: 'splittable',
+            badgeText: '允许切分',
           badgeBg: '#3b82f6',
           badgePosition: 'right',
         })
@@ -161,7 +195,7 @@ export function visualizePageBreaks(
 
   // 绘制分页切割线与 page-break 指示标签（使用高辨识度紫色，避免与 atomic 红色混淆）
   pages.slice(1).forEach((breakY, index) => {
-    const lineY = breakY - borderTop;
+    const lineY = expandToLiveY(breakY);
     const lineContainer = document.createElement('div');
     lineContainer.setAttribute('data-pdf-debug', 'true');
     lineContainer.style.cssText = `

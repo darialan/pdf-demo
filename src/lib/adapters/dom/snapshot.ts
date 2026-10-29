@@ -10,8 +10,14 @@ export function copyResolvedStyle(source: Element, target: HTMLElement | SVGElem
     const property = computed.item(i);
     // Computed dimensions can be used values of an originally auto-sized box.
     // Freezing those values changes margin collapsing and table alignment.
-    // Retain authored dimensions from cloneNode/CSS, rather than fixing every box.
-    if (/^(min-|max-)?(width|height|block-size|inline-size)$/.test(property)) continue;
+    // Retain min/max constraints: unlike used auto dimensions these remain CSS
+    // constraints and can come from ancestor-dependent component-library rules.
+    if (/^(width|height|block-size|inline-size)$/.test(property)) {
+      // Intrinsic media and tables must retain their rendered size when an ancestor
+      // selector no longer matches in the detached snapshot. Generic flow boxes
+      // keep auto sizing so margin collapse and table alignment remain unchanged.
+      if (!/^(IMG|CANVAS|SVG|TABLE|COL|COLGROUP)$/.test(source.tagName.toUpperCase())) continue;
+    }
     target.style.setProperty(property, computed.getPropertyValue(property), computed.getPropertyPriority(property));
   }
   target.style.animation = 'none';

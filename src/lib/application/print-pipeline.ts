@@ -118,10 +118,20 @@ export function resolvePrintElement(target: unknown): HTMLElement | null {
   if (!isPrintableElement(target)) return null;
   if (target.tagName?.toLowerCase() === 'iframe') {
     const iframe = target as HTMLIFrameElement;
-    const doc = iframe.contentDocument || iframe.contentWindow?.document;
-    if (doc?.body && isPrintableElement(doc.body)) {
-      return (doc.getElementById('iframe-report-content') as HTMLElement) || doc.body;
+    let doc: Document | null | undefined;
+    try {
+      doc = iframe.contentDocument || iframe.contentWindow?.document;
+    } catch {
+      throw new Error('无法读取跨域 iframe，请在嵌入系统内接入打印工具或使用其导出接口');
     }
+    if (!doc?.body || doc.readyState === 'loading' || (doc.URL === 'about:blank' && Boolean(iframe.getAttribute('src')))) {
+      throw new Error('iframe 内容尚未就绪，请等待加载完成后重试');
+    }
+    const content = (doc.getElementById('iframe-report-content') as HTMLElement) || doc.body;
+    if (!isPrintableElement(content) || (!content.childElementCount && !content.textContent?.trim())) {
+      throw new Error('iframe 中没有可打印的业务内容');
+    }
+    return content;
   }
   return target;
 }
