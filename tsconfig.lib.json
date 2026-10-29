@@ -1,0 +1,23 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist/types",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false
+  },
+  "include": [
+    "src/lib/**/*.ts",
+    "src/core/**/*.ts",
+    "src/adapters/**/*.ts",
+    "src/application/**/*.ts",
+    "src/hooks/**/*.ts",
+    "src/ui/preview/page-break-overlay.ts"
+  ],
+  "exclude": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "src/demo/**/*",
+    "src/scratch/**/*"
+  ]
+}

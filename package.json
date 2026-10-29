@@ -1,7 +1,43 @@
 {
-  "name": "my-app",
-  "version": "0.1.0",
-  "private": true,
+  "name": "@darialan/web-pdf-printer",
+  "version": "1.0.0",
+  "description": "高性能客户端 DOM 分页与 PDF 导出引擎（防文字截断、防表格跨页腰斩、计算样式冻结与低内存按页微切片）",
+  "author": "darialan",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/janice143/web-pdf-printer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/janice143/web-pdf-printer/issues"
+  },
+  "homepage": "https://github.com/janice143/web-pdf-printer#readme",
+  "keywords": [
+    "pdf",
+    "printer",
+    "html2canvas",
+    "jspdf",
+    "pagination",
+    "dom-to-pdf",
+    "avoid-cut-off",
+    "web-pdf-printer",
+    "darialan"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "docs/npm-package-guide.md"
+  ],
   "dependencies": {
     "@ant-design/icons": "^5.2.6",
     "@testing-library/jest-dom": "^5.17.0",
@@ -21,10 +57,26 @@
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },
+  "peerDependencies": {
+    "html2canvas": ">=1.4.0",
+    "jspdf": ">=2.5.0",
+    "react": ">=16.8.0 || >=17.0.0 || >=18.0.0",
+    "react-dom": ">=16.8.0 || >=17.0.0 || >=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "build:lib": "vite build --config vite.config.lib.ts && tsc -p tsconfig.lib.json && node -e \"require('fs').writeFileSync('dist/index.d.ts', \\\"export * from './types/lib/index';\\\\n\\\")\"",
     "test": "react-scripts test",
+    "test:once": "react-scripts test --watchAll=false",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
