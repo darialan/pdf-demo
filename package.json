@@ -57,6 +57,11 @@
     }
   },
   "scripts": {
+    "release": "node scripts/release.mjs patch",
+    "release:dry": "node scripts/release.mjs --dry-run",
+    "release:patch": "node scripts/release.mjs patch",
+    "release:minor": "node scripts/release.mjs minor",
+    "release:major": "node scripts/release.mjs major",
     "prepublishOnly": "npm run test:once && npm run build:lib",
     "postinstall": "node -e \"const fs=require('fs');if(!fs.existsSync('src/lib'))process.exit(0);const p='node_modules/@darialan';try{fs.mkdirSync(p,{recursive:true});fs.rmSync(p+'/web-pdf-printer',{force:true,recursive:true});fs.symlinkSync('../../src/lib',p+'/web-pdf-printer','junction')}catch(e){}\"",
     "start": "react-scripts start",
