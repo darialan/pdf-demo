@@ -170,10 +170,19 @@ async function main() {
 
   // 9. 正式发布到 NPM
   step('8. 推送并发布到 NPM 官方仓库');
+  const otpArg = process.argv.find(arg => arg.startsWith('--otp'));
+  const publishCmd = `npm publish --access public${otpArg ? ` ${otpArg}` : ''}`;
   try {
-    run('npm publish --access public');
+    run(publishCmd);
   } catch {
-    fail('发布到 NPM 失败！请检查是否有该 scope/包名 的发布权限或双重身份验证 (2FA)。');
+    fail(
+      '发布到 NPM 失败！\n' +
+      '常见原因：\n' +
+      '  1. NPM 强制要求 2FA 双重身份验证：\n' +
+      '     👉 方案 A (推荐一劳永逸)：在 npmjs.com 后台创建勾选了「Bypass 2FA for publish」的 Granular Access Token 并配置到 ~/.npmrc\n' +
+      '     👉 方案 B (单次输入)：从手机 Authenticator 查看 6 位动态验证码，运行 npm run release -- --otp=123456\n' +
+      '  2. 权限问题：请确认你当前登录的账号是否拥有 @darialan 命名空间的所有权或权限。'
+    );
   }
   success(`已成功发布 @darialan/web-pdf-printer@${finalVersion} 到 NPM！`);
 

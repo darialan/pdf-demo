@@ -186,3 +186,22 @@ git push && git push --tags
 ### Q5: 提示工作区有未提交的代码
 - **原因**：为了保证代码仓库与发布的包版本强一致，`npm run release` 脚本会检查 Git 状态。
 - **解决办法**：发版前先执行 `git add . && git commit -m "feat: xxx"` 保存修改。
+
+### Q6: 报错 403 Forbidden - `Two-factor authentication or granular access token with bypass 2fa enabled is required to publish packages`
+- **原因**：NPM 官方为了保障开源供应链安全，强制开启了发布双重验证（2FA）。
+- **解决办法（二选一）**：
+  - **方案 1（最推荐，一劳永逸无需每次输码）**：
+    1. 打开 [npmjs.com](https://www.npmjs.com/) 登录后，点击头像 -> **Access Tokens** -> **Generate New Token** -> **Granular Access Token**；
+    2. 勾选 **Bypass two-factor authentication (2FA) for publish**；
+    3. 复制生成的 `npm_xxxxxxxxxxxx`，在本地终端运行：
+       ```bash
+       echo "//registry.npmjs.org/:_authToken=npm_xxxxxxxxxxxx" >> ~/.npmrc
+       ```
+    4. 之后发版将自动免密、免 2FA 畅通直发。
+  - **方案 2（单次带验证码发布）**：
+    从手机身份验证器（Authenticator）查看当前 6 位动态验证码，运行：
+    ```bash
+    npm publish --access public --otp=123456
+    # 或通过自动化脚本带码发布：
+    npm run release -- --otp=123456
+    ```
