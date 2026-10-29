@@ -1,6 +1,6 @@
 {
   "name": "@darialan/web-pdf-printer",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "高性能客户端 DOM 分页与 PDF 导出引擎（防文字截断、防表格跨页腰斩、计算样式冻结与低内存按页微切片）",
   "author": "darialan",
   "license": "MIT",
