@@ -7,7 +7,7 @@ import {
   resolvePaper,
   UNIT_FIELDS,
 } from '@darialan/web-pdf-printer';
-import { Button, Form, InputNumber, Modal, Radio, Select } from 'antd';
+import { Button, Form, InputNumber, Modal, Radio, Select, Switch } from 'antd';
 import { useState } from 'react';
 import './settings-panel.css';
 
@@ -38,6 +38,12 @@ export function PrintSettingsButton({
     const factor = activeUnit === 'px' ? PX_PER_MM : 1;
     const precision = activeUnit === 'px' ? 1 : 2;
 
+    const pageNumber = settings.pageNumber || {
+      enabled: true,
+      position: 'bottom-right',
+      format: 'slash',
+    };
+
     const displayValues: PrintSettings = {
       ...settings,
       unit: activeUnit,
@@ -47,6 +53,7 @@ export function PrintSettingsButton({
       marginRightMm: Number((settings.marginRightMm * factor).toFixed(precision)),
       marginBottomMm: Number((settings.marginBottomMm * factor).toFixed(precision)),
       marginLeftMm: Number((settings.marginLeftMm * factor).toFixed(precision)),
+      pageNumber,
     };
     form.setFieldsValue(displayValues);
   };
@@ -68,6 +75,13 @@ export function PrintSettingsButton({
         marginRightMm: Number((draft.marginRightMm * factor).toFixed(4)),
         marginBottomMm: Number((draft.marginBottomMm * factor).toFixed(4)),
         marginLeftMm: Number((draft.marginLeftMm * factor).toFixed(4)),
+        header: value.header,
+        footer: value.footer,
+        pageNumber: {
+          enabled: draft.pageNumber?.enabled ?? true,
+          position: draft.pageNumber?.position || 'bottom-right',
+          format: draft.pageNumber?.format || 'slash',
+        },
       };
 
       resolvePaper(canonical);
@@ -247,6 +261,59 @@ export function PrintSettingsButton({
               </Form.Item>
             ))}
           </div>
+
+          <div style={{ height: 1, background: '#f1f5f9', margin: '14px 0 12px 0' }} />
+          <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', marginBottom: 10 }}>
+            页码设置
+          </div>
+          <div className="print-settings-grid">
+            <Form.Item name={['pageNumber', 'enabled']} label="显示页码" valuePropName="checked">
+              <Switch checkedChildren="开启" unCheckedChildren="关闭" />
+            </Form.Item>
+            <Form.Item
+              noStyle
+              shouldUpdate={(prev, curr) => prev.pageNumber?.enabled !== curr.pageNumber?.enabled}
+            >
+              {({ getFieldValue }) => {
+                const enabled = getFieldValue(['pageNumber', 'enabled']) ?? true;
+                if (!enabled) return null;
+                return (
+                  <Form.Item name={['pageNumber', 'position']} label="页码位置">
+                    <Select
+                      options={[
+                        { value: 'bottom-right', label: '底部靠右' },
+                        { value: 'bottom-center', label: '底部居中' },
+                        { value: 'top-right', label: '顶部靠右' },
+                        { value: 'top-center', label: '顶部居中' },
+                      ]}
+                    />
+                  </Form.Item>
+                );
+              }}
+            </Form.Item>
+          </div>
+          <Form.Item
+            noStyle
+            shouldUpdate={(prev, curr) => prev.pageNumber?.enabled !== curr.pageNumber?.enabled}
+          >
+            {({ getFieldValue }) => {
+              const enabled = getFieldValue(['pageNumber', 'enabled']) ?? true;
+              if (!enabled) return null;
+              return (
+                <div className="print-settings-grid">
+                  <Form.Item name={['pageNumber', 'format']} label="页码格式">
+                    <Select
+                      options={[
+                        { value: 'slash', label: '1 / 5 (数字斜杠)' },
+                        { value: 'chinese', label: '第 1 页 / 共 5 页 (中文标准)' },
+                        { value: 'hyphen', label: '- 1 - (中划线简洁)' },
+                      ]}
+                    />
+                  </Form.Item>
+                </div>
+              );
+            }}
+          </Form.Item>
         </Form>
       </Modal>
     </>

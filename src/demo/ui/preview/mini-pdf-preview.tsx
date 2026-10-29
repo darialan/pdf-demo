@@ -140,7 +140,7 @@ export function MiniPdfPreview({ data, loading = false, onClose }: MiniPdfPrevie
                   footerHeightPx,
                   sourceWidth,
                   scale,
-                  slicingMode,
+                  pageNumber,
                 } = data.geometry;
 
                 const sliceHeightPx = (page.end - page.start) * scale;
@@ -223,16 +223,22 @@ export function MiniPdfPreview({ data, loading = false, onClose }: MiniPdfPrevie
                       )}
 
                       {/* 页码 */}
-                      {!slicingMode && (
+                      {pageNumber?.enabled !== false && (
                         <div
                           className="mini-sheet-page-num"
                           style={{
-                            right: marginRightPx * currentZoom,
+                            ...(pageNumber?.position === 'bottom-center' || pageNumber?.position === 'top-center'
+                              ? { left: '50%', transform: 'translateX(-50%)' }
+                              : { right: marginRightPx * currentZoom }),
                             bottom: Math.max(3, (marginBottomPx / 3) * currentZoom),
                             fontSize: Math.max(7, 8 * currentZoom),
                           }}
                         >
-                          {index + 1} / {data.pages.length}
+                          {pageNumber?.format === 'chinese'
+                            ? `第 ${index + 1} 页 / 共 ${data.pages.length} 页`
+                            : pageNumber?.format === 'hyphen'
+                            ? `- ${index + 1} -`
+                            : `${index + 1} / ${data.pages.length}`}
                         </div>
                       )}
                     </div>

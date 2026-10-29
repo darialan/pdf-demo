@@ -1,0 +1,22 @@
+# Generation prompts
+
+Tool: built-in image_gen. Three independent calls, one for each concept. `transparent_background: false`. No reference images.
+
+## Shared prompt
+
+Create a polished brandkit concept presentation for the existing developer tool "WebPDF Printer". This is an explicitly requested refresh limited to the logo, wordmark, and heading treatment, not a new name or new website. Audience: frontend developers exporting business reports, purchase orders and approvals to PDF in the browser, with intelligent pagination keeping text lines and table rows intact. Tone: precise, practical, quiet, trustworthy. Preserve the website's restrained light neutral palette: off-white #fcfcfb, charcoal #202321, forest green #32745d, hairline #e0e4e0. No purple gradients, sparkles, shields, printers, stock file outline icons, mascots, or copied famous marks.
+One coherent mark per concept, repeated EXACTLY across applications. Create a landscape 3:2 concept board, aiming for 1536x1024 if supported. Light canvas, crisp vector-like flat graphic rendering, ample clean space. Custom three-band layout: upper 40% a large isolated original symbol next to the wordmark "WebPDF Printer"; middle 40% the SAME symbol and wordmark scaled into a realistic existing website navigation with sparse labels "分页能力", "场景演示", "接入方式", plus a small dark "打开工作台" button on the right, and underneath a cropped hero with a left-aligned Chinese heading (provided below) and a simple right-side miniature paper document preview; bottom 20% monochrome versions on white and charcoal, and genuine small-size 16/24/32px-style symbol examples, all aligned. The symbol must be recognizable at small sizes, with few substantial geometric shapes. Wordmark must be spelled exactly, human typeset with no distorted letters. Use the user's existing layout rhythm, not an unrelated invented UI. No extra prose, no mock merchandise, no construction line clutter, no tiny fake labels. Only title, brand name and the listed UI text.
+
+Append one of the following concept prompts to the shared prompt for each call.
+
+## A
+
+CONCEPT A: PAGE FLOW. Label the board "A · PAGE FLOW". Product-action metaphor: content continues intact from one page to the next. Create a compact, distinct abstract symbol formed from two offset open page/frame shapes with a single continuous ribbon-like path connecting their aligned content edges, carefully reduced into two or three bold forms and a clear negative-space gap. No literal arrow and no folded stock document outline. The symbol is primarily charcoal with a restrained forest-green continuation element. Beside it use "WebPDF" in a warm precise medium-bold sans serif and "Printer" in regular weight, on one baseline. Hero heading EXACTLY two lines: "为复杂业务页面，" then "做好 PDF 分页。" The hero typography is clean and confident, same palette.
+
+## B
+
+CONCEPT B: WP MONOGRAM. Label the board "B · WP MONOGRAM". Monogram + meaning: craft a custom bold geometric WP ligature whose vertical strokes and offset top/bottom corners quietly suggest a short stack of pages. The W and P must fuse into ONE compact original symbol, with one intentional paper-edge negative-space cut. Flat solid charcoal, no 3D effects, no generic chevron, no disconnected alphabet letters. Weight should remain legible at favicon size. Wordmark "WebPDF Printer" in tightly considered sturdy geometric sans serif, "WebPDF" bold and "Printer" medium, neither condensed nor futuristic. Hero heading EXACTLY two lines: "把业务页面，" then "交付为 PDF。" Keep the realistic website navbar treatment restrained and use the green only for a tiny interface accent.
+
+## C
+
+CONCEPT C: FOLDED PAGE. Label the board "C · FOLDED PAGE". A simple abstract folded-paper symbol with optical balance: one compact rectangular paper plane with a broad diagonal fold, where a crisp negative-space horizontal step suggests the orderly beginning of a next page. It must feel like a unique folded P, designed from only two or three solid planes, NOT an outlined file icon or a paper airplane. Flat deep forest-green symbol, charcoal wordmark; monochrome versions must also work. Wordmark "WebPDF Printer" in an elegant restrained humanist sans serif, slightly more open spacing than the other concepts, balanced mixed case, all on one line. Hero heading EXACTLY two lines: "网页里的内容，" then "清楚地落在纸上。" All other styling remains consistent with the shared existing website.

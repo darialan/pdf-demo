@@ -4,7 +4,7 @@ import { createPdfWriter } from '../adapters/pdf/jspdf-writer';
 import { validatePageBreaks } from '../core/pagination/paginator';
 import { Interval, MeasurementStats, PageSlice } from '../core/types';
 import { checkCancelled } from './cancellation';
-import { LayoutOptions, prepareLayout } from './print-pipeline';
+import { LayoutOptions, prepareLayout, resolvePrintElement } from './print-pipeline';
 
 export interface ExportOptions extends LayoutOptions {
   filename: string;
@@ -79,12 +79,11 @@ export async function inspectPrintLayout({
   ...options
 }: PreviewPaginationOptions): Promise<PrintInspectionResult> {
   const started = performance.now();
-  const layout = await prepareLayout({ element: contentElement, maxPages: Number.MAX_SAFE_INTEGER, ...options });
+  const target = resolvePrintElement(contentElement);
+  const layout = await prepareLayout({ element: target, maxPages: Number.MAX_SAFE_INTEGER, ...options });
   try {
     const pageBreaks = layout.pages.map(page => page.start);
-    const sourceMeasurement = options.settings?.slicingMode
-      ? { height: layout.pages[layout.pages.length - 1]?.end || 0, ranges: [] }
-      : measureDocument(contentElement!, layout.capacity, options.rules);
+    const sourceMeasurement = measureDocument(target!, layout.capacity, options.rules);
     validatePageBreaks(layout.pages, sourceMeasurement.ranges);
     const result: PrintInspectionResult = {
       pageBreaks,

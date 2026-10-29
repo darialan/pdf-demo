@@ -1,8 +1,8 @@
 .print-workbench-container {
   width: 100%;
-  max-width: 1440px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 16px 28px 48px;
+  padding: 0 0 24px;
   box-sizing: border-box;
 }
 
@@ -117,6 +117,48 @@
 
 .print-tab-custom .ant-tabs-nav {
   margin-bottom: 0 !important;
-  background: #fff;
-  border-bottom: 1px solid #e2e8f0;
+  background: var(--card, #fff);
+  border-bottom: 1px solid var(--line, #e2e8f0);
+  padding: 0 18px;
+}
+
+/* 窄屏下场景标签与工具条挤在一行会把「导出 PDF」推出屏幕，改为上下两行。 */
+@media (max-width: 700px) {
+  .print-tab-custom .ant-tabs-nav {
+    flex-wrap: wrap;
+    row-gap: 10px;
+    padding: 0 12px;
+  }
+  /* Ant v5 用 :where() 把自身权重压到 0，这里要匹配它的后代结构才能覆盖。 */
+  .print-tab-custom .ant-tabs-extra-content {
+    flex: 1 0 100%;
+    width: auto;
+    margin-inline-start: 0;
+    padding-inline: 0;
+  }
+  .print-tab-custom .print-tab-bar-extra {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .print-tab-custom .print-paper-badge {
+    display: none;
+  }
+  /* Ant 按旧宽度算出的横向位移在窄屏下会把当前场景推出可视区，改为标签区原生横向滚动。 */
+  .print-tab-custom .ant-tabs-nav-list {
+    transform: none !important;
+  }
+  .ant-tabs-top.print-tab-custom > .ant-tabs-nav .ant-tabs-nav-wrap {
+    flex: 1 1 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+  .ant-tabs-top.print-tab-custom > .ant-tabs-nav .ant-tabs-nav-wrap::-webkit-scrollbar {
+    display: none;
+  }
+  .ant-tabs-top.print-tab-custom > .ant-tabs-nav .ant-tabs-nav-operations,
+  .ant-tabs-top.print-tab-custom > .ant-tabs-nav .ant-tabs-ink-bar {
+    display: none;
+  }
 }

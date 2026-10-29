@@ -11,11 +11,14 @@ export function createTextMeasurer(rootTop: number) {
     if (characters > 200000) throw new Error('文本超过 200,000 字符限制，请拆分导出');
     const parent = node.parentElement;
     if (parent && !lineHeights.has(parent)) {
-      lineHeights.set(parent, parseFloat(window.getComputedStyle(parent).lineHeight));
+      const win = parent.ownerDocument?.defaultView || window;
+      const lh = win.getComputedStyle ? win.getComputedStyle(parent).lineHeight : window.getComputedStyle(parent).lineHeight;
+      lineHeights.set(parent, parseFloat(lh));
     }
     const lineHeight = parent ? lineHeights.get(parent)! : NaN;
     range.selectNodeContents(node);
-    return Array.from(range.getClientRects())
+    const rects = range.getClientRects ? Array.from(range.getClientRects()) : [];
+    return rects
       .filter(rect => rect.width > 0 && rect.height > 0)
       .map(rect => {
         // Existing leading approximation is retained here, isolated from element

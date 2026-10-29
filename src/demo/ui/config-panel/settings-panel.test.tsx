@@ -36,13 +36,17 @@ test('打印设置联动：切换纸张尺寸自动载入预设宽高与边距�
   expect(widthInput).toBeDisabled();
 
   // 切换为自定义尺寸
-  const select = screen.getByRole('combobox');
+  const select = screen.getAllByRole('combobox')[0];
   fireEvent.mouseDown(select);
   const customOption = screen.getByText('自定义尺寸');
   fireEvent.click(customOption);
 
   // 自定义尺寸下不显示纸张方向（仅标准纸张有方向）
   expect(screen.queryByText('纸张方向')).not.toBeInTheDocument();
+
+  // 验证页码设置区域存在
+  expect(screen.getByText('页码设置')).toBeInTheDocument();
+  expect(screen.getByText('显示页码')).toBeInTheDocument();
 
   // 自定义尺寸下宽高输入框解禁，宽为 A4 宽 210，高默认为 200px (≈52.92mm)，边距为 2px (≈0.53mm)
   expect(widthInput).not.toBeDisabled();
@@ -64,4 +68,32 @@ test('打印设置联动：切换纸张尺寸自动载入预设宽高与边距�
   const saved = handleChange.mock.calls[0][0];
   expect(saved.paper).toBe('custom');
   expect(saved.unit).toBe('px');
+  expect(saved.pageNumber).toEqual({
+    enabled: true,
+    position: 'bottom-right',
+    format: 'slash',
+  });
+});
+
+test('页码设置：关闭显示页码时隐藏位置与格式选项并保存', async () => {
+  const handleChange = jest.fn();
+  render(<PrintSettingsButton value={DEFAULT_SETTINGS} disabled={false} onChange={handleChange} />);
+
+  fireEvent.click(screen.getByRole('button', { name: '打印设置' }));
+  expect(screen.getByText('页码设置')).toBeInTheDocument();
+  expect(screen.getByText('页码位置')).toBeInTheDocument();
+  expect(screen.getByText('页码格式')).toBeInTheDocument();
+
+  // 点击关闭显示页码 switch
+  const switchBtn = screen.getByRole('switch');
+  fireEvent.click(switchBtn);
+
+  // 位置与格式选择器随之隐藏
+  expect(screen.queryByText('页码位置')).not.toBeInTheDocument();
+  expect(screen.queryByText('页码格式')).not.toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole('button', { name: '应 用' }));
+  await waitFor(() => expect(handleChange).toHaveBeenCalled());
+  const saved = handleChange.mock.calls[0][0];
+  expect(saved.pageNumber?.enabled).toBe(false);
 });

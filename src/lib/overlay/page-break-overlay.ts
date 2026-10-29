@@ -9,8 +9,12 @@ export interface ObservabilityStats {
 
 let restorePosition: (() => void) | undefined;
 
-export function clearPageBreaks() {
-  document.querySelectorAll('[data-pdf-debug]').forEach(node => node.remove());
+export function clearPageBreaks(owner?: Document | HTMLElement) {
+  const doc = owner ? ('nodeType' in owner && owner.nodeType === 9 ? (owner as Document) : owner.ownerDocument) : document;
+  doc?.querySelectorAll('[data-pdf-debug]').forEach(node => node.remove());
+  if (doc !== document && typeof document !== 'undefined') {
+    document.querySelectorAll('[data-pdf-debug]').forEach(node => node.remove());
+  }
   restorePosition?.();
   restorePosition = undefined;
 }
@@ -19,7 +23,7 @@ export function visualizePageBreaks(
   pages: number[],
   element: HTMLElement
 ): ObservabilityStats {
-  clearPageBreaks();
+  clearPageBreaks(element);
 
   const stats: ObservabilityStats = {
     atomic: 0,
@@ -27,7 +31,10 @@ export function visualizePageBreaks(
     ignore: 0,
   };
 
-  if (window.getComputedStyle(element).position === 'static') {
+  const win = element.ownerDocument?.defaultView || (typeof window !== 'undefined' ? window : null);
+  const computed = win?.getComputedStyle ? win.getComputedStyle(element) : null;
+
+  if (computed && computed.position === 'static') {
     const position = element.style.getPropertyValue('position');
     const priority = element.style.getPropertyPriority('position');
     element.style.position = 'relative';
@@ -38,8 +45,8 @@ export function visualizePageBreaks(
   }
 
   const rootRect = element.getBoundingClientRect();
-  const borderTop = parseFloat(window.getComputedStyle(element).borderTopWidth) || 0;
-  const borderLeft = parseFloat(window.getComputedStyle(element).borderLeftWidth) || 0;
+  const borderTop = computed ? (parseFloat(computed.borderTopWidth) || 0) : 0;
+  const borderLeft = computed ? (parseFloat(computed.borderLeftWidth) || 0) : 0;
 
   // 扫描当前打印区域内各节点，严格按照 3 种元素语义分类：
   // 1. ignore (不打印)

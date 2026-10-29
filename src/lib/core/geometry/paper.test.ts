@@ -29,17 +29,15 @@ test('invalid custom dimensions and margins are rejected before rendering', () =
   expect(() => resolvePaper({ ...DEFAULT_SETTINGS, marginLeftMm: 210 })).toThrow('占满');
 });
 
-test('allows sub-millimeter pages in slice mode and preserves custom width/height order', () => {
+test('preserves custom width/height order', () => {
   const result = resolvePaper({
     ...DEFAULT_SETTINGS,
     paper: 'custom',
-    widthMm: (800 * 25.4) / 96,
-    heightMm: (2 * 25.4) / 96,
-    slicingMode: true,
+    widthMm: 100,
+    heightMm: 150,
   });
-  expect(result.pageHeight).toBeCloseTo(1.5);
-  expect(result.pageWidth).toBeCloseTo(600);
-  expect(result.top + result.bottom).toBe(0);
+  expect(result.widthMm).toBe(100);
+  expect(result.heightMm).toBe(150);
 });
 
 test('unit switching round-trips without changing the physical page', () => {

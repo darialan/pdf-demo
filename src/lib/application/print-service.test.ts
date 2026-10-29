@@ -3,7 +3,10 @@ import { prepareLayout } from './print-pipeline';
 import { calculatePagesArray } from './print-service';
 
 jest.mock('jspdf', () => jest.fn());
-jest.mock('./print-pipeline', () => ({ prepareLayout: jest.fn() }));
+jest.mock('./print-pipeline', () => ({
+  prepareLayout: jest.fn(),
+  resolvePrintElement: jest.fn((el: any) => el),
+}));
 jest.mock('../adapters/dom/measurement', () => ({ measureDocument: jest.fn() }));
 
 test('preview tolerates subpixel boundary rounding but rejects actual intersections and cleans up', async () => {

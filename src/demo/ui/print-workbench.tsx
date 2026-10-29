@@ -10,7 +10,7 @@ import {
   resolvePaper,
   visualizePageBreaks,
 } from '@darialan/web-pdf-printer';
-import { message, Tabs } from 'antd';
+import { message, Tabs, Tooltip } from 'antd';
 import { ReactNode, useRef, useState } from 'react';
 import {
   PrintObservabilityBanner,
@@ -23,15 +23,29 @@ import './debug-panel/print-toolbar.css';
 export interface PrintSceneItem {
   key: string;
   label: string;
+  scenario?: string; // 演示的业务场景
+  problem?: string;  // 解决的具体问题/痛点
   contentId: string;
   headerId?: string;
   footerId?: string;
   children: ReactNode;
 }
 
-export function PrintWorkbench({ scenes }: { scenes: PrintSceneItem[] }) {
+function resolveWorkbenchElement(contentId: string): HTMLElement | null {
+  const el = document.getElementById(contentId);
+  if (!el) return null;
+  if (el.tagName.toLowerCase() === 'iframe') {
+    const iframeDoc = (el as HTMLIFrameElement).contentDocument || (el as HTMLIFrameElement).contentWindow?.document;
+    if (iframeDoc?.body) {
+      return (iframeDoc.getElementById('iframe-report-content') as HTMLElement) || iframeDoc.body;
+    }
+  }
+  return el;
+}
+
+export function PrintWorkbench({ scenes, initialSceneKey }: { scenes: PrintSceneItem[]; initialSceneKey?: string }) {
   const [loading, setLoading] = useState(false);
-  const [tab, setTab] = useState(scenes[0]?.key || '0');
+  const [tab, setTab] = useState(() => scenes.find(scene => scene.key === initialSceneKey)?.key || scenes[0]?.key || 'anti-cutoff');
   const [settings, setSettings] = useState<PrintSettings>(DEFAULT_SETTINGS);
   const [debugActive, setDebugActive] = useState(false);
   const [inspection, setInspection] = useState<PrintInspectionResult | null>(null);
@@ -69,7 +83,7 @@ export function PrintWorkbench({ scenes }: { scenes: PrintSceneItem[] }) {
     const currentScene = scenes.find(item => item.key === tab);
     if (!currentScene) return;
 
-    const el = document.getElementById(currentScene.contentId);
+    const el = resolveWorkbenchElement(currentScene.contentId);
     if (!el) {
       message.error('未找到待测量的打印区域');
       return;
@@ -131,7 +145,7 @@ export function PrintWorkbench({ scenes }: { scenes: PrintSceneItem[] }) {
     const currentScene = scenes.find(item => item.key === tab);
     if (!currentScene) return;
 
-    const el = document.getElementById(currentScene.contentId);
+    const el = resolveWorkbenchElement(currentScene.contentId);
     if (!el) {
       message.error('找不到待导出的打印内容');
       return;
@@ -171,22 +185,46 @@ export function PrintWorkbench({ scenes }: { scenes: PrintSceneItem[] }) {
         <Tabs
           className="print-tab-custom"
           activeKey={tab}
-          items={scenes.map(({ key, label, children }) => ({
-            key,
-            label,
-            children: (
-              <div>
-                {debugActive && (
-                  <PrintObservabilityBanner
-                    inspection={inspection}
-                    stats={stats}
-                    onClose={handleCloseDebug}
-                  />
+          items={scenes.map(({ key, label, scenario, problem, children }) => {
+            const hasTooltip = Boolean(scenario || problem);
+            const tooltipTitle = hasTooltip ? (
+              <div style={{ maxWidth: 260, padding: '2px 0', lineHeight: 1.5, fontSize: 12 }}>
+                {scenario && (
+                  <div style={{ color: '#f8fafc', fontWeight: 500, marginBottom: problem ? 4 : 0 }}>
+                    {scenario}
+                  </div>
                 )}
-                <div style={{ padding: '12px 4px' }}>{children}</div>
+                {problem && (
+                  <div style={{ color: '#94a3b8', fontSize: 11 }}>
+                    {problem}
+                  </div>
+                )}
               </div>
-            ),
-          }))}
+            ) : null;
+
+            return {
+              key,
+              label: hasTooltip ? (
+                <Tooltip title={tooltipTitle} placement="bottomLeft" mouseEnterDelay={0.45}>
+                  <span style={{ cursor: 'pointer', display: 'inline-block' }}>{label}</span>
+                </Tooltip>
+              ) : (
+                label
+              ),
+              children: (
+                <div>
+                  {debugActive && (
+                    <PrintObservabilityBanner
+                      inspection={inspection}
+                      stats={stats}
+                      onClose={handleCloseDebug}
+                    />
+                  )}
+                  <div style={{ padding: '12px 4px' }}>{children}</div>
+                </div>
+              ),
+            };
+          })}
           onChange={handleTabChange}
           tabBarExtraContent={
             <PrintToolbarActions

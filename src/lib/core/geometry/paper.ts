@@ -74,7 +74,6 @@ export const PAPER_PRESETS: Record<Paper, PaperPreset> = {
 
 export const DEFAULT_SETTINGS: PrintSettings = {
   unit: 'mm',
-  slicingMode: false,
   paper: 'a4',
   widthMm: 210,
   heightMm: 297,
@@ -83,6 +82,11 @@ export const DEFAULT_SETTINGS: PrintSettings = {
   marginRightMm: 10,
   marginBottomMm: 10,
   marginLeftMm: 10,
+  pageNumber: {
+    enabled: true,
+    position: 'bottom-right',
+    format: 'slash',
+  },
 };
 
 /**
@@ -165,16 +169,16 @@ export function resolvePaper(settings: PrintSettings) {
   const [short, long] = [...size].sort((a, b) => a - b);
   const [widthMm, heightMm] =
     settings.paper === 'custom' ? size : settings.orientation === 'portrait' ? [short, long] : [long, short];
-  if (!settings.slicingMode && (widthMm - margins[1] - margins[3] <= 0 || heightMm - margins[0] - margins[2] <= 0)) {
-    throw new Error('页边距占满了页面，请减小边距或启用细切片测试');
+  if (widthMm - margins[1] - margins[3] <= 0 || heightMm - margins[0] - margins[2] <= 0) {
+    throw new Error('页边距占满了页面，请减小边距');
   }
   return {
     pageWidth: mmToPt(widthMm),
     pageHeight: mmToPt(heightMm),
-    left: settings.slicingMode ? 0 : mmToPt(margins[3]),
-    right: settings.slicingMode ? 0 : mmToPt(margins[1]),
-    top: settings.slicingMode ? 0 : mmToPt(margins[0]),
-    bottom: settings.slicingMode ? 0 : mmToPt(margins[2]),
+    left: mmToPt(margins[3]),
+    right: mmToPt(margins[1]),
+    top: mmToPt(margins[0]),
+    bottom: mmToPt(margins[2]),
     widthMm,
     heightMm,
   };

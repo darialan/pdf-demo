@@ -1,6 +1,7 @@
 import {
   cloneWithResolvedStyles,
   inspectPrintLayout,
+  PageNumberConfig,
   PageSlice,
   PrintSettings,
   resolvePaper,
@@ -22,7 +23,7 @@ export interface HtmlPaperGeometry {
   footerHeightPx: number;
   sourceWidth: number;
   scale: number;
-  slicingMode?: boolean;
+  pageNumber?: PageNumberConfig;
 }
 
 export interface HtmlPreviewData {
@@ -50,10 +51,10 @@ export function calculateHtmlPaperGeometry(
 
   const paperWidthPx = paper.widthMm * PX_PER_MM;
   const paperHeightPx = paper.heightMm * PX_PER_MM;
-  const marginTopPx = settings.slicingMode ? 0 : settings.marginTopMm * PX_PER_MM;
-  const marginRightPx = settings.slicingMode ? 0 : settings.marginRightMm * PX_PER_MM;
-  const marginBottomPx = settings.slicingMode ? 0 : settings.marginBottomMm * PX_PER_MM;
-  const marginLeftPx = settings.slicingMode ? 0 : settings.marginLeftMm * PX_PER_MM;
+  const marginTopPx = settings.marginTopMm * PX_PER_MM;
+  const marginRightPx = settings.marginRightMm * PX_PER_MM;
+  const marginBottomPx = settings.marginBottomMm * PX_PER_MM;
+  const marginLeftPx = settings.marginLeftMm * PX_PER_MM;
 
   const printableWidthPx = Math.max(10, paperWidthPx - marginLeftPx - marginRightPx);
   const printableHeightPx = Math.max(10, paperHeightPx - marginTopPx - marginBottomPx);
@@ -77,7 +78,7 @@ export function calculateHtmlPaperGeometry(
     footerHeightPx,
     sourceWidth,
     scale,
-    slicingMode: settings.slicingMode,
+    pageNumber: settings.pageNumber,
   };
 }
 
@@ -293,10 +294,18 @@ export function HtmlPageSheet({
     footerHeightPx,
     sourceWidth,
     scale,
-    slicingMode,
+    pageNumber,
   } = geometry;
 
   const sliceHeightPx = (page.end - page.start) * scale;
+  const showPageNumber = pageNumber?.enabled !== false;
+  const pageNumberText =
+    pageNumber?.format === 'chinese'
+      ? `第 ${pageIndex + 1} 页 / 共 ${totalPages} 页`
+      : pageNumber?.format === 'hyphen'
+      ? `- ${pageIndex + 1} -`
+      : `${pageIndex + 1} / ${totalPages}`;
+  const isCenter = pageNumber?.position === 'bottom-center' || pageNumber?.position === 'top-center';
 
   return (
     <div className="html-page-sheet-container">
@@ -373,16 +382,18 @@ export function HtmlPageSheet({
         )}
 
         {/* 页码 */}
-        {!slicingMode && (
+        {showPageNumber && (
           <div
             className="html-sheet-page-number"
             style={{
-              right: marginRightPx * zoom,
+              ...(isCenter
+                ? { left: '50%', transform: 'translateX(-50%)' }
+                : { right: marginRightPx * zoom }),
               bottom: Math.max(4, (marginBottomPx / 3) * zoom),
               fontSize: Math.max(9, 10 * zoom),
             }}
           >
-            {pageIndex + 1} / {totalPages}
+            {pageNumberText}
           </div>
         )}
       </div>

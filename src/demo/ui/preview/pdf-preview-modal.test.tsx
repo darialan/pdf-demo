@@ -22,7 +22,7 @@ describe('PdfPreviewModal 组件 (HTML 虚拟纸张即时预览)', () => {
       footerHeightPx: 0,
       sourceWidth: 800,
       scale: 0.897,
-      slicingMode: false,
+      pageNumber: { enabled: true, position: 'bottom-right', format: 'slash' },
     },
     sourceHtml: '<div class="test-content"><h1>采购单测试</h1><p>商品明细说明</p></div>',
     totalMs: 18.5,

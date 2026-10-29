@@ -23,7 +23,7 @@ describe('MiniPdfPreview 组件 (带全屏与折叠控制)', () => {
       footerHeightPx: 0,
       sourceWidth: 800,
       scale: 0.897,
-      slicingMode: false,
+      pageNumber: { enabled: true, position: 'bottom-right', format: 'slash' },
     },
     sourceHtml: '<div class="content"><p>测试行数据</p></div>',
     totalMs: 15,

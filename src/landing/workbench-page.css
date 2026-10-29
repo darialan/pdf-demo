@@ -1,0 +1,19 @@
+/* 打印工作台独立页面：顶部工具条 + 铺满视口的演示区。 */
+.workbench-page { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+.workbench-topbar { flex: 0 0 auto; border-bottom: 1px solid var(--line); background: var(--bg); }
+.workbench-topbar-inner { display: flex; align-items: center; gap: 16px; min-height: 60px; padding-inline: 24px; }
+.workbench-topbar-title { display: flex; align-items: center; gap: 10px; margin-left: 4px; padding-left: 16px; border-left: 1px solid var(--line); color: var(--ink2); font-size: 13px; white-space: nowrap; }
+.workbench-topbar-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.workbench-main { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 0 24px; }
+.workbench-loading { padding: 90px 24px; color: var(--ink2); text-align: center; }
+/* 场景标签与导出工具常驻顶部，滚动长单据时仍可操作。 */
+.workbench-main .print-tab-custom .ant-tabs-nav { position: sticky; top: 0; z-index: 20; }
+.workbench-main .print-workbench-container { padding-bottom: 32px; }
+
+@media (max-width: 640px) {
+  .workbench-topbar-inner { min-height: 56px; padding-inline: 16px; gap: 10px; }
+  .workbench-topbar-title { display: none; }
+  .workbench-main { padding-inline: 12px; }
+  .workbench-topbar-actions .icon-btn { display: none; }
+  .workbench-topbar-actions .btn { padding-inline: 10px; font-size: 11px; }
+}

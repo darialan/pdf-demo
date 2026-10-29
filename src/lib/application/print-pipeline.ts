@@ -1,19 +1,52 @@
-import { measureDocument, readRootHeight } from '../adapters/dom/measurement';
+import { measureDocument } from '../adapters/dom/measurement';
 import { createPrintSnapshot } from '../adapters/dom/snapshot';
 import { calculateGeometry, PageGeometry } from '../core/geometry/page-geometry';
 import { DEFAULT_SETTINGS, resolvePaper } from '../core/geometry/paper';
 import { paginate } from '../core/pagination/paginator';
 import { buildPrintRules, getPrintRules } from '../core/rules/print-rules';
-import { MeasurementStats, Orientation, PageSlice, PrintRule, PrintRuleConfig, PrintSettings } from '../core/types';
+import {
+  DeclarativeHeaderFooterConfig,
+  MeasurementStats,
+  Orientation,
+  PageSlice,
+  PrintRule,
+  PrintRuleConfig,
+  PrintSettings,
+} from '../core/types';
 import { checkCancelled } from './cancellation';
 
 export type { Orientation } from '../core/types';
+
+export function createDeclarativeElement(
+  config: DeclarativeHeaderFooterConfig,
+  type: 'header' | 'footer',
+  width: number
+): HTMLElement {
+  const el = document.createElement('div');
+  el.className = `pdf-declarative-${type}`;
+  el.style.width = `${width}px`;
+  el.style.boxSizing = 'border-box';
+  el.style.padding = type === 'header' ? '8px 0 6px 0' : '6px 0 8px 0';
+  el.style.textAlign = config.align || 'center';
+  el.style.fontSize = type === 'header' ? '12px' : '11px';
+  el.style.color = type === 'header' ? '#334155' : '#64748b';
+  el.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+  el.style.lineHeight = '1.4';
+  if (config.showDivider) {
+    if (type === 'header') {
+      el.style.borderBottom = '1px solid #cbd5e1';
+    } else {
+      el.style.borderTop = '1px solid #cbd5e1';
+    }
+  }
+  el.textContent = config.text || '';
+  return el;
+}
 
 export interface PaginationPipelineOptions {
   root: HTMLElement;
   capacity: number;
   maxPages: number;
-  slicingMode?: boolean;
   rules?: readonly PrintRule[];
   ruleConfig?: PrintRuleConfig;
 }
@@ -47,13 +80,10 @@ export interface PreparedLayout extends PageGeometry {
 const activeRoots = new WeakSet<HTMLElement>();
 
 /** DOM measurement adapter → measured intervals → pure core paginator. */
-export function planDocument({ root, capacity, maxPages, slicingMode, rules, ruleConfig }: PaginationPipelineOptions) {
+export function planDocument({ root, capacity, maxPages, rules, ruleConfig }: PaginationPipelineOptions) {
   const started = performance.now();
-  const height = readRootHeight(root);
   const resolvedRules = rules || (ruleConfig ? buildPrintRules(ruleConfig) : getPrintRules());
-  const measurement = slicingMode
-    ? { height, ranges: [], stats: undefined }
-    : measureDocument(root, capacity, resolvedRules);
+  const measurement = measureDocument(root, capacity, resolvedRules);
   const measured = performance.now();
   const pages = paginate(measurement.height, capacity, measurement.ranges, maxPages);
   return {
@@ -66,50 +96,97 @@ export function planDocument({ root, capacity, maxPages, slicingMode, rules, rul
   };
 }
 
+/**
+ * Safely verify whether a node is a printable DOM element,
+ * including elements from an iframe or different window realm.
+ */
+export function isPrintableElement(node: unknown): node is HTMLElement {
+  if (!node || typeof node !== 'object') return false;
+  const el = node as any;
+  if (el.nodeType !== 1) return false;
+  const win = el.ownerDocument?.defaultView;
+  const isElement =
+    (win && typeof win.HTMLElement === 'function' && el instanceof win.HTMLElement) ||
+    (typeof HTMLElement !== 'undefined' && el instanceof HTMLElement) ||
+    (typeof el.getBoundingClientRect === 'function' && typeof el.cloneNode === 'function');
+  if (!isElement) return false;
+  return Boolean(el.isConnected ?? el.ownerDocument?.contains?.(el));
+}
+
+/** If an iframe element is passed, automatically resolve its inner document body or main report content */
+export function resolvePrintElement(target: unknown): HTMLElement | null {
+  if (!isPrintableElement(target)) return null;
+  if (target.tagName?.toLowerCase() === 'iframe') {
+    const iframe = target as HTMLIFrameElement;
+    const doc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (doc?.body && isPrintableElement(doc.body)) {
+      return (doc.getElementById('iframe-report-content') as HTMLElement) || doc.body;
+    }
+  }
+  return target;
+}
+
 /** Pipeline orchestration: snapshot & resource readiness → page geometry → pagination planning. */
 export async function prepareLayout(options: LayoutOptions): Promise<PreparedLayout> {
-  const { element, header, footer, signal, orientation = 'portrait' } = options;
-  const slicingMode = options.settings?.slicingMode;
-  const maxPages = options.maxPages ?? (slicingMode ? Number.MAX_SAFE_INTEGER : 100);
-  if (!(element instanceof HTMLElement) || !element.isConnected) {
+  const { header, footer, signal, orientation = 'portrait' } = options;
+  const maxPages = options.maxPages ?? 100;
+
+  const printElement = resolvePrintElement(options.element);
+  if (!printElement) {
     throw new Error('找不到有效的打印区域');
   }
   if (!['portrait', 'landscape'].includes(orientation)) {
     throw new Error('纸张方向必须为 portrait 或 landscape');
   }
   const paper = resolvePaper({ ...DEFAULT_SETTINGS, orientation, ...(options.settings || {}) });
-  if (activeRoots.has(element)) {
+  if (activeRoots.has(printElement)) {
     throw new Error('该区域正在导出，请勿重复提交');
   }
-  const width = element.getBoundingClientRect().width;
+  const width = printElement.getBoundingClientRect().width;
   if (!Number.isFinite(width) || width <= 0) {
     throw new Error('打印区域宽度为零，请先显示内容');
   }
   checkCancelled(signal);
-  activeRoots.add(element);
+  activeRoots.add(printElement);
   const snapshot = createPrintSnapshot(width);
   const cleanup = () => {
     snapshot.dispose();
-    activeRoots.delete(element);
+    activeRoots.delete(printElement);
   };
   try {
-    const root = snapshot.clone(element);
-    const headerClone = header && !slicingMode ? snapshot.clone(header) : undefined;
-    const footerClone = footer && !slicingMode ? snapshot.clone(footer) : undefined;
+    const root = snapshot.clone(printElement);
+
+    let headerClone: HTMLElement | undefined;
+    if (header && isPrintableElement(header)) {
+      headerClone = snapshot.clone(header);
+    } else if (options.settings?.header?.enabled && options.settings.header.text) {
+      const declHeader = createDeclarativeElement(options.settings.header, 'header', width);
+      headerClone = snapshot.clone(declHeader);
+    }
+
+    let footerClone: HTMLElement | undefined;
+    if (footer && isPrintableElement(footer)) {
+      footerClone = snapshot.clone(footer);
+    } else if (options.settings?.footer?.enabled && options.settings.footer.text) {
+      const declFooter = createDeclarativeElement(options.settings.footer, 'footer', width);
+      footerClone = snapshot.clone(declFooter);
+    }
+
     snapshot.mount();
     await snapshot.ready(signal);
+
+    const hasPageNumber = options.settings?.pageNumber ? options.settings.pageNumber.enabled : true;
     const geometry = calculateGeometry(
       paper,
       width,
       headerClone?.getBoundingClientRect().height,
       footerClone?.getBoundingClientRect().height,
-      slicingMode
+      hasPageNumber
     );
     const { pages, stats, timing } = planDocument({
       root,
       capacity: geometry.capacity,
       maxPages,
-      slicingMode,
       rules: options.rules,
       ruleConfig: options.ruleConfig,
     });

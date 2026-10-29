@@ -13,10 +13,24 @@ export type Orientation = 'portrait' | 'landscape';
 
 export type Paper = 'a4' | 'a3' | 'a5' | 'letter' | 'custom';
 
+/** 声明式页眉/页脚基础配置（开发者代码配置） */
+export interface DeclarativeHeaderFooterConfig {
+  enabled?: boolean;
+  text?: string;
+  align?: 'left' | 'center' | 'right';
+  showDivider?: boolean;
+}
+
+/** 独立页码系统配置（可由设置面板 UI 控制，亦可代码配置） */
+export interface PageNumberConfig {
+  enabled: boolean;
+  position?: 'bottom-right' | 'bottom-center' | 'top-right' | 'top-center';
+  format?: 'slash' | 'chinese' | 'hyphen';
+}
+
 export interface PrintSettings {
   paper: Paper;
   unit?: 'mm' | 'px';
-  slicingMode?: boolean;
   widthMm: number;
   heightMm: number;
   orientation: Orientation;
@@ -24,6 +38,9 @@ export interface PrintSettings {
   marginRightMm: number;
   marginBottomMm: number;
   marginLeftMm: number;
+  header?: DeclarativeHeaderFooterConfig;
+  footer?: DeclarativeHeaderFooterConfig;
+  pageNumber?: PageNumberConfig;
 }
 
 export type ElementRule =
