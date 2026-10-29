@@ -184,3 +184,5 @@ flowchart TD
 | 最后补齐可靠性 | 当前先整页截图，缺少完整任务和资源治理 | 按页渲染、容量预算、状态控制、故障测试与 PDF 产物验收 |
 
 代码依据：`src/pdf-demo/index.tsx`、`pdf-print.ts`、`pages-debug.ts` 和 `pages/business-demo.tsx`。上一轮类型检查与现有测试通过，但测试只覆盖业务 Tab 和部分数据，尚无真实 PDF 正确性与性能结论。本次仅精简技术方案，未修改业务实现。
+
+> **路径说明**：上文的 `src/pdf-demo/*` 为本文撰写时的历史目录结构，该目录已被后续重构取代。当前库源码位于 `src/lib/`（`core` / `adapters` / `application` / `hooks` / `overlay`），示例工程位于 `src/demo/`（含 `src/demo/ui/`）。本节保留原文路径以维持历史记录的准确性，不作为当前代码位置指引。

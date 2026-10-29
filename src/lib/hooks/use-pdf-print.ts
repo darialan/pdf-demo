@@ -6,7 +6,7 @@ import {
   PreviewPaginationOptions,
   PrintInspectionResult,
 } from '../application/print-service';
-import { clearPageBreaks, visualizePageBreaks } from '../ui/preview/page-break-overlay';
+import { clearPageBreaks, visualizePageBreaks } from '../overlay/page-break-overlay';
 
 export interface UsePdfPrintProgress {
   completed: number;

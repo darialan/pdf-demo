@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { clearPageBreaks } from '../../ui/preview/page-break-overlay';
+import { clearPageBreaks } from '@darialan/web-pdf-printer';
 
 export const LOW_CODE_CONTENT_ID = 'print-content-lowcode';
 export const LOW_CODE_HEADER_ID = 'print-header-lowcode';

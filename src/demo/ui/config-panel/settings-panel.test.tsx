@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { PrintSettingsButton } from './settings-panel';
-import { DEFAULT_SETTINGS } from '../../core/geometry/paper';
+import { DEFAULT_SETTINGS } from '@darialan/web-pdf-printer';
 
 beforeEach(() => {
   Object.defineProperty(window, 'matchMedia', {

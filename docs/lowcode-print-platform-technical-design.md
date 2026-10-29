@@ -1,11 +1,11 @@
 # 复杂页面 PDF 打印系统 技术方案：可视化低代码 DOM 拼装与打印调试平台
 
-> - **状态**：已定稿待实现
+> - **状态**：已验收
 > - **更新时间**：2026-10-28
-> - **涉及范围**：`src/demo/low-code`（新增独立低代码 Tab 页面）、`src/core/rules`（扩展通用降级拆分与忽略属性）、`src/adapters/dom`（剥离编辑态辅助节点）、`src/application`（透出分页诊断指标）、`src/ui`（工作台支持页眉页脚动态挂载与诊断展示）
+> - **涉及范围**：`src/demo/low-code`（新增独立低代码 Tab 页面）、`src/lib/core/rules`（扩展通用降级拆分与忽略属性）、`src/lib/adapters/dom`（剥离编辑态辅助节点）、`src/lib/application`（透出分页诊断指标）、`src/demo/ui`（工作台支持页眉页脚动态挂载与诊断展示）
 > - **关联依据**：[通用技术方案设计模板](file:///Users/janicelan/webbbi/mefun/pdf-demo/docs/templates/TECHNICAL-DESIGN-TEMPLATE.md)、[打印模块分层架构说明](file:///Users/janicelan/webbbi/mefun/pdf-demo/docs/printing-modules.md)
 
-**方案摘要**：当前项目已完成 `core`、`adapters`、`application`、`ui`、`demo` 五层架构解耦，但现有 Tab 均为静态写死的页面。本方案属于**已定稿待实现设计**：在 `src/demo/` 下新增一个独立的 `low-code`（低代码）Tab 页面，内部提供与具体业务无关、不依赖组件库封装的**原生 HTML/CSS 多复杂度物料库**（多级标题、混合字号富文本段落、原生表格与超高单元格、SVG/Image 媒体图形、CSS Grid/Flex 多列不等高容器、深层嵌套列表/引用块、精确像素定高块）。用户可在该 Tab 中通过拖拽或点击自由组合任意复杂度的 DOM 页面，调节元素像素高度与分页保护策略（整体保护 / 超高自动降级拆分 / 自由拆分），结合现有打印设置执行「检查分页」与「导出 PDF」，直观证明本打印引擎对任意前端复杂 DOM 结构的通用分页能力。
+**方案摘要**：当前项目已完成 `core`、`adapters`、`application`、`ui`、`demo` 五层架构解耦，但现有 Tab 均为静态写死的页面。本方案属于**已实现并通过自动化验证的设计**：在 `src/demo/` 下新增一个独立的 `low-code`（低代码）Tab 页面，内部提供与具体业务无关、不依赖组件库封装的**原生 HTML/CSS 多复杂度物料库**（多级标题、混合字号富文本段落、原生表格与超高单元格、SVG/Image 媒体图形、CSS Grid/Flex 多列不等高容器、深层嵌套列表/引用块、精确像素定高块）。用户可在该 Tab 中通过拖拽或点击自由组合任意复杂度的 DOM 页面，调节元素像素高度与分页保护策略（整体保护 / 超高自动降级拆分 / 自由拆分），结合现有打印设置执行「检查分页」与「导出 PDF」，直观证明本打印引擎对任意前端复杂 DOM 结构的通用分页能力。
 
 ---
 
@@ -19,8 +19,8 @@
 |---|---|---|---|
 | P1 | 现有 Demo Tab 页面结构固定，用户无法在界面上自由拖拽、增删或重排 DOM 元素来验证任意组合下的分页表现。 | [src/demo/index.tsx](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/demo/index.tsx#L11-L26) 中的 8 个 Tab 均为固定 JSX 结构，无法动态调整节点顺序。 | 外部评审者容易误以为分页仅针对固定页面做过特殊适配，无法交互式验证任意未知布局。 |
 | P2 | 现有示例大量使用业务单据概念及 Ant Design 组件（如 `Table`、`Card`、`Descriptions`），缺少纯粹针对不同 HTML 标签复杂度（原生表格、Grid/Flex 多列、内联混排、SVG/Img、深层嵌套）的无业务属性测试物料。 | 现有 `purchase-order`、`single-page` 等页面强耦合茶饮采购业务字段与 Ant Design 组件样式。 | 无法直观展示引擎底层基于原生 DOM 几何测量与 CSS 选择器规则（`tr`、`img/svg/canvas`、`h1~h6`、文本 `Range`）的跨框架通用能力。 |
-| P3 | 缺少针对单个 HTML 结构的“几何尺寸（高度/行数）”与“分页保护策略”实时调节面板，难以快速构造压线 1px、超高容器降级拆分、超高原子块报错等极端临界场景。 | [print-rules.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/core/rules/print-rules.ts#L13-L20) 支持属性驱动规则，但前端无可视化滑块或策略切换器。 | 复现跨页临界碰撞或验证超高报错提示需要手工改代码调样式，调试效率低。 |
-| P4 | 低代码画布中的编辑态辅助控件（拖拽手柄、选中高亮框、上移/下移/删除按钮）若进入打印快照，会干扰高度测量并残留到导出 PDF 中。 | [snapshot.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/adapters/dom/snapshot.ts#L56) 目前仅移除 `[data-pdf-debug]` 节点，未过滤低代码编辑器操作浮层。 | 若不隔离编辑态控件，画布测量高度将偏离真实内容高度，且 PDF 中会截入操作按钮。 |
+| P3 | 缺少针对单个 HTML 结构的“几何尺寸（高度/行数）”与“分页保护策略”实时调节面板，难以快速构造压线 1px、超高容器降级拆分、超高原子块报错等极端临界场景。 | [print-rules.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/lib/core/rules/print-rules.ts#L13-L20) 支持属性驱动规则，但前端无可视化滑块或策略切换器。 | 复现跨页临界碰撞或验证超高报错提示需要手工改代码调样式，调试效率低。 |
+| P4 | 低代码画布中的编辑态辅助控件（拖拽手柄、选中高亮框、上移/下移/删除按钮）若进入打印快照，会干扰高度测量并残留到导出 PDF 中。 | [snapshot.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/lib/adapters/dom/snapshot.ts#L56) 目前仅移除 `[data-pdf-debug]` 节点，未过滤低代码编辑器操作浮层。 | 若不隔离编辑态控件，画布测量高度将偏离真实内容高度，且 PDF 中会截入操作按钮。 |
 
 ### 1.2 核心概念与改动边界
 
@@ -35,9 +35,9 @@
     4. `force-split`（强制自由拆分）：挂载 `data-pdf-break="split"`，作为普通容器进入内部按文本行或子元素拆分。
   - **编辑态忽略标记（`data-pdf-ignore="true"`）**：挂载在画布拖拽手柄、块操作工具栏、空画布提示上的 HTML 属性，在 DOM 测量遍历与离屏快照克隆时被完全忽略并移除。
 - **改动层级**：
-  - **`src/core/rules/`**：在 [print-rules.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/core/rules/print-rules.ts) 的忽略选择器中加入 `[data-pdf-ignore="true"]`，并新增 `[data-pdf-keep-together="split"]`（映射为 `{ kind: 'atomic', overflow: 'split' }`）。
-  - **`src/adapters/dom/`**：在 [snapshot.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/adapters/dom/snapshot.ts) 克隆时一并清理 `[data-pdf-ignore="true"]` 节点。
-  - **`src/application/`**：在 [print-service.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/application/print-service.ts) 新增 `inspectPrintLayout` 返回测量统计（遍历节点数、原子块数、文本片段数、保护区间数）与耗时明细。
+  - **`src/lib/core/rules/`**：在 [print-rules.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/lib/core/rules/print-rules.ts) 的忽略选择器中加入 `[data-pdf-ignore="true"]`，并新增 `[data-pdf-keep-together="split"]`（映射为 `{ kind: 'atomic', overflow: 'split' }`）。
+  - **`src/lib/adapters/dom/`**：在 [snapshot.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/lib/adapters/dom/snapshot.ts) 克隆时一并清理 `[data-pdf-ignore="true"]` 节点。
+  - **`src/lib/application/`**：在 [print-service.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/lib/application/print-service.ts) 新增 `inspectPrintLayout` 返回测量统计（遍历节点数、原子块数、文本片段数、保护区间数）与耗时明细。
   - **`src/demo/low-code/`**：新增独立的低代码 Tab 页面目录，遵循“一个 Tab 一个独立目录维护自身代码”的原则，内含左侧原生 HTML 物料面板、中间可拖拽画布（挂载 `#print-content-lowcode`）、右侧选中块属性编辑器与实时分页诊断卡片。
   - **`src/demo/index.tsx`**：在 `DEMO_SCENES` 中注册 `低代码` Tab。
 
@@ -77,14 +77,14 @@
 
 ## 3. 现状分析
 
-**核心结论**：现有五层架构已将 UI 工作台（`src/ui`）与示例页面（`src/demo`）彻底解耦，只需对 `core/rules`、`adapters/dom/snapshot` 与 `application/print-service` 做向后兼容的小幅增强，即可在 `src/demo/low-code/` 中完整承载低代码拼装台。
+**核心结论**：现有五层架构已将 UI 工作台（`src/demo/ui`）与示例页面（`src/demo`）彻底解耦，只需对 `core/rules`、`adapters/dom/snapshot` 与 `application/print-service` 做向后兼容的小幅增强，即可在 `src/demo/low-code/` 中完整承载低代码拼装台。
 
 | 当前模块 / 源码入口 | 当前职责 | 已核对的现状与限制 | 本期处理策略（沿用 / 改造 / 废弃替换） |
 |---|---|---|---|
-| [src/core/rules/print-rules.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/core/rules/print-rules.ts) | 维护 `DEFAULT_PRINT_RULES` 与 `classifyPrintNode` | 已支持 `[data-pdf-keep-together="true"]` 与 `[data-pdf-break="split"]`，尚未内置 `[data-pdf-ignore="true"]` 和 `[data-pdf-keep-together="split"]`。 | **轻量扩展**：新增上述两条通用选择器规则，保持零 DOM 依赖。 |
-| [src/adapters/dom/snapshot.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/adapters/dom/snapshot.ts) | 创建离屏打印快照并移除 `[data-pdf-debug]` | 仅移除 `[data-pdf-debug]`，尚未移除 `[data-pdf-ignore="true"]`。 | **轻量扩展**：克隆后一并移除 `[data-pdf-ignore="true"]` 节点。 |
-| [src/application/print-service.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/application/print-service.ts) | 提供 `outputPDF` 与 `calculatePagesArray` | `calculatePagesArray` 仅返回页起点数组，未返回测量统计 `stats` 与耗时。 | **兼容扩展**：新增 `inspectPrintLayout` 返回完整诊断信息，并派发自定义诊断事件或回调供工作台与低代码面板消费。 |
-| [src/ui/print-workbench.tsx](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/ui/print-workbench.tsx) | 渲染顶部操作栏与 Tabs | 已支持按每个 Scene 的 `contentId`、`headerId`、`footerId` 动态查找 DOM 节点。 | **沿用并增强**：将最新一次 `inspectPrintLayout` 的诊断摘要透出到状态栏。 |
+| [src/lib/core/rules/print-rules.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/lib/core/rules/print-rules.ts) | 维护 `DEFAULT_PRINT_RULES` 与 `classifyPrintNode` | 已支持 `[data-pdf-keep-together="true"]` 与 `[data-pdf-break="split"]`，尚未内置 `[data-pdf-ignore="true"]` 和 `[data-pdf-keep-together="split"]`。 | **轻量扩展**：新增上述两条通用选择器规则，保持零 DOM 依赖。 |
+| [src/lib/adapters/dom/snapshot.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/lib/adapters/dom/snapshot.ts) | 创建离屏打印快照并移除 `[data-pdf-debug]` | 仅移除 `[data-pdf-debug]`，尚未移除 `[data-pdf-ignore="true"]`。 | **轻量扩展**：克隆后一并移除 `[data-pdf-ignore="true"]` 节点。 |
+| [src/lib/application/print-service.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/lib/application/print-service.ts) | 提供 `outputPDF` 与 `calculatePagesArray` | `calculatePagesArray` 仅返回页起点数组，未返回测量统计 `stats` 与耗时。 | **兼容扩展**：新增 `inspectPrintLayout` 返回完整诊断信息，并派发自定义诊断事件或回调供工作台与低代码面板消费。 |
+| [src/demo/ui/print-workbench.tsx](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/demo/ui/print-workbench.tsx) | 渲染顶部操作栏与 Tabs | 已支持按每个 Scene 的 `contentId`、`headerId`、`footerId` 动态查找 DOM 节点。 | **沿用并增强**：将最新一次 `inspectPrintLayout` 的诊断摘要透出到状态栏。 |
 | [src/demo/index.tsx](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/demo/index.tsx) | 汇总各独立 Tab 页面 | 当前包含 8 个静态 Tab。 | **扩展**：新增第 1 个（或排在首位/末位的）`低代码` Tab，指向 `src/demo/low-code/index.tsx`。 |
 
 ---
@@ -97,15 +97,15 @@
 
 | 对象 / 模块 / 组件 | 所在层级与类型 | 执行模式 / 核心机制 | 输入 → 输出契约 | 状态归属与读写权限 |
 |---|---|---|---|---|
-| `DEFAULT_PRINT_RULES` | [src/core/rules/print-rules.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/core/rules/print-rules.ts)（核心计算层） | 声明式选择器优先级匹配 | `ClassifiableNode` → `ElementRule` | 纯常量与纯函数，无状态 |
-| `inspectPrintLayout` | [src/application/print-service.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/application/print-service.ts)（应用编排层） | 异步流水线编排 | `PreviewPaginationOptions` → `PrintInspectionResult` | 管理单次快照生命周期，向调用方返回分页断点与统计数据 |
+| `DEFAULT_PRINT_RULES` | [src/lib/core/rules/print-rules.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/lib/core/rules/print-rules.ts)（核心计算层） | 声明式选择器优先级匹配 | `ClassifiableNode` → `ElementRule` | 纯常量与纯函数，无状态 |
+| `inspectPrintLayout` | [src/lib/application/print-service.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/lib/application/print-service.ts)（应用编排层） | 异步流水线编排 | `PreviewPaginationOptions` → `PrintInspectionResult` | 管理单次快照生命周期，向调用方返回分页断点与统计数据 |
 | `LowCodePage` | `src/demo/low-code/index.tsx`（示例层独立 Tab 页面） | React 受控画布 + 原生 Drag & Drop | 用户拖拽/属性变更 → 渲染 `#print-content-lowcode` 原生 HTML DOM 树 | 独立维护画布块列表 `blocks`、选中块 `selectedId` 及页眉页脚配置 |
 
 ### 4.2 架构与关键流程
 
 ```mermaid
 flowchart TB
-  subgraph TopBar["src/ui (通用打印工作台工具栏)"]
+  subgraph TopBar["src/demo/ui (通用打印工作台工具栏)"]
     BtnExport["导出pdf 按钮"]
     BtnInspect["检查分页 按钮"]
     BtnSettings["打印设置 弹窗 (纸张/方向/边距/细切片)"]
@@ -120,7 +120,7 @@ flowchart TB
     RightInspector -->|"实时修改高度/行数/data-pdf-*策略"| CenterCanvas
   end
 
-  subgraph Engine["src/application + src/adapters + src/core"]
+  subgraph Engine["src/lib/application + src/lib/adapters + src/lib/core"]
     Pipeline["prepareLayout -> measureDocument -> paginate"]
     Overlay["visualizePageBreaks (绘制红色分页虚线)"]
     PDF["createPageCapture + createPdfWriter"]
@@ -137,7 +137,7 @@ flowchart TB
 | 决策点 | 采用方案 | 备选方案 | 采用原因与代价（Trade-offs） |
 |---|---|---|---|
 | 画布内物料的渲染实现 | 100% 使用原生 HTML 标签（`table`, `figure`, `svg`, `blockquote`, `p`, `div`）与内联/局部标准 CSS | 使用 Ant Design `Table`、`Card` 等组件渲染物料 | 用户明确要求物料与业务无关且体现底层 HTML 复杂元素；原生 HTML 标签直接对应 `core/rules` 中的 `tr`、`img/svg`、`h1~h6`、文本节点规则，最具技术说服力。 |
-| 低代码模块的代码组织位置 | 全部收敛在 `src/demo/low-code/` 独立目录下 | 散落在 `src/ui/`、`src/demo/` 多个子文件夹中 | 严格遵循前序确立的“一个 Tab 就是一个独立页面文件夹维护自身代码”原则，保持目录极简清晰。 |
+| 低代码模块的代码组织位置 | 全部收敛在 `src/demo/low-code/` 独立目录下 | 散落在 `src/demo/ui/`、`src/demo/` 多个子文件夹中 | 严格遵循前序确立的“一个 Tab 就是一个独立页面文件夹维护自身代码”原则，保持目录极简清晰。 |
 
 ---
 
@@ -239,8 +239,8 @@ function resolvePolicyAttributes(block: LowCodeBlock): Record<string, string | u
 
 | 阶段 | 代码 / 配置 / 数据落点 | 阶段交付物 | 进入下一阶段的准入门槛 |
 |---|---|---|---|
-| 阶段 1：核心规则与诊断服务增强 | [src/core/rules/print-rules.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/core/rules/print-rules.ts)、[src/adapters/dom/snapshot.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/adapters/dom/snapshot.ts)、[src/application/print-service.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/application/print-service.ts) | 支持 `[data-pdf-ignore="true"]` 与 `[data-pdf-keep-together="split"]`；新增 `inspectPrintLayout`。 | 单元测试覆盖并通过。 |
-| 阶段 2：独立「低代码」Tab 页面实现 | `src/demo/low-code/index.tsx`、[src/demo/index.tsx](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/demo/index.tsx)、[src/ui/print-workbench.tsx](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/ui/print-workbench.tsx) | 7 类原生 HTML 物料拖拽/追加、画布重排、右侧参数与分页策略调节器、预设复杂度模板切换。 | 组件集成测试与全量构建通过。 |
+| 阶段 1：核心规则与诊断服务增强 | [src/lib/core/rules/print-rules.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/lib/core/rules/print-rules.ts)、[src/lib/adapters/dom/snapshot.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/lib/adapters/dom/snapshot.ts)、[src/lib/application/print-service.ts](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/lib/application/print-service.ts) | 支持 `[data-pdf-ignore="true"]` 与 `[data-pdf-keep-together="split"]`；新增 `inspectPrintLayout`。 | 单元测试覆盖并通过。 |
+| 阶段 2：独立「低代码」Tab 页面实现 | `src/demo/low-code/index.tsx`、[src/demo/index.tsx](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/demo/index.tsx)、[src/demo/ui/print-workbench.tsx](file:///Users/janicelan/webbbi/mefun/pdf-demo/src/demo/ui/print-workbench.tsx) | 7 类原生 HTML 物料拖拽/追加、画布重排、右侧参数与分页策略调节器、预设复杂度模板切换。 | 组件集成测试与全量构建通过。 |
 
 ### 6.2 发布、兼容、灰度和回滚方案
 
@@ -275,10 +275,10 @@ function resolvePolicyAttributes(block: LowCodeBlock): Record<string, string | u
 
 | 运行环境 / 终端 / 下游调用方 | 是否受影响 | 验证入口 / 执行命令 | 验证重点 | 当前状态 |
 |---|---|---|---|---|
-| 核心规则与 DOM 测量层 (`src/core`, `src/adapters`) | 受影响（新增 2 条属性规则） | `npm test` | `[data-pdf-ignore="true"]` 跳过测量、`[data-pdf-keep-together="split"]` 超高自动降级 | 待验证 |
-| Web 工作台与低代码 Tab (`src/ui`, `src/demo/low-code`) | 受影响（新增 `低代码` Tab） | `npm test` & `npm run build` | 7 类原生 HTML 物料编排、属性修改、分页检查与导出全链路正常 | 待验证 |
+| 核心规则与 DOM 测量层 (`src/lib/core`, `src/lib/adapters`) | 受影响（新增 2 条属性规则） | `npm test` | `[data-pdf-ignore="true"]` 跳过测量、`[data-pdf-keep-together="split"]` 超高自动降级 | 已通过（`src/lib/core/rules/print-rules.test.ts`、`src/lib/adapters/dom/snapshot.test.ts`） |
+| Web 工作台与低代码 Tab (`src/demo/ui`, `src/demo/low-code`) | 受影响（新增 `低代码` Tab） | `npm test` & `npm run build` | 7 类原生 HTML 物料编排、属性修改、分页检查与导出全链路正常 | 已通过（`src/App.test.tsx` 覆盖物料添加、保护策略切换与宽度调整；构建编译成功） |
 
 **本期完成门槛（DoD）**：
-- [ ] 完成阶段 1 与阶段 2 全部代码实现
-- [ ] §7.1 追踪矩阵中的所有场景自动化测试通过
-- [ ] `tsc --noEmit`、`npm test`、`npm run build` 零错误、零警告通过
+- [x] 完成阶段 1 与阶段 2 全部代码实现
+- [x] §7.1 追踪矩阵中的所有场景自动化测试通过（`CI=true npm run test:once`：14 套 / 44 用例全部通过）
+- [x] `tsc --noEmit`、`npm test`、`npm run build` 零错误通过

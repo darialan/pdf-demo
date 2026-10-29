@@ -5,7 +5,7 @@ import { PrintSettings } from '../../core/types';
 
 export interface PdfDocumentWriterOptions {
   geometry: PageGeometry;
-  settings?: PrintSettings;
+  settings?: Partial<PrintSettings>;
   headerCanvas?: HTMLCanvasElement;
   footerCanvas?: HTMLCanvasElement;
   totalPages: number;
@@ -23,7 +23,7 @@ export function createPdfWriter({
     geometry;
   const orientation = pageWidth > pageHeight ? 'landscape' : 'portrait';
   const pdf = new jsPDF({ unit: 'pt', format: [pageWidth, pageHeight], orientation });
-  const rightMarginPt = settings ? mmToPt(settings.marginRightMm) : mmToPt(10);
+  const rightMarginPt = settings?.marginRightMm !== undefined ? mmToPt(settings.marginRightMm) : mmToPt(10);
 
   return {
     addPageSlice(pageIndex: number, canvas: HTMLCanvasElement, sliceHeightPt: number) {

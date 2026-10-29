@@ -23,7 +23,7 @@ export interface LayoutOptions {
   header?: HTMLElement | null;
   footer?: HTMLElement | null;
   orientation?: Orientation;
-  settings?: PrintSettings;
+  settings?: Partial<PrintSettings>;
   signal?: AbortSignal;
   maxPages?: number;
   rules?: readonly PrintRule[];
@@ -77,7 +77,7 @@ export async function prepareLayout(options: LayoutOptions): Promise<PreparedLay
   if (!['portrait', 'landscape'].includes(orientation)) {
     throw new Error('纸张方向必须为 portrait 或 landscape');
   }
-  const paper = resolvePaper(options.settings || { ...DEFAULT_SETTINGS, orientation });
+  const paper = resolvePaper({ ...DEFAULT_SETTINGS, orientation, ...(options.settings || {}) });
   if (activeRoots.has(element)) {
     throw new Error('该区域正在导出，请勿重复提交');
   }

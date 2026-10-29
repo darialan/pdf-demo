@@ -1,5 +1,5 @@
-import { walkPrintTree } from '../../adapters/dom/traversal';
-import { classifyPrintNode } from '../../core/rules/print-rules';
+import { walkPrintTree } from '../adapters/dom/traversal';
+import { classifyPrintNode } from '../core/rules/print-rules';
 
 export interface ObservabilityStats {
   atomic: number;

@@ -1,9 +1,11 @@
+import {
+  ObservabilityStats,
+  PrintInspectionResult,
+  PrintSettings,
+  resolvePaper,
+} from '@darialan/web-pdf-printer';
 import { Button } from 'antd';
-import { resolvePaper } from '../../core/geometry/paper';
-import { PrintSettings } from '../../core/types';
 import { PrintSettingsButton } from '../config-panel/settings-panel';
-import { ObservabilityStats } from '../preview/page-break-overlay';
-import { PrintInspectionResult } from '../../application/print-service';
 import './print-toolbar.css';
 
 export interface PrintToolbarActionsProps {

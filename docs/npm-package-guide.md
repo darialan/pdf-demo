@@ -44,13 +44,14 @@
 │   ├── index.d.ts                 # TypeScript 根类型定义入口
 │   └── types/                     # 完整的模块级别 TypeScript .d.ts 文件
 ├── src/
-│   ├── core/                      # 【领域核心】纯数学几何换算、分页避让算法、规则定义（无 DOM 依赖）
-│   ├── adapters/                  # 【基础设施】DOM 测量、样式冻结、html2canvas 切片、jsPDF 组装
-│   ├── application/               # 【应用服务】print-pipeline 串联流水线、print-service、任务取消机制
-│   ├── hooks/                     # 【框架适配】React usePdfPrint Hook
 │   ├── lib/                       # 【NPM 库主导出入口】src/lib/index.ts
-│   ├── ui/                        # 【展示层】React 调试面板、迷你预览、工作台
+│   │   ├── core/                  # 【领域核心】纯数学几何换算、分页避让算法、规则定义（无 DOM 依赖）
+│   │   ├── adapters/              # 【基础设施】DOM 测量、样式冻结、html2canvas 切片、jsPDF 组装
+│   │   ├── application/           # 【应用服务】print-pipeline 串联流水线、print-service、任务取消机制
+│   │   ├── hooks/                 # 【框架适配】React usePdfPrint Hook
+│   │   └── overlay/               # 【可视化调试】分页线叠加层（原生 DOM，无 React 依赖）
 │   └── demo/                      # 【示例业务场景】采购订单、验收单、结算单等案例
+│       └── ui/                    # 【展示层】React 调试面板、迷你预览、工作台
 ├── vite.config.lib.ts             # 专用于 NPM 库的 Vite 构建配置
 └── tsconfig.lib.json              # 专用于 NPM 声明文件生成的 TS 配置
 ```
@@ -301,6 +302,32 @@ await outputPDF({
 });
 ```
 
+### 3.5 iframe 隔离沙箱与独立网页打印
+
+在许多企业应用中，打印模板常以 `<iframe>` 形式隔离渲染（例如微前端子应用页面、包含独立 CSS 的合同单页、第三方发票模板）：
+
+```ts
+// 1. 获取同源 iframe 的内部文档对象（支持 srcdoc 或同源 URL）
+const iframe = document.getElementById('my-report-iframe') as HTMLIFrameElement;
+const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+
+if (!iframeDoc) throw new Error('无法访问 iframe 内容，请确保同源或使用 srcdoc');
+
+// 2. 提取 iframe 内部待打印的目标容器
+const printTarget = iframeDoc.getElementById('iframe-report-content') || iframeDoc.body;
+
+// 3. 一键交由 @darialan/web-pdf-printer 打印
+await outputPDF({
+  element: printTarget as HTMLElement,
+  filename: 'iframe-report.pdf',
+  settings: {
+    paper: 'a4',
+    orientation: 'portrait',
+  },
+});
+```
+> **提示**：核心库是纯 DOM 引擎，只要目标节点是一个有效的 `HTMLElement`，无论它存在于主文档还是 `iframe.contentDocument` 中，都可以直接接收并完成计算样式冻结、测量与微切片导出。
+
 ---
 
 ## 四、核心底层机制与算法数学推导
@@ -415,7 +442,7 @@ export function createTextMeasurer(rootTop: number) {
 
 ### 4.4 贪心回退避让纯分页算法推导与复杂度分析
 
-分页算法位于 `src/core/pagination/paginator.ts` 中的 `paginate` 函数。
+分页算法位于 `src/lib/core/pagination/paginator.ts` 中的 `paginate` 函数。
 
 #### 算法流程：
 - **输入**：

@@ -20,7 +20,51 @@
 
 ---
 
-## 📦 安装
+## 🖥️ 本地 Demo 工作台快速启动
+
+本项目自带了一个功能完备的交互式可视化打印工作台，用于真实预览与调试各种复杂单据的分页表现。
+
+### 1. 运行步骤
+
+```bash
+# 1. 安装项目依赖（自动通过 postinstall 建立库链接）
+npm install
+
+# 2. 启动本地交互式 Demo 工作台
+npm start
+```
+
+启动完成后，本地开发服务器将运行在 **`http://localhost:3000`**，浏览器会自动打开该页面。
+
+### 2. Demo 工作台包含的演示场景
+
+| 场景 Tab | 演示核心要点 |
+| --- | --- |
+| 📑 **段落** | 中英文多行文本流的行级精准测量与回退避让，保证文字绝不在字腰被截断 |
+| 📄 **单页与 iframe 嵌入** | 包含标准单页《员工录用审批表》（页码准确 1/1、无空白页）以及 **iframe 独立沙箱网页抓取打印** |
+| ✂️ **多页分页截断** | 超长表格行（`tr`）、图片、卡片及业务复合块在跨页临界点处的自动推移保护 |
+| 🏷️ **自定义页眉页脚** | 每页固定重复的独立页眉/页脚 Canvas 贴图与动态页码计算（`第 X / Y 页`） |
+| 🧾 **采购订单** | 真实企业级多页混合业务单据导出（订单、验收单、结算单与电子签章区） |
+| 🧩 **低代码** | 原生物料自由拖拽排版、动态调节单块高度/行数、实时压线临界验证与分页策略切换 |
+
+### 3. 工作台实用调试功能
+
+- ⚙️ **打印设置面板**：支持切换 A4 / A3 / A5 / Letter / 自定义尺寸，横向/纵向排版，自定义毫米或像素页边距，及物理切片模式。
+- 🔍 **分页辅助线标线**：一键在页面上直观绘制紫色切刀线（`✂️ page-break`）、红色实框（`atomic` 原子项）、蓝色虚框（`splittable` 流式项）与灰色虚框（`ignore` 忽略项）。
+- 📱 **多页实时预览**：支持右侧迷你画廊预览与全屏大图预览，先预览排版效果再决定下载。
+
+### 4. 项目常用脚本速查
+
+```bash
+npm start          # 启动本地开发 Demo 工作台 (http://localhost:3000)
+npm run build:lib  # 打包纯净的核心 NPM 库到 dist/ (ESM + CJS + .d.ts)
+npm run test:once  # 运行全量单元测试 (14 套单测，44 个用例全部通过)
+npm run build      # 打包本地 Demo 工作台为生产静态资源到 build/
+```
+
+---
+
+## 📦 安装核心库
 
 ```bash
 npm install @darialan/web-pdf-printer html2canvas jspdf
@@ -92,6 +136,26 @@ export function InvoicePage() {
       </div>
     </div>
   );
+}
+```
+
+### 3. iframe 隔离网页嵌入打印
+
+若待打印内容位于 `<iframe>` 沙箱中（如微前端页面或隔离 CSS 的报表模板）：
+
+```ts
+import { outputPDF } from '@darialan/web-pdf-printer';
+
+const iframe = document.getElementById('my-iframe') as HTMLIFrameElement;
+const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+const printTarget = iframeDoc?.getElementById('report-root') || iframeDoc?.body;
+
+if (printTarget) {
+  await outputPDF({
+    element: printTarget as HTMLElement,
+    filename: 'iframe-report.pdf',
+    settings: { paper: 'a4', orientation: 'portrait' },
+  });
 }
 ```
 

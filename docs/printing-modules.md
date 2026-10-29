@@ -1,16 +1,16 @@
 # 打印模块分层架构与扩展方式
 
-本文对应当前分层实现。顶层直接划分为 `demo`、`ui`、`application`、`core`、`adapters` 五个模块，保持单向依赖与清晰的职责边界。
+本文对应当前分层实现。库源码统一位于 `src/lib`，示例工程位于 `src/demo`，保持单向依赖与清晰的职责边界。
 
 ## 一、五层模块职责
 
 | 模块 | 工程含义 | 当前项目职责 |
 | --- | --- | --- |
 | `src/demo` | Examples / Playground | 采购业务单据（订单/验收单/结算单）、表格、长文本、图片、签认区等复杂分页案例 |
-| `src/ui` | Presentation Layer | 打印设置面板（`config-panel`）、分页线预览（`preview`）、调试与导出工具栏（`debug-panel`）及工作台容器 |
-| `src/application` | Application Layer | 串联快照准备、资源等待、DOM 测量、分页计算、逐页截图与 PDF 输出（`print-pipeline`、`print-service`） |
-| `src/core` | Domain / Core Engine | 公共类型（`types`）、节点分类与溢出策略（`rules`）、纯分页算法（`pagination`）、纸张与页面几何换算（`geometry`） |
-| `src/adapters` | Infrastructure / Adapters | 对接浏览器 DOM 遍历/测量/快照（`dom`）、字体图片资源就绪（`resources`）、Canvas 截图（`canvas`）、jsPDF 输出（`pdf`） |
+| `src/demo/ui` | Presentation Layer | 打印设置面板（`config-panel`）、分页线预览（`preview`）、调试与导出工具栏（`debug-panel`）及工作台容器 |
+| `src/lib/application` | Application Layer | 串联快照准备、资源等待、DOM 测量、分页计算、逐页截图与 PDF 输出（`print-pipeline`、`print-service`） |
+| `src/lib/core` | Domain / Core Engine | 公共类型（`types`）、节点分类与溢出策略（`rules`）、纯分页算法（`pagination`）、纸张与页面几何换算（`geometry`） |
+| `src/lib/adapters` | Infrastructure / Adapters | 对接浏览器 DOM 遍历/测量/快照（`dom`）、字体图片资源就绪（`resources`）、Canvas 截图（`canvas`）、jsPDF 输出（`pdf`） |
 
 ## 二、调用链与依赖边界
 

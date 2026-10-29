@@ -72,12 +72,18 @@
     }
   },
   "scripts": {
+    "postinstall": "node -e \"const fs=require('fs');if(!fs.existsSync('src/lib'))process.exit(0);const p='node_modules/@darialan';try{fs.mkdirSync(p,{recursive:true});fs.rmSync(p+'/web-pdf-printer',{force:true,recursive:true});fs.symlinkSync('../../src/lib',p+'/web-pdf-printer','junction')}catch(e){}\"",
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "build:lib": "vite build --config vite.config.lib.ts && tsc -p tsconfig.lib.json && node -e \"require('fs').writeFileSync('dist/index.d.ts', \\\"export * from './types/lib/index';\\\\n\\\")\"",
+    "build:lib": "vite build --config vite.config.lib.ts && tsc -p tsconfig.lib.json && node -e \"require('fs').writeFileSync('dist/index.d.ts', \\\"export * from './types/index';\\\\n\\\")\"",
     "test": "react-scripts test",
     "test:once": "react-scripts test --watchAll=false",
     "eject": "react-scripts eject"
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "^@darialan/web-pdf-printer$": "<rootDir>/src/lib/index.ts"
+    }
   },
   "eslintConfig": {
     "extends": [

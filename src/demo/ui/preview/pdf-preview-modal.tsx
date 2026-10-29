@@ -1,9 +1,12 @@
+import {
+  cloneWithResolvedStyles,
+  inspectPrintLayout,
+  PageSlice,
+  PrintSettings,
+  resolvePaper,
+} from '@darialan/web-pdf-printer';
 import { Button, Modal, Spin, Tag } from 'antd';
 import React, { useState } from 'react';
-import { cloneWithResolvedStyles } from '../../adapters/dom/snapshot';
-import { inspectPrintLayout } from '../../application/print-service';
-import { resolvePaper } from '../../core/geometry/paper';
-import { PageSlice, PrintSettings } from '../../core/types';
 import './pdf-preview-modal.css';
 
 export interface HtmlPaperGeometry {

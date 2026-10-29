@@ -1,5 +1,4 @@
-import { DEMO_SCENES } from './demo';
-import { PrintWorkbench } from './ui';
+import { DEMO_SCENES, PrintWorkbench } from './demo';
 
 function App() {
   return (

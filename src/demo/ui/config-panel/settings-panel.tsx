@@ -1,14 +1,14 @@
-import { Button, Form, InputNumber, Modal, Radio, Select } from 'antd';
-import { useState } from 'react';
 import {
   DEFAULT_SETTINGS,
   getPresetDimensions,
   MM_PER_PX,
+  PrintSettings,
   PX_PER_MM,
   resolvePaper,
   UNIT_FIELDS,
-} from '../../core/geometry/paper';
-import { PrintSettings } from '../../core/types';
+} from '@darialan/web-pdf-printer';
+import { Button, Form, InputNumber, Modal, Radio, Select } from 'antd';
+import { useState } from 'react';
 import './settings-panel.css';
 
 const formatDisplayNumber = (val: number | string | undefined) => {

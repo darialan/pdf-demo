@@ -1,14 +1,21 @@
+import {
+  clearPageBreaks,
+  cloneWithResolvedStyles,
+  DEFAULT_SETTINGS,
+  inspectPrintLayout,
+  ObservabilityStats,
+  outputPDF,
+  PrintInspectionResult,
+  PrintSettings,
+  resolvePaper,
+  visualizePageBreaks,
+} from '@darialan/web-pdf-printer';
 import { message, Tabs } from 'antd';
 import { ReactNode, useRef, useState } from 'react';
-import { cloneWithResolvedStyles } from '../adapters/dom/snapshot';
-import { inspectPrintLayout, outputPDF, PrintInspectionResult } from '../application/print-service';
-import { DEFAULT_SETTINGS, resolvePaper } from '../core/geometry/paper';
-import { PrintSettings } from '../core/types';
 import {
   PrintObservabilityBanner,
   PrintToolbarActions,
 } from './debug-panel/print-toolbar';
-import { clearPageBreaks, ObservabilityStats, visualizePageBreaks } from './preview/page-break-overlay';
 import { calculateHtmlPaperGeometry, HtmlPreviewData } from './preview/pdf-preview-modal';
 import { MiniPdfPreview } from './preview/mini-pdf-preview';
 import './debug-panel/print-toolbar.css';

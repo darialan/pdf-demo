@@ -14,6 +14,8 @@
 
 ## 2. 代码现状与验证结果
 
+> **路径说明**：本节及后续审查条目中的 `src/pdf-demo/*` 为本文撰写时的历史目录结构，该目录已被后续重构取代。当前库源码位于 `src/lib/`（`core` / `adapters` / `application` / `hooks` / `overlay`），示例工程位于 `src/demo/`（含 `src/demo/ui/`）。下文保留原文路径与行号以维持历史记录的准确性，不作为当前代码位置指引。
+
 ### 2.1 当前链路
 
 页面入口为 `src/App.tsx` → `src/pdf-demo/index.tsx`。
