@@ -198,7 +198,7 @@ async function main() {
   // 11. 完成摘要
   console.log(`\n${colors.bold}${colors.green}🎉 恭喜！版本 v${finalVersion} 发布圆满成功！${colors.reset}\n`);
   console.log(`📦 NPM 主页:  ${colors.cyan}https://www.npmjs.com/package/${pkgName}${colors.reset}`);
-  console.log(`🐙 GitHub 源码: ${colors.cyan}https://github.com/darialan/web-pdf-printer${colors.reset}`);
+  console.log(`🐙 GitHub 源码: ${colors.cyan}https://github.com/darialan/web-printer${colors.reset}`);
   console.log(`\n你可以通过如下命令立即在其他项目中安装体验：`);
   console.log(`  ${colors.bold}npm install ${pkgName}@latest${colors.reset}\n`);
 }

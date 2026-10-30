@@ -6,10 +6,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/darialan/web-pdf-printer.git"
+    "url": "git+https://github.com/darialan/web-printer.git"
   },
   "bugs": {
-    "url": "https://github.com/darialan/web-pdf-printer/issues"
+    "url": "https://github.com/darialan/web-printer/issues"
   },
   "homepage": "https://pdf-demo-phi.vercel.app/",
   "keywords": [

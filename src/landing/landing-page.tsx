@@ -5,7 +5,7 @@ import { useTheme } from './theme';
 import './site.css';
 import './landing-page.css';
 
-const REPO = 'https://github.com/darialan/web-pdf-printer';
+const REPO = 'https://github.com/darialan/web-printer';
 const DOCS = `${REPO}#readme`;
 const INSTALL_CMD = 'npm install @darialan/web-printer';
 

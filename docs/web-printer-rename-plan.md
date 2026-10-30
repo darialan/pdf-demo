@@ -46,9 +46,12 @@
 | 包校验 | `scripts/verify-package.mjs` 在空目录安装 tarball 与 registry 版本：ESM/CJS 根入口可导入且不含 React，安装 React 后 `/react` 子入口可导入，TypeScript 编译通过 |
 | 线上复核 | 真实浏览器打开线上首页与工作台：标题「Web Printer · 长网页，分好每一页」、安装命令 `npm install @darialan/web-printer`、四张场景截图 1440×1000 正常加载、分页预览可用、真实导出「长表格.pdf」成功，无失败请求与页面错误 |
 
+### 仓库更名结果
+
+仓库已在 GitHub 端更名为 `darialan/web-printer`，旧地址 `darialan/web-pdf-printer` 返回 301 跳转到新地址。代码内所有指向源码仓库的链接（package.json 的 repository / bugs、首页与工作台的 GitHub 入口、release 脚本输出、e2e 断言）与 git remote 一并切换到新地址。
+
 ### 本轮确认保留的旧名
 
-- GitHub 仓库仍为 `darialan/web-pdf-printer`：本机无 GitHub 管理入口（`gh` 不可用），按计划保留已验证的旧地址作为稳定基础设施，GitHub 旧地址跳转不受影响。
 - 旧 npm 包 `@darialan/web-pdf-printer@1.0.2` 不下架。
 - `data-pdf-*` / `.pdf-*` 协议、`usePdfPrint` / `outputPDF` 等旧 API 作为兼容别名保留，由专门单测覆盖。
 
@@ -56,4 +59,4 @@
 
 发布前失败只修复本地内容。npm 版本不可覆盖，发布前必须先完成 tarball 校验。npm/部署身份校验若需要用户完成登录或动态认证，保留已完成工作并明确指出唯一缺少的认证；不索取聊天中的密钥。发布后不删除旧包。线上部署异常使用 Vercel 前一生产版本恢复。不可把本地构建成功当作 npm 发布或线上验证成功。
 
-仓库管理入口当前自动化读取超时；本轮保留已验证的 `darialan/web-pdf-printer` 源码地址作为稳定基础设施，不把链接改为尚不存在的新地址。站点继续使用现有生产 URL。
+站点继续使用现有生产 URL；仓库地址变更只影响源码链接，不影响已发布产物。

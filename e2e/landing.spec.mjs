@@ -7,7 +7,7 @@ test('landing installs the package, demonstrates real responsive pagination and 
   await page.goto('/#/');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('长网页，分好每一页。');
   await expect(page.getByRole('navigation', { name: '全局导航' }).getByRole('link', { name: '打开工作台' })).toHaveAttribute('href', '#/playground');
-  await expect(page.getByRole('link', { name: 'GitHub Star', exact: true })).toHaveAttribute('href', 'https://github.com/darialan/web-pdf-printer');
+  await expect(page.getByRole('link', { name: 'GitHub Star', exact: true })).toHaveAttribute('href', 'https://github.com/darialan/web-printer');
   await page.getByRole('button', { name: '复制安装命令', exact: true }).click();
   expect(await page.evaluate(() => window.copiedText)).toBe('npm install @darialan/web-printer');
   await expect(page.locator('.command-block pre > code')).toHaveCount(2);
