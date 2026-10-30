@@ -42,6 +42,9 @@ test('visualizePageBreaks 能够全覆盖标记 atomic, splittable 与 ignore �
   // 页面上存在调试遮罩层
   const debugNodes = container.querySelectorAll('[data-pdf-debug="true"]');
   expect(debugNodes.length).toBeGreaterThan(0);
+  const labels = Array.from(debugNodes).flatMap(node => Array.from(node.querySelectorAll('span')).map(span => span.textContent));
+  expect(labels).toEqual(expect.arrayContaining(['atomic', 'splittable', 'ignore']));
+  expect(labels.some(label => label?.includes('page-break'))).toBe(true);
 
   // 清除后完全移除
   clearPageBreaks();

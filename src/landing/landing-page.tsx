@@ -10,9 +10,9 @@ const DOCS = `${REPO}#readme`;
 const INSTALL_CMD = 'npm install @darialan/web-pdf-printer html2canvas jspdf';
 
 const scenes = [
-  { key: 'purchase-order', title: '45 行采购订单', description: '长表格明细清单，行数不可预测，天然跨页防表格行腰斩。', detail: '第一类：长表格', icon: 'grid' },
-  { key: 'long-article', title: '计算光学技术长文', description: '公式推导、代码块与配图混排，支持切图分享到社交平台。', detail: '第二类：长文章', icon: 'code' },
-  { key: 'complex-mixed', title: '售后工单详情', description: '表单信息、现场照片、长段落与检查表混排在一页。', detail: '第三类：复杂图文页面', icon: 'sliders' },
+  { key: 'purchase-order', title: '45 行采购明细表', description: '单独一张长表格，展示整行保护与单元格文字分页。', detail: '第一类：长表格', icon: 'grid' },
+  { key: 'long-article', title: '把时间留给步行', description: '连续文字组成的长文章，展示按文字行分页的效果。', detail: '第二类：长文章', icon: 'code' },
+  { key: 'complex-mixed', title: '计算光学技术文章', description: '原文样式下的公式、代码与配图混排，跨页保护整块内容。', detail: '第三类：复杂图文页面', icon: 'sliders' },
   { key: 'custom-header-footer', title: '差旅报销单', description: '每页重复的自定义页眉页脚，带动态总页码。', detail: '第四类：自定义页眉页脚', icon: 'file' },
 ] as const;
 

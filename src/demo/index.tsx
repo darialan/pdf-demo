@@ -1,4 +1,4 @@
-import { configurePrint } from '@darialan/web-pdf-printer';
+import { configurePrint } from '../lib';
 import type { PrintSceneItem } from './ui';
 import { COMPLEX_MIXED_CONTENT_ID, ComplexMixedDemo } from './complex-mixed';
 import { CUSTOM_FOOTER_ID, CUSTOM_HEADER_ID, CustomHeaderFooterDemo, CUSTOM_HEADER_FOOTER_CONTENT_ID } from './custom-header-footer';
@@ -17,24 +17,24 @@ export const DEMO_SCENES: PrintSceneItem[] = [
   {
     key: 'purchase-order',
     label: '长表格',
-    scenario: '采购订单详情 · 门店补货与收货跟踪',
-    problem: '筛选后的长表格连续导出，保留整行及合计',
+    scenario: '门店包材采购明细表',
+    problem: '长表格连续分页，保护表格行与单元格中的文字',
     contentId: PURCHASE_ORDER_CONTENT_ID,
     children: <PurchaseOrderDemo />,
   },
   {
     key: 'long-article',
     label: '长文章',
-    scenario: '计算光学技术长文 · 公式推导、代码块与配图混排',
-    problem: '长篇正文的文字行防截断，公式图与代码块整体保护，支持切图分享',
+    scenario: '散文长文 · 连续段落与文字行',
+    problem: '连续文字按行分页，避免从一行文字中间截断',
     contentId: LONG_ARTICLE_CONTENT_ID,
     children: <LongArticleDemo />,
   },
   {
     key: 'complex-mixed',
     label: '复杂图文页面',
-    scenario: '售后工单详情 · 表单信息、现场照片、处理记录与检查表混排',
-    problem: '表单、图片、长段落与表格同时出现时的分页与整体保护',
+    scenario: '计算光学技术文章 · 公式、代码与配图混排',
+    problem: '保留原文样式，保护公式、代码块和图片的完整性',
     contentId: COMPLEX_MIXED_CONTENT_ID,
     children: <ComplexMixedDemo />,
   },

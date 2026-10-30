@@ -81,6 +81,14 @@ export function cloneWithResolvedStyles(source: HTMLElement): HTMLElement {
   });
   target.querySelectorAll('[data-pdf-debug], [data-pdf-ignore="true"]').forEach(node => node.remove());
 
+  // The root's margins position it in the source page (including resolved auto
+  // centering margins). A page slice supplies its own origin and paper margins;
+  // carrying those external offsets into it shifts/crops the captured document.
+  // Descendant margins remain frozen above to preserve the internal layout.
+  target.style.margin = '0';
+  target.style.setProperty('margin-inline', '0');
+  target.style.setProperty('margin-block', '0');
+
   // Lock root target width to source element width so rendering outside original flow never shrink-wraps or alters line wrapping
   const sourceWidth = source.getBoundingClientRect().width;
   if (sourceWidth > 0) {

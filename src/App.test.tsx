@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import App from './App';
 import WorkbenchPage from './demo/workbench-page';
 import { purchaseOrderRows, orderedTotal } from './demo/purchase-order';
@@ -21,32 +21,48 @@ beforeEach(() => {
   });
 });
 
-test('保留基础 Demo 与代表性采购订单业务单据', async () => {
+test('长表格只展示一张完整表格，不包含筛选栏和订单卡片', async () => {
   render(<WorkbenchPage />);
   expect(await screen.findByRole('tab', { name: '长表格' }, { timeout: 4000 })).toBeInTheDocument();
-  fireEvent.click(screen.getByRole('tab', { name: '长表格' }));
-  expect(document.getElementById('print-content6')).toBeInTheDocument();
-  expect(screen.getByText('交货与包装 / Delivery & Packaging')).toBeInTheDocument();
+  const root = document.getElementById('print-content6')!;
+  expect(within(root).getAllByRole('table')).toHaveLength(1);
+  expect(within(root).getAllByRole('row')).toHaveLength(46);
+  expect(root.querySelector('input, select, button, .ant-card')).toBeNull();
+  expect(screen.queryByText('订单概况')).not.toBeInTheDocument();
   expect(purchaseOrderRows).toHaveLength(45);
   expect(orderedTotal).toBeGreaterThan(0);
 });
 
-test('长文章 Tab 展示真实长文标题与摘要，正文区域异步加载原文 HTML', async () => {
+test('长文章以连续文字展示分页，不包含公式、代码、图片或表格', async () => {
   render(<WorkbenchPage />);
   fireEvent.click(await screen.findByRole('tab', { name: '长文章' }));
-  const articleRoot = document.getElementById('print-content-long-article')!;
-  expect(articleRoot).toBeInTheDocument();
-  expect(screen.getByText('用 TorchOptics 逆向设计一条凸 Accelerating Beam 轨迹')).toBeInTheDocument();
-  expect(screen.getByText(/Gaussian 输入沿指定凸抛物线轨迹传播/)).toBeInTheDocument();
+  const root = document.getElementById('print-content-long-article')!;
+  expect(within(root).getByRole('heading', { level: 1 })).toHaveTextContent('把时间留给步行');
+  expect(root.querySelectorAll('p')).toHaveLength(25);
+  expect(root.textContent!.length).toBeGreaterThan(2500);
+  expect(root.querySelector('img, pre, code, table, svg, math')).toBeNull();
 });
 
-test('复杂图文页面 Tab 混排表单信息、现场照片、长段落与检查表', async () => {
-  render(<WorkbenchPage />);
-  fireEvent.click(await screen.findByRole('tab', { name: '复杂图文页面' }));
-  const mixedRoot = document.getElementById('print-content-complex-mixed')!;
-  expect(mixedRoot).toBeInTheDocument();
-  expect(screen.getByText('滨江江陵路店 · 前台网络间歇掉线')).toBeInTheDocument();
-  expect(mixedRoot.querySelector('[data-pdf-atomic="true"]')).not.toBeNull();
+test('复杂图文页面承接技术文章，原样保留正文样式并保护图片和代码块', async () => {
+  const originalFetch = global.fetch;
+  global.fetch = jest.fn().mockResolvedValue({
+    ok: true,
+    text: async () => '<section style="font-size:16px;line-height:30px"><p>原文正文样式</p><pre style="background:#123456"><code>原文代码样式</code></pre><img src="/figure.png" alt="原文配图" /></section>',
+  });
+  try {
+    render(<WorkbenchPage />);
+    fireEvent.click(await screen.findByRole('tab', { name: '复杂图文页面' }));
+    const root = document.getElementById('print-content-complex-mixed')!;
+    expect(within(root).getByRole('heading', { level: 1 })).toHaveTextContent('用 TorchOptics 逆向设计一条凸 Accelerating Beam 轨迹');
+    expect(await within(root).findByText('原文代码样式')).toBeInTheDocument();
+    expect(global.fetch).toHaveBeenCalledWith('/demo-assets/torchoptics-article.html');
+    expect(root.querySelector('.article-body > section')).toHaveStyle('font-size: 16px; line-height: 30px');
+    expect(root.querySelector('pre')).toHaveAttribute('data-pdf-atomic', 'true');
+    expect(root.querySelector('pre')).toHaveStyle('background: #123456');
+    expect(root.querySelector('img')).toHaveAttribute('data-pdf-atomic', 'true');
+  } finally {
+    global.fetch = originalFetch;
+  }
 });
 
 test('自定义页眉页脚 Tab 每页重复自定义页眉与页脚内容', async () => {
@@ -86,7 +102,7 @@ test('场景链接打开对应的工作台单据，接入示例支持键盘切�
   window.history.replaceState(null, '', '/');
   const scrollTo = jest.spyOn(window, 'scrollTo').mockImplementation(() => {});
   render(<App />);
-  const sceneLink = screen.getByRole('link', { name: /45 行采购订单/ });
+  const sceneLink = screen.getByRole('link', { name: /45 行采购明细表/ });
   expect(sceneLink).toHaveAttribute('href', '#/playground?scene=purchase-order');
 
   expect(screen.getByRole('tabpanel')).toHaveTextContent('marginTopMm: 12');

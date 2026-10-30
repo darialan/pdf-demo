@@ -1,4 +1,4 @@
-import { copyResolvedStyle } from './snapshot';
+import { cloneWithResolvedStyles, copyResolvedStyle } from './snapshot';
 import { measureTextLines } from './text-range';
 
 test('print root keeps ancestor-provided typography after moving to body', () => {
@@ -101,4 +101,19 @@ test('snapshot preserves media and table sizes defined by ancestor-dependent CSS
   } finally {
     mock.mockRestore();
   }
+});
+
+test('centered print roots start at the page origin while retaining internal margins and padding', () => {
+  const source = document.createElement('article');
+  source.style.cssText = 'margin:24px 288px; padding:36px 44px; font-size:17px;';
+  source.innerHTML = '<p style="margin:12px 16px;line-height:34px">Long article</p>';
+  source.getBoundingClientRect = () => ({ width: 800 } as DOMRect);
+  const clone = cloneWithResolvedStyles(source);
+  const style = window.getComputedStyle(clone);
+  expect([style.marginTop, style.marginRight, style.marginBottom, style.marginLeft]).toEqual(['0px', '0px', '0px', '0px']);
+  expect(clone.style.width).toBe('800px');
+  expect(clone.style.padding).toBe('36px 44px');
+  expect(clone.querySelector('p')!.style.margin).toBe('12px 16px');
+  expect(source.style.margin).toBe('24px 288px');
+  expect(source.style.fontSize).toBe(clone.style.fontSize);
 });

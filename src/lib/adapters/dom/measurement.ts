@@ -31,7 +31,20 @@ function collectIgnoredRanges(root: HTMLElement, bounds: DOMRect, rules: readonl
     if (rule.kind !== 'ignore') return 'descend';
     const rect = (node as Element).getBoundingClientRect();
     if (rect.width > 0 && rect.height > 0) {
-      ignored.push({ top: rect.top - bounds.top, bottom: rect.bottom - bounds.top });
+      // Removing the node in the clone (cloneWithResolvedStyles) also removes any
+      // margin it contributed to the gap before/after it, since margin collapsing
+      // has nothing left to collapse against. Extend the ignored interval by the
+      // element's own margin-top/margin-bottom so the live-DOM approximation
+      // matches the clone's layout exactly, not just the element's border box.
+      const element = node as Element;
+      const win = element.ownerDocument?.defaultView;
+      const style = win?.getComputedStyle ? win.getComputedStyle(element) : null;
+      const marginTop = style ? parseFloat(style.marginTop) || 0 : 0;
+      const marginBottom = style ? parseFloat(style.marginBottom) || 0 : 0;
+      ignored.push({
+        top: rect.top - bounds.top - marginTop,
+        bottom: rect.bottom - bounds.top + marginBottom,
+      });
     }
     return 'skip';
   });

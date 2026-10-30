@@ -3,7 +3,7 @@ import {
   PrintInspectionResult,
   PrintSettings,
   resolvePaper,
-} from '@darialan/web-pdf-printer';
+} from '../../../lib';
 import { Button } from 'antd';
 import { PrintSettingsButton } from '../config-panel/settings-panel';
 import './print-toolbar.css';
@@ -101,14 +101,14 @@ export function PrintObservabilityBanner({
       <div className="observability-legend">
         <span className="legend-item legend-item-keep">
           <span className="legend-dot" style={{ background: '#ef4444' }} />
-          整行保护 (atomic): {stats?.atomic ?? 0}
+          atomic: {stats?.atomic ?? 0}
         </span>
         <span className="legend-item legend-item-break">
           <span className="legend-dot" style={{ background: '#3b82f6' }} />
-          允许切分: {stats?.splittable ?? 0}
+          splittable: {stats?.splittable ?? 0}
         </span>
         <span className="legend-item legend-item-line">
-          ✂️ 换页切分线
+          ✂️ page-break
         </span>
         {onClose && (
           <button

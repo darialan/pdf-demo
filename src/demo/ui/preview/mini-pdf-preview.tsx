@@ -4,7 +4,7 @@ import {
   FullscreenOutlined,
   MinusOutlined,
 } from '@ant-design/icons';
-import { Spin } from 'antd';
+import { Button, Spin } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 import { HtmlPreviewData } from './pdf-preview-modal';
 import './mini-pdf-preview.css';
@@ -12,6 +12,8 @@ import './mini-pdf-preview.css';
 export interface MiniPdfPreviewProps {
   data: HtmlPreviewData | null;
   loading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
   onClose?: () => void;
 }
 
@@ -182,7 +184,7 @@ function MiniPreviewPage({ index, page, data, currentZoom, fullscreen, eager }: 
   );
 }
 
-export function MiniPdfPreview({ data, loading = false, onClose }: MiniPdfPreviewProps) {
+export function MiniPdfPreview({ data, loading = false, error, onRetry, onClose }: MiniPdfPreviewProps) {
   const [minimized, setMinimized] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
 
@@ -197,7 +199,7 @@ export function MiniPdfPreview({ data, loading = false, onClose }: MiniPdfPrevie
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [fullscreen]);
 
-  if (!data && !loading) return null;
+  if (!data && !loading && !error) return null;
 
   const paperWidthPx = data?.geometry.paperWidthPx || 794;
 
@@ -286,6 +288,7 @@ export function MiniPdfPreview({ data, loading = false, onClose }: MiniPdfPrevie
 
         {(!minimized || fullscreen) && (
           <div className="mini-preview-body">
+            {error && <PreviewFailure error={error} onRetry={onRetry} />}
             {loading && (
               <div className="mini-preview-loading">
                 <Spin size="small" />
@@ -310,4 +313,35 @@ export function MiniPdfPreview({ data, loading = false, onClose }: MiniPdfPrevie
       </div>
     </>
   );
+}
+
+function PreviewFailure({ error, onRetry }: { error: string; onRetry?: () => void }) {
+  return <div role="alert" style={{ color: '#f8fafc', padding: 12 }}>
+    <p>纸张预览失败：{error}</p>
+    {onRetry && <Button size="small" onClick={onRetry}>重试预览</Button>}
+  </div>;
+}
+
+/** Preview rendering errors must not unmount the source annotations. */
+export class MiniPreviewBoundary extends React.Component<{
+  children: React.ReactNode;
+  onRetry: () => void;
+  onClose: () => void;
+}, { error: string | null }> {
+  state = { error: null as string | null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { error: error.message || String(error) };
+  }
+
+  render() {
+    if (!this.state.error) return this.props.children;
+    return <div className="mini-pdf-preview-widget">
+      <div className="mini-preview-header">
+        <span className="mini-preview-title-wrap">📄 纸张预览</span>
+        <button className="mini-preview-icon-btn" aria-label="关闭预览小窗" onClick={this.props.onClose}>×</button>
+      </div>
+      <PreviewFailure error={this.state.error} onRetry={this.props.onRetry} />
+    </div>;
+  }
 }

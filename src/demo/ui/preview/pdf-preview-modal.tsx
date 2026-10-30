@@ -5,7 +5,7 @@ import {
   PageSlice,
   PrintSettings,
   resolvePaper,
-} from '@darialan/web-pdf-printer';
+} from '../../../lib';
 import { Button, Modal, Spin, Tag } from 'antd';
 import React, { useState } from 'react';
 import './pdf-preview-modal.css';

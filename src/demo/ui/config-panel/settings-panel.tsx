@@ -6,7 +6,7 @@ import {
   PX_PER_MM,
   resolvePaper,
   UNIT_FIELDS,
-} from '@darialan/web-pdf-printer';
+} from '../../../lib';
 import { Button, Form, InputNumber, Modal, Radio, Select, Switch } from 'antd';
 import { useState } from 'react';
 import './settings-panel.css';

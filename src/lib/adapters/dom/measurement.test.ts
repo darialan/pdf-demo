@@ -94,3 +94,14 @@ test('an oversized explicit group reports the named region instead of silently c
   expect(() => measureDocument(root, 100)).toThrow('审批签名与日期');
   expect(() => measureDocument(root, 100)).toThrow('220px');
 });
+
+test('ignored toolbar margins disappear from both document height and protected row coordinates', () => {
+  const root = document.createElement('div');
+  root.innerHTML = '<div data-pdf-ignore="true" style="margin-bottom:16px">filters</div><table><tbody><tr><td>row</td></tr></tbody></table>';
+  setRect(root, 100, 548);
+  setRect(root.firstElementChild!, 100, 32);
+  setRect(root.querySelector('tr')!, 248, 55);
+  const result = measureDocument(root, 300);
+  expect(result.height).toBe(500);
+  expect(result.ranges).toEqual([{ top: 100, bottom: 155 }]);
+});

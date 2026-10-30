@@ -111,7 +111,7 @@ export function visualizePageBreaks(
             borderColor: '#94a3b8',
             borderStyle: 'dashed',
             backgroundColor: 'rgba(148, 163, 184, 0.08)',
-            badgeText: '不打印',
+            badgeText: 'ignore',
             badgeBg: '#64748b',
             badgePosition: 'left',
           })
@@ -149,7 +149,7 @@ export function visualizePageBreaks(
           borderColor: '#ef4444',
           borderStyle: 'solid',
           backgroundColor: 'rgba(239, 68, 68, 0.05)',
-            badgeText: '整行保护',
+          badgeText: 'atomic',
           badgeBg: '#ef4444',
           badgePosition: 'right',
         })
@@ -179,7 +179,7 @@ export function visualizePageBreaks(
           borderColor: '#3b82f6',
           borderStyle: 'dashed',
           backgroundColor: 'rgba(59, 130, 246, 0.04)',
-            badgeText: '允许切分',
+          badgeText: 'splittable',
           badgeBg: '#3b82f6',
           badgePosition: 'right',
         })
