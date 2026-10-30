@@ -189,7 +189,8 @@ export function PrintSettingsButton({
               <Radio.Group options={[{ value: 'mm', label: 'mm' }, { value: 'px', label: 'px' }]} />
             </Form.Item>
             <Form.Item name="paper" label="输出尺寸" className="print-settings-span" rules={[{ required: true }]}>
-              <Select options={OUTPUT_PRESET_OPTIONS} />
+              {/* 不锁定为触发器宽度：弹窗缩放动画首帧宽度会被误测，锁定会让下拉变成窄条 */}
+              <Select options={OUTPUT_PRESET_OPTIONS} dropdownMatchSelectWidth={false} />
             </Form.Item>
           </div>
           <div className="print-settings-grid">
