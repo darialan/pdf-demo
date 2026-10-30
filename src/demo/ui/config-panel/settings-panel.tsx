@@ -2,7 +2,6 @@ import {
   DEFAULT_SETTINGS,
   getPresetDimensions,
   getPresetUnit,
-  IMAGE_PAPER_SIZES,
   MM_PER_PX,
   PrintSettings,
   PX_PER_MM,
@@ -11,6 +10,7 @@ import {
 } from '../../../lib';
 import { Button, Form, InputNumber, Modal, Radio, Select, Switch } from 'antd';
 import { useState } from 'react';
+import { OUTPUT_PRESET_OPTIONS } from './output-presets';
 import './settings-panel.css';
 
 const formatDisplayNumber = (val: number | string | undefined) => {
@@ -18,38 +18,6 @@ const formatDisplayNumber = (val: number | string | undefined) => {
   const num = Number(val);
   return Number.isFinite(num) ? String(Number(num.toFixed(2))) : String(val);
 };
-
-const pxDims = (key: keyof typeof IMAGE_PAPER_SIZES) => {
-  const { widthPx, heightPx } = IMAGE_PAPER_SIZES[key];
-  return `${widthPx}×${heightPx}`;
-};
-
-/** 预设分组：纸张（mm）与社媒图片（px）分开，用户按"我要 PDF 还是要图"来选 */
-const OUTPUT_PRESET_OPTIONS = [
-  {
-    label: '纸张',
-    options: [
-      { value: 'a4', label: 'A4 · 210×297 mm' },
-      { value: 'a3', label: 'A3 · 297×420 mm' },
-      { value: 'a5', label: 'A5 · 148×210 mm' },
-      { value: 'letter', label: 'Letter · 216×279 mm' },
-    ],
-  },
-  {
-    label: '社媒图片',
-    options: [
-      { value: 'card-3x4', label: `小红书 / 3:4 · ${pxDims('card-3x4')}` },
-      { value: 'card-4x5', label: `小红书竖版 / 4:5 · ${pxDims('card-4x5')}` },
-      { value: 'square-1x1', label: `方形 / 1:1 · ${pxDims('square-1x1')}` },
-      { value: 'story-9x16', label: `全屏 / 9:16 · ${pxDims('story-9x16')}` },
-      { value: 'ecom-750x1000', label: `电商详情 · ${pxDims('ecom-750x1000')}` },
-    ],
-  },
-  {
-    label: '其他',
-    options: [{ value: 'custom', label: '自定义尺寸' }],
-  },
-];
 
 export function PrintSettingsButton({
   value,
@@ -220,7 +188,7 @@ export function PrintSettingsButton({
             <Form.Item name="unit" label="尺寸单位">
               <Radio.Group options={[{ value: 'mm', label: 'mm' }, { value: 'px', label: 'px' }]} />
             </Form.Item>
-            <Form.Item name="paper" label="输出尺寸" rules={[{ required: true }]}>
+            <Form.Item name="paper" label="输出尺寸" className="print-settings-span" rules={[{ required: true }]}>
               <Select options={OUTPUT_PRESET_OPTIONS} />
             </Form.Item>
           </div>

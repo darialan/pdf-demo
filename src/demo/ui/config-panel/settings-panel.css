@@ -15,6 +15,8 @@
 .print-settings-dialog .ant-form-item-label { padding-bottom: 4px; }
 .print-settings-dialog .ant-input-number { width: 100%; }
 .print-settings-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 20px; }
+/* 预设标签带尺寸（1242×1656），窄屏放不下两列，单独占满一行 */
+.print-settings-span { grid-column: 1 / -1; }
 .print-settings-margins { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 12px; }
 .print-settings-hint { color: #8c8c8c; font-size: 12px; line-height: 1.6; margin-top: 2px; }
 .print-settings-derived {

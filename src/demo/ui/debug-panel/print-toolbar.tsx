@@ -9,6 +9,7 @@ import { Button, Dropdown } from 'antd';
 import { DownOutlined } from '@ant-design/icons';
 import { cloneElement } from 'react';
 import { PrintSettingsButton } from '../config-panel/settings-panel';
+import { getOutputPresetName } from '../config-panel/output-presets';
 import './print-toolbar.css';
 
 export interface PrintToolbarActionsProps {
@@ -45,19 +46,19 @@ export function PrintToolbarActions({
   const displayWidth = Number((paper.widthMm * unitFactor).toFixed(1));
   const displayHeight = Number((paper.heightMm * unitFactor).toFixed(1));
 
-  const paperName = settings.paper === 'custom' ? '自定义' : settings.paper.toUpperCase();
+  const paperName = getOutputPresetName(settings.paper);
   const paperSize = `${displayWidth} × ${displayHeight} ${settings.unit || 'mm'}`;
 
   return (
     <div className="print-tab-bar-extra">
       {/* 信息区：只读的文档上下文，弱化为文字，不与按钮抢视觉 */}
-      <div className="print-toolbar-meta" aria-label="纸张规格">
+      <div className="print-toolbar-meta" aria-label="输出规格">
         <svg className="print-meta-icon" width="13" height="13" viewBox="0 0 16 16" fill="none"
           stroke="currentColor" strokeWidth="1.3" aria-hidden="true">
           <path d="M4 1.5h5L13 5.5v9H4z" strokeLinejoin="round" />
           <path d="M9 1.5v4h4" strokeLinejoin="round" />
         </svg>
-        <span className="print-meta-label">纸张</span>
+        <span className="print-meta-label">尺寸</span>
         <span className="print-meta-value">{paperName}</span>
         <span className="print-meta-dim">{paperSize}</span>
       </div>
