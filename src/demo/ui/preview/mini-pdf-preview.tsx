@@ -5,7 +5,8 @@ import {
   MinusOutlined,
 } from '@ant-design/icons';
 import { Button, Spin } from 'antd';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { namespacePreviewHtml } from '../../../lib';
 import { HtmlPreviewData } from './pdf-preview-modal';
 import './mini-pdf-preview.css';
 
@@ -29,7 +30,7 @@ function useLazyMount(initiallyVisible: boolean) {
   const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (visible) return;
+    if (initiallyVisible) return;
     const node = ref.current;
     if (!node || typeof IntersectionObserver === 'undefined') {
       setVisible(true);
@@ -37,16 +38,13 @@ function useLazyMount(initiallyVisible: boolean) {
     }
     const observer = new IntersectionObserver(
       entries => {
-        if (entries.some(entry => entry.isIntersecting)) {
-          setVisible(true);
-          observer.disconnect();
-        }
+        setVisible(entries.some(entry => entry.isIntersecting));
       },
       { root: node.closest('.mini-preview-body'), rootMargin: '600px 0px' }
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, [visible]);
+  }, [initiallyVisible]);
 
   return { ref, visible };
 }
@@ -62,6 +60,10 @@ interface MiniPreviewPageProps {
 
 function MiniPreviewPage({ index, page, data, currentZoom, fullscreen, eager }: MiniPreviewPageProps) {
   const { ref, visible } = useLazyMount(eager);
+  const id = useId().replace(/:/g, '');
+  const sourceHtml = useMemo(() => namespacePreviewHtml(data.sourceHtml, `mini-${id}-body`), [data.sourceHtml, id]);
+  const headerHtml = useMemo(() => namespacePreviewHtml(data.headerHtml || '', `mini-${id}-header`), [data.headerHtml, id]);
+  const footerHtml = useMemo(() => namespacePreviewHtml(data.footerHtml || '', `mini-${id}-footer`), [data.footerHtml, id]);
   const {
     paperWidthPx,
     paperHeightPx,
@@ -74,7 +76,9 @@ function MiniPreviewPage({ index, page, data, currentZoom, fullscreen, eager }: 
     footerHeightPx,
     sourceWidth,
     scale,
-    pageNumber,
+    pageNumber, bodyTopPx = marginTopPx + headerHeightPx,
+    footerTopPx = paperHeightPx - marginBottomPx - footerHeightPx,
+    pageNumberYPx = paperHeightPx - marginBottomPx / 2,
   } = data.geometry;
 
   const sliceHeightPx = (page.end - page.start) * scale;
@@ -101,6 +105,7 @@ function MiniPreviewPage({ index, page, data, currentZoom, fullscreen, eager }: 
           <div
             className="mini-sheet-header"
             style={{
+              position: 'absolute', top: marginTopPx * currentZoom,
               height: headerHeightPx * currentZoom,
               width: printableWidthPx * currentZoom,
             }}
@@ -111,7 +116,7 @@ function MiniPreviewPage({ index, page, data, currentZoom, fullscreen, eager }: 
                 transform: `scale(${scale * currentZoom})`,
                 transformOrigin: 'top left',
               }}
-              dangerouslySetInnerHTML={{ __html: data.headerHtml }}
+              dangerouslySetInnerHTML={{ __html: headerHtml }}
             />
           </div>
         )}
@@ -121,6 +126,7 @@ function MiniPreviewPage({ index, page, data, currentZoom, fullscreen, eager }: 
           className="mini-sheet-viewport"
           style={{
             width: printableWidthPx * currentZoom,
+            position: 'absolute', top: bodyTopPx * currentZoom,
             height: sliceHeightPx * currentZoom,
             maxHeight: sliceHeightPx * currentZoom,
           }}
@@ -128,12 +134,13 @@ function MiniPreviewPage({ index, page, data, currentZoom, fullscreen, eager }: 
           {visible ? (
             <div
               className="mini-sheet-content"
+              ref={node => node?.setAttribute('inert', '')}
               style={{
                 width: sourceWidth,
                 transform: `scale(${scale * currentZoom}) translateY(-${page.start}px)`,
                 transformOrigin: 'top left',
               }}
-              dangerouslySetInnerHTML={{ __html: data.sourceHtml }}
+              dangerouslySetInnerHTML={{ __html: sourceHtml }}
             />
           ) : (
             <div className="mini-sheet-placeholder" />
@@ -145,6 +152,7 @@ function MiniPreviewPage({ index, page, data, currentZoom, fullscreen, eager }: 
           <div
             className="mini-sheet-footer"
             style={{
+              position: 'absolute', top: footerTopPx * currentZoom,
               height: footerHeightPx * currentZoom,
               width: printableWidthPx * currentZoom,
             }}
@@ -155,7 +163,7 @@ function MiniPreviewPage({ index, page, data, currentZoom, fullscreen, eager }: 
                 transform: `scale(${scale * currentZoom})`,
                 transformOrigin: 'top left',
               }}
-              dangerouslySetInnerHTML={{ __html: data.footerHtml }}
+              dangerouslySetInnerHTML={{ __html: footerHtml }}
             />
           </div>
         )}
@@ -168,8 +176,8 @@ function MiniPreviewPage({ index, page, data, currentZoom, fullscreen, eager }: 
               ...(pageNumber?.position === 'bottom-center' || pageNumber?.position === 'top-center'
                 ? { left: '50%', transform: 'translateX(-50%)' }
                 : { right: marginRightPx * currentZoom }),
-              bottom: Math.max(3, (marginBottomPx / 3) * currentZoom),
-              fontSize: Math.max(7, 8 * currentZoom),
+              top: (pageNumberYPx - 12) * currentZoom,
+              fontSize: 12 * currentZoom,
             }}
           >
             {pageNumber?.format === 'chinese'
@@ -187,16 +195,31 @@ function MiniPreviewPage({ index, page, data, currentZoom, fullscreen, eager }: 
 export function MiniPdfPreview({ data, loading = false, error, onRetry, onClose }: MiniPdfPreviewProps) {
   const [minimized, setMinimized] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
+  const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
+  const widget = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const resize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener('resize', resize);
+    return () => window.removeEventListener('resize', resize);
+  }, []);
 
   useEffect(() => {
     if (!fullscreen) return;
+    const previous = document.activeElement as HTMLElement | null;
+    widget.current?.querySelector<HTMLButtonElement>('button')?.focus();
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Tab') {
+        const controls = Array.from(widget.current?.querySelectorAll<HTMLElement>('button:not(:disabled), [tabindex="0"]') || []);
+        const first = controls[0], last = controls[controls.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
+      }
       if (e.key === 'Escape') {
         setFullscreen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => { window.removeEventListener('keydown', handleKeyDown); previous?.focus(); };
   }, [fullscreen]);
 
   if (!data && !loading && !error) return null;
@@ -204,9 +227,7 @@ export function MiniPdfPreview({ data, loading = false, error, onRetry, onClose 
   const paperWidthPx = data?.geometry.paperWidthPx || 794;
 
   // 迷你模式下固定等比微缩至 232px；全屏模式下按视窗宽度自适应放大至舒适阅读尺寸
-  const baseFullscreenWidth = typeof window !== 'undefined'
-    ? Math.min(860, Math.max(540, window.innerWidth * 0.6))
-    : 720;
+  const baseFullscreenWidth = Math.min(860, Math.max(200, viewportWidth - 96), viewportWidth < 700 ? viewportWidth - 80 : viewportWidth * 0.65);
 
   const currentZoom = fullscreen
     ? baseFullscreenWidth / paperWidthPx
@@ -227,6 +248,11 @@ export function MiniPdfPreview({ data, loading = false, error, onRetry, onClose 
       )}
 
       <div
+        ref={widget}
+        role={fullscreen ? 'dialog' : 'region'}
+        aria-modal={fullscreen || undefined}
+        aria-label="纸张预览"
+        aria-busy={loading}
         className={`mini-pdf-preview-widget ${fullscreen ? 'is-fullscreen' : ''}`}
         style={{
           width: fullscreen ? 'auto' : minimized ? '200px' : '272px',
@@ -234,7 +260,6 @@ export function MiniPdfPreview({ data, loading = false, error, onRetry, onClose 
       >
         <div
           className="mini-preview-header"
-          onClick={() => !fullscreen && setMinimized(prev => !prev)}
         >
           <div className="mini-preview-title-wrap">
             <span>📄 纸张预览</span>
@@ -252,6 +277,7 @@ export function MiniPdfPreview({ data, loading = false, error, onRetry, onClose 
             {/* 1. 最小化/折叠按钮 */}
             <button
               className="mini-preview-icon-btn"
+              aria-label={minimized ? '展开小窗' : '折叠小窗'}
               title={minimized ? '展开小窗' : '折叠小窗'}
               onClick={() => {
                 if (fullscreen) setFullscreen(false);
@@ -264,6 +290,7 @@ export function MiniPdfPreview({ data, loading = false, error, onRetry, onClose 
             {/* 2. 全屏放大 / 退出全屏（还原缩小）按钮 */}
             <button
               className="mini-preview-icon-btn"
+              aria-label={fullscreen ? '退出全屏 (Esc)' : '全屏预览'}
               title={fullscreen ? '退出全屏 (Esc)' : '全屏预览'}
               onClick={handleToggleFullscreen}
             >
@@ -274,6 +301,7 @@ export function MiniPdfPreview({ data, loading = false, error, onRetry, onClose 
             {onClose && (
               <button
                 className="mini-preview-icon-btn"
+                aria-label="关闭预览小窗"
                 title="关闭预览小窗"
                 onClick={() => {
                   if (fullscreen) setFullscreen(false);
@@ -290,7 +318,7 @@ export function MiniPdfPreview({ data, loading = false, error, onRetry, onClose 
           <div className="mini-preview-body">
             {error && <PreviewFailure error={error} onRetry={onRetry} />}
             {loading && (
-              <div className="mini-preview-loading">
+              <div className="mini-preview-loading" role="status">
                 <Spin size="small" />
                 <span style={{ marginLeft: 8 }}>计算分页中…</span>
               </div>

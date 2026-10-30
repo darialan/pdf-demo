@@ -103,28 +103,12 @@ export function PrintSettingsButton({
       const factor = toUnit === 'px' ? PX_PER_MM : MM_PER_PX;
       const precision = toUnit === 'px' ? 1 : 2;
 
-      // 如果当前是自定义尺寸且刚好是默认值，保持整型标准 200 与 2
-      if (allValues.paper === 'custom' && toUnit === 'px') {
-        const isDefaultHeight = Math.abs(allValues.heightMm - Number((200 * MM_PER_PX).toFixed(2))) < 0.1;
-        const isDefaultMargin = Math.abs(allValues.marginTopMm - Number((2 * MM_PER_PX).toFixed(2))) < 0.05;
-        form.setFieldsValue({
-          widthMm: Number((allValues.widthMm * factor).toFixed(1)),
-          heightMm: isDefaultHeight ? 200 : Number((allValues.heightMm * factor).toFixed(1)),
-          marginTopMm: isDefaultMargin ? 2 : Number((allValues.marginTopMm * factor).toFixed(1)),
-          marginRightMm: isDefaultMargin ? 2 : Number((allValues.marginRightMm * factor).toFixed(1)),
-          marginBottomMm: isDefaultMargin ? 2 : Number((allValues.marginBottomMm * factor).toFixed(1)),
-          marginLeftMm: isDefaultMargin ? 2 : Number((allValues.marginLeftMm * factor).toFixed(1)),
-        });
-      } else {
-        const updated: Partial<PrintSettings> = {};
-        UNIT_FIELDS.forEach(field => {
-          const val = allValues[field];
-          if (typeof val === 'number') {
-            updated[field] = Number((val * factor).toFixed(precision));
-          }
-        });
-        form.setFieldsValue(updated);
-      }
+      const updated: Partial<PrintSettings> = {};
+      UNIT_FIELDS.forEach(field => {
+        const val = allValues[field];
+        if (typeof val === 'number') updated[field] = Number((val * factor).toFixed(precision));
+      });
+      form.setFieldsValue(updated);
       return;
     }
 
@@ -160,7 +144,6 @@ export function PrintSettingsButton({
           fill(value);
           setOpen(true);
         }}
-        style={{ marginLeft: 8 }}
       >
         打印设置
       </Button>

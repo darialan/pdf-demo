@@ -15,3 +15,15 @@ test('page geometry with page number disabled reserves no page number gap', () =
   expect(withoutPageNo.capacity).toBeGreaterThan(withPageNo.capacity);
   expect((withoutPageNo.capacity - withPageNo.capacity) * withoutPageNo.ratio).toBeCloseTo(14);
 });
+
+test('top page numbers reserve their own lane below the header and never overlap body', () => {
+  const paper = resolvePaper(DEFAULT_SETTINGS);
+  const top = calculateGeometry(paper, 800, 40, 20, { enabled: true, position: 'top-center' });
+  const bottom = calculateGeometry(paper, 800, 40, 20, { enabled: true, position: 'bottom-center' });
+  expect(top.capacity).toBeCloseTo(bottom.capacity);
+  expect(top.bodyTop).toBeCloseTo(bottom.bodyTop + 14);
+  expect(top.pageNumberY).toBeLessThan(top.bodyTop);
+  expect(top.pageNumberY - 9).toBeGreaterThanOrEqual(top.headerY + top.headerHeight);
+  expect(() => calculateGeometry(paper, 0, undefined, undefined)).toThrow('无效');
+  expect(() => calculateGeometry(paper, 800, Infinity, undefined)).toThrow('无效');
+});

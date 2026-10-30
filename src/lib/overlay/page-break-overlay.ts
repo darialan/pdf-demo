@@ -1,5 +1,6 @@
 import { walkPrintTree } from '../adapters/dom/traversal';
-import { classifyPrintNode } from '../core/rules/print-rules';
+import { classifyPrintNode, getPrintRules } from '../core/rules/print-rules';
+import { PrintRule } from '../core/types';
 
 export interface ObservabilityStats {
   atomic: number;
@@ -7,21 +8,23 @@ export interface ObservabilityStats {
   ignore: number;
 }
 
-let restorePosition: (() => void) | undefined;
+const restorers = new Map<HTMLElement, () => void>();
 
 export function clearPageBreaks(owner?: Document | HTMLElement) {
-  const doc = owner ? ('nodeType' in owner && owner.nodeType === 9 ? (owner as Document) : owner.ownerDocument) : document;
-  doc?.querySelectorAll('[data-pdf-debug]').forEach(node => node.remove());
-  if (doc !== document && typeof document !== 'undefined') {
-    document.querySelectorAll('[data-pdf-debug]').forEach(node => node.remove());
+  const scope = owner || document;
+  scope.querySelectorAll('[data-pdf-debug]').forEach(node => node.remove());
+  for (const [root, restore] of Array.from(restorers)) {
+    if (!owner || owner === root || (owner.nodeType === 9 && root.ownerDocument === owner)) {
+      restore();
+      restorers.delete(root);
+    }
   }
-  restorePosition?.();
-  restorePosition = undefined;
 }
 
 export function visualizePageBreaks(
   pages: number[],
-  element: HTMLElement
+  element: HTMLElement,
+  rules: readonly PrintRule[] = getPrintRules()
 ): ObservabilityStats {
   clearPageBreaks(element);
 
@@ -38,67 +41,30 @@ export function visualizePageBreaks(
     const position = element.style.getPropertyValue('position');
     const priority = element.style.getPropertyPriority('position');
     element.style.position = 'relative';
-    restorePosition = () => {
+    restorers.set(element, () => {
       if (position) element.style.setProperty('position', position, priority);
       else element.style.removeProperty('position');
-    };
+    });
   }
 
   const rootRect = element.getBoundingClientRect();
   const borderTop = computed ? (parseFloat(computed.borderTopWidth) || 0) : 0;
   const borderLeft = computed ? (parseFloat(computed.borderLeftWidth) || 0) : 0;
 
-  // Page-break coordinates come from measureDocument, which collapses out [data-pdf-ignore]
-  // subtrees (zero height, matching the real export where those nodes are removed). The overlay
-  // itself is drawn on the live, uncollapsed DOM, so collapsed-space breakY values must be mapped
-  // back to live coordinates before positioning the break line, otherwise the line drifts upward
-  // by the cumulative height of every ignored block above it.
-  const ignoredLiveRanges: { top: number; bottom: number }[] = [];
-  walkPrintTree(element, node => {
-    if (node.nodeType !== 1) return 'descend';
-    const el = node as HTMLElement;
-    if (el.hasAttribute('data-pdf-debug')) return 'skip';
-    const isIgnored =
-      el.matches(
-        '.ant-pagination, .ant-pagination-item, .ant-pagination-prev, .ant-pagination-next, [data-pdf-ignore="true"], .pdf-ignore, script, style, template, [hidden]'
-      ) || classifyPrintNode(el).kind === 'ignore';
-    if (!isIgnored) return 'descend';
-    const rect = el.getBoundingClientRect();
-    if (rect.width > 0 && rect.height > 0) {
-      // Same coordinate basis as measureDocument's `bounds.top` (no borderTop subtraction here;
-      // that correction is applied once, separately, when converting collapsed breakY to a live line position).
-      ignoredLiveRanges.push({ top: rect.top - rootRect.top, bottom: rect.bottom - rootRect.top });
-    }
-    return 'skip';
-  });
-  ignoredLiveRanges.sort((a, b) => a.top - b.top);
-  const expandToLiveY = (collapsedY: number) => {
-    // collapsedY is in the same basis as measureDocument (relative to bounds.top, pre-borderTop).
-    let y = collapsedY;
-    for (const range of ignoredLiveRanges) {
-      if (range.top <= y) y += range.bottom - range.top;
-      else break;
-    }
-    return y - borderTop;
-  };
-
   // 扫描当前打印区域内各节点，严格按照 3 种元素语义分类：
   // 1. ignore (不打印)
   // 2. atomic (不可分割最小原子项)
   // 3. splittable (可分割流式项)
+  // 分类结果必须与 measureDocument 保持一致；否则会出现"标成可分割但实际没被切开"的错位。
   walkPrintTree(element, node => {
-    if (node.nodeType !== 1) return 'descend';
+    if (node.nodeType !== 1) return 'skip';
     const el = node as HTMLElement;
     if (el.hasAttribute('data-pdf-debug')) return 'skip';
 
-    // 1. ignore (不打印：交互控件 / 分页器 / 隐藏元素)
-    const isIgnored =
-      el.matches(
-        '.ant-pagination, .ant-pagination-item, .ant-pagination-prev, .ant-pagination-next, [data-pdf-ignore="true"], .pdf-ignore, script, style, template, [hidden]'
-      ) ||
-      classifyPrintNode(el).kind === 'ignore';
+    const rule = classifyPrintNode(el, rules);
 
-    if (isIgnored) {
+    // 1. ignore (不打印：交互控件 / 分页器 / 隐藏元素)
+    if (rule.kind === 'ignore') {
       stats.ignore++;
       const rect = el.getBoundingClientRect();
       if (rect.width > 0 && rect.height > 0) {
@@ -120,32 +86,18 @@ export function visualizePageBreaks(
       return 'skip';
     }
 
-    const rule = classifyPrintNode(el);
     const rect = el.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return 'skip';
 
-    const left = rect.left - rootRect.left - borderLeft;
-    const top = rect.top - rootRect.top - borderTop;
-    const width = rect.width;
-    const height = rect.height;
-
     // 2. atomic (不可分割原子项：表格行、标题、图片媒体、卡片、业务注册原子项)
-    const isTinyIcon = el.tagName.toLowerCase() === 'svg' && width <= 24 && height <= 24;
-    const isAtomic =
-      !isTinyIcon &&
-      (rule.kind === 'atomic' ||
-        el.matches(
-          'tr, .ant-table-row, .el-table__row, [data-pdf-atomic="true"], .pdf-atomic, [data-pdf-keep-together], .pdf-keep-together, .pdf-keep-or-split'
-        ));
-
-    if (isAtomic) {
+    if (rule.kind === 'atomic') {
       stats.atomic++;
       element.appendChild(
         createOverlay({
-          left,
-          top,
-          width,
-          height,
+          left: rect.left - rootRect.left - borderLeft,
+          top: rect.top - rootRect.top - borderTop,
+          width: rect.width,
+          height: rect.height,
           borderColor: '#ef4444',
           borderStyle: 'solid',
           backgroundColor: 'rgba(239, 68, 68, 0.05)',
@@ -157,25 +109,20 @@ export function visualizePageBreaks(
       return 'skip';
     }
 
-    // 3. splittable (可分割流式项：段落、长文本流、自由容器，允许被物理分页线切断)
-    const isSplittableContainer = el.matches(
-      '[data-pdf-splittable="true"], .pdf-splittable, [data-pdf-break="split"], .pdf-force-split'
-    );
-    const isSplittableFlow =
-      isSplittableContainer ||
-      el.matches(
-        'p, blockquote, .ant-typography:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6)'
-      ) ||
-      (el.tagName === 'DIV' && el.childElementCount === 0 && Boolean(el.textContent?.trim()));
+    // 行内元素（b / code / 行内公式）不单独成框，避免把一行文字里的片段标成"区域"
+    if (isInlineBox(el, win)) return 'skip';
 
-    if (isSplittableFlow) {
+    // 3. splittable (可分割流式项：真正拥有正文文本的块，允许被物理分页线切断)
+    const explicitSplit = el.matches(SPLIT_CONTAINER_SELECTOR);
+    const ownsFlowingText = hasOwnText(el);
+    if (explicitSplit || ownsFlowingText) {
       stats.splittable++;
       element.appendChild(
         createOverlay({
-          left,
-          top,
-          width,
-          height,
+          left: rect.left - rootRect.left - borderLeft,
+          top: rect.top - rootRect.top - borderTop,
+          width: rect.width,
+          height: rect.height,
           borderColor: '#3b82f6',
           borderStyle: 'dashed',
           backgroundColor: 'rgba(59, 130, 246, 0.04)',
@@ -184,19 +131,19 @@ export function visualizePageBreaks(
           badgePosition: 'right',
         })
       );
-      if (isSplittableContainer && el.childElementCount > 0) {
-        return 'descend';
-      }
-      return 'skip';
+      // 显式声明的可分割容器继续下钻，让内部的原子子项照常标红
+      return explicitSplit ? 'descend' : 'skip';
     }
 
+    // 本身没有正文的容器（例如只包了一张图的 <p>）继续下钻，
+    // 让真正的媒体子孙节点按 atomic 标红，而不是把整段标成 splittable。
     return 'descend';
   });
 
   // 绘制分页切割线与 page-break 指示标签（使用高辨识度紫色，避免与 atomic 红色混淆）
   pages.slice(1).forEach((breakY, index) => {
-    const lineY = expandToLiveY(breakY);
-    const lineContainer = document.createElement('div');
+    const lineY = breakY - borderTop;
+    const lineContainer = element.ownerDocument.createElement('div');
     lineContainer.setAttribute('data-pdf-debug', 'true');
     lineContainer.style.cssText = `
       position: absolute;
@@ -205,12 +152,12 @@ export function visualizePageBreaks(
       width: 100%;
       height: 0;
       border-top: 2px dashed #7c3aed;
-      z-index: 990;
+      z-index: ${MARKER_LAYER.line};
       pointer-events: none;
       box-sizing: border-box;
     `;
 
-    const pill = document.createElement('span');
+    const pill = element.ownerDocument.createElement('span');
     pill.textContent = `✂️ page-break: ${Math.round(breakY)}px (p.${index + 1} ➔ p.${index + 2})`;
     pill.style.cssText = `
       position: absolute;
@@ -236,6 +183,38 @@ export function visualizePageBreaks(
   return stats;
 }
 
+const SPLIT_CONTAINER_SELECTOR =
+  '[data-pdf-splittable="true"], .pdf-splittable, [data-pdf-break="split"], .pdf-force-split';
+
+/**
+ * 标记层必须留在页面内容与站点外壳之间：
+ * 打印根节点不会创建独立层叠上下文，若这里用 900+ 的 z-index，
+ * 标记会盖住吸顶的工具条（z-index 20）与站点导航（z-index 100）。
+ * 只要盖过文档正文即可，所以统一用一个很小的区间。
+ */
+const MARKER_LAYER = { box: 2, badge: 3, line: 4 } as const;
+
+/** 行内语义标签：即使是 flex/grid 子项被 blockify，也不该被当成一块独立可分割区域 */
+const INLINE_TAGS = new Set([
+  'SPAN', 'B', 'STRONG', 'EM', 'I', 'CODE', 'A', 'SMALL', 'SUP', 'SUB', 'MARK',
+  'ABBR', 'CITE', 'Q', 'TIME', 'U', 'S', 'KBD', 'SAMP', 'VAR', 'BR',
+]);
+
+/** 只认元素自己的文本节点：`<p><img></p>` 这类媒体包装段落本身没有正文，不该算可分割正文流 */
+function hasOwnText(el: HTMLElement): boolean {
+  for (let i = 0; i < el.childNodes.length; i++) {
+    const child = el.childNodes[i];
+    if (child.nodeType === 3 && child.textContent?.trim()) return true;
+  }
+  return false;
+}
+
+function isInlineBox(el: HTMLElement, win: Window | null): boolean {
+  if (INLINE_TAGS.has(el.tagName)) return true;
+  if (!win?.getComputedStyle) return false;
+  return win.getComputedStyle(el).display.startsWith('inline');
+}
+
 function createOverlay(opts: {
   left: number;
   top: number;
@@ -259,7 +238,7 @@ function createOverlay(opts: {
     border: 1.5px ${opts.borderStyle} ${opts.borderColor};
     background: ${opts.backgroundColor};
     box-sizing: border-box;
-    z-index: 920;
+    z-index: ${MARKER_LAYER.box};
     pointer-events: none;
     border-radius: 2px;
   `;
@@ -286,7 +265,7 @@ function createOverlay(opts: {
     border-radius: 3px;
     white-space: nowrap;
     box-shadow: 0 1px 2px rgba(0,0,0,0.18);
-    z-index: 921;
+    z-index: ${MARKER_LAYER.badge};
     opacity: 0.95;
     letter-spacing: 0.2px;
   `;

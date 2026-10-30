@@ -115,3 +115,13 @@ test('buildPrintRules 支持独立构造规则列表，不污染全局状态', (
   expect(classifyPrintNode(node, localRules)).toMatchObject({ kind: 'atomic' });
   expect(classifyPrintNode(node)).toMatchObject({ kind: 'container' });
 });
+
+test('explicit atomic configuration rejects overflow while keepOrSplit remains a fallback', () => {
+  const { buildPrintRules, classifyPrintNode, resolveAtomicOverflow } = require('./print-rules');
+  const node = document.createElement('div');
+  node.className = 'group';
+  const strict = classifyPrintNode(node, buildPrintRules({ atomic: ['.group'] }));
+  expect(() => resolveAtomicOverflow(strict, 600, 500)).toThrow('超过');
+  const flexible = classifyPrintNode(node, buildPrintRules({ keepOrSplit: ['.group'] }));
+  expect(resolveAtomicOverflow(flexible, 600, 500)).toBe('descend');
+});

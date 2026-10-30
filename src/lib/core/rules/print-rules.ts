@@ -118,14 +118,18 @@ export function buildPrintRules(config?: PrintRuleConfig): PrintRule[] {
   const atomicSelectors = [
     ...(config.atomic || []),
     ...(config.keepTogether || []),
-    ...(config.keepOrSplit || []),
   ];
   if (atomicSelectors.length) {
     customList.push({
       selector: atomicSelectors.join(', '),
-      result: { kind: 'atomic', label: '自定义原子项', overflow: 'split' },
+      result: { kind: 'atomic', label: '自定义原子项', overflow: 'error' },
     });
   }
+
+  if (config.keepOrSplit?.length) customList.push({
+    selector: config.keepOrSplit.join(', '),
+    result: { kind: 'atomic', label: '可降级拆分区域', overflow: 'split' },
+  });
 
   // 兜底追加纯原生基础内置规则
   return [...customList, ...BASE_PRINT_RULES];

@@ -1,13 +1,15 @@
 import {
-  cloneWithResolvedStyles,
-  inspectPrintLayout,
+  calculateGeometry,
+  prepareLayout,
+  serializePrintSnapshot,
+  namespacePreviewHtml,
   PageNumberConfig,
   PageSlice,
   PrintSettings,
   resolvePaper,
 } from '../../../lib';
 import { Button, Modal, Spin, Tag } from 'antd';
-import React, { useState } from 'react';
+import React, { useId, useMemo, useState } from 'react';
 import './pdf-preview-modal.css';
 
 export interface HtmlPaperGeometry {
@@ -23,6 +25,9 @@ export interface HtmlPaperGeometry {
   footerHeightPx: number;
   sourceWidth: number;
   scale: number;
+  bodyTopPx?: number;
+  footerTopPx?: number;
+  pageNumberYPx?: number;
   pageNumber?: PageNumberConfig;
 }
 
@@ -59,11 +64,13 @@ export function calculateHtmlPaperGeometry(
   const printableWidthPx = Math.max(10, paperWidthPx - marginLeftPx - marginRightPx);
   const printableHeightPx = Math.max(10, paperHeightPx - marginTopPx - marginBottomPx);
 
-  const sourceWidth = sourceElement.getBoundingClientRect().width || 800;
+  const sourceWidth = sourceElement.getBoundingClientRect().width;
   const scale = printableWidthPx / sourceWidth;
 
-  const headerHeightPx = (headerElement ? headerElement.getBoundingClientRect().height : 0) * scale;
-  const footerHeightPx = (footerElement ? footerElement.getBoundingClientRect().height : 0) * scale;
+  const layout = calculateGeometry(paper, sourceWidth, headerElement?.getBoundingClientRect().height,
+    footerElement?.getBoundingClientRect().height, settings.pageNumber ?? true);
+  const headerHeightPx = layout.headerHeight * 4 / 3;
+  const footerHeightPx = layout.footerHeight * 4 / 3;
 
   return {
     paperWidthPx,
@@ -78,63 +85,37 @@ export function calculateHtmlPaperGeometry(
     footerHeightPx,
     sourceWidth,
     scale,
+    bodyTopPx: layout.bodyTop * 4 / 3,
+    footerTopPx: layout.footerY * 4 / 3,
+    pageNumberYPx: layout.pageNumberY * 4 / 3,
     pageNumber: settings.pageNumber,
   };
 }
 
-/**
- * 构建原生 HTML 虚拟纸张预览数据（仅需几毫秒，彻底摒弃耗时的 Canvas/PDF 逐页光栅化合成）
- */
-export async function buildHtmlPreviewData({
-  contentElement,
-  header,
-  footer,
-  settings,
-  filename,
-}: {
+/** Preview and export use the same frozen DOM, resource readiness, planner and paper geometry. */
+export async function buildHtmlPreviewData({ contentElement, header, footer, settings, filename, signal }: {
   contentElement: HTMLElement;
   header?: HTMLElement | null;
   footer?: HTMLElement | null;
   settings: PrintSettings;
   filename: string;
+  signal?: AbortSignal;
 }): Promise<HtmlPreviewData> {
   const started = performance.now();
-
-  // 1. 毫秒级分页切点计算（纯数学区间计算，耗时通常 < 20ms）
-  const inspection = await inspectPrintLayout({
-    contentElement,
-    header,
-    footer,
-    settings,
-  });
-
-  // 2. 计算标准物理纸张与视窗缩放规格
-  const geometry = calculateHtmlPaperGeometry(settings, contentElement, header, footer);
-
-  // 3. 克隆并冻结计算样式，剥离调试遮罩后的纯净 HTML 结构（确保与测量阶段尺寸完全一致）
-  const clone = cloneWithResolvedStyles(contentElement);
-  const headerClone = header ? cloneWithResolvedStyles(header) : null;
-  const footerClone = footer ? cloneWithResolvedStyles(footer) : null;
-
-  const paper = resolvePaper(settings);
-  const unitFactor = settings.unit === 'px' ? 96 / 25.4 : 1;
-  const displayWidth = Number((paper.widthMm * unitFactor).toFixed(1));
-  const displayHeight = Number((paper.heightMm * unitFactor).toFixed(1));
-  const paperLabel =
-    settings.paper === 'custom'
-      ? `自定义 · ${displayWidth} × ${displayHeight} ${settings.unit || 'mm'}`
-      : `${settings.paper.toUpperCase()} · ${displayWidth} × ${displayHeight} ${settings.unit || 'mm'}`;
-
-  return {
-    paperLabel,
-    pages: inspection.pages,
-    geometry,
-    sourceHtml: clone.outerHTML,
-    headerHtml: headerClone ? headerClone.outerHTML : undefined,
-    footerHtml: footerClone ? footerClone.outerHTML : undefined,
-    totalMs: performance.now() - started,
-    filename,
-  };
+  const layout = await prepareLayout({ element: contentElement, header, footer, settings, signal });
+  try {
+    const geometry = calculateHtmlPaperGeometry(settings, layout.root, layout.header, layout.footer);
+    const paper = resolvePaper(settings);
+    const factor = settings.unit === 'px' ? 96 / 25.4 : 1;
+    const paperLabel = `${settings.paper === 'custom' ? '自定义' : settings.paper.toUpperCase()} · ${Number((paper.widthMm * factor).toFixed(1))} × ${Number((paper.heightMm * factor).toFixed(1))} ${settings.unit || 'mm'}`;
+    return {
+      paperLabel, pages: layout.pages, geometry,
+      sourceHtml: serializePrintSnapshot(layout.root),
+      headerHtml: layout.header ? serializePrintSnapshot(layout.header) : undefined,
+      footerHtml: layout.footer ? serializePrintSnapshot(layout.footer) : undefined,
+      totalMs: performance.now() - started, filename,
+    };
+  } finally { layout.cleanup(); }
 }
 
 export interface PdfPreviewModalProps {
@@ -294,9 +275,15 @@ export function HtmlPageSheet({
     footerHeightPx,
     sourceWidth,
     scale,
-    pageNumber,
+    pageNumber, bodyTopPx = marginTopPx + headerHeightPx,
+    footerTopPx = paperHeightPx - marginBottomPx - footerHeightPx,
+    pageNumberYPx = paperHeightPx - marginBottomPx / 2,
   } = geometry;
 
+  const id = useId().replace(/:/g, '');
+  const sourceMarkup = useMemo(() => namespacePreviewHtml(sourceHtml, `sheet-${id}-body`), [sourceHtml, id]);
+  const headerMarkup = useMemo(() => namespacePreviewHtml(headerHtml || '', `sheet-${id}-header`), [headerHtml, id]);
+  const footerMarkup = useMemo(() => namespacePreviewHtml(footerHtml || '', `sheet-${id}-footer`), [footerHtml, id]);
   const sliceHeightPx = (page.end - page.start) * scale;
   const showPageNumber = pageNumber?.enabled !== false;
   const pageNumberText =
@@ -326,6 +313,7 @@ export function HtmlPageSheet({
           <div
             className="html-sheet-header-box"
             style={{
+              position: 'absolute', top: marginTopPx * zoom,
               height: headerHeightPx * zoom,
               width: printableWidthPx * zoom,
             }}
@@ -336,7 +324,7 @@ export function HtmlPageSheet({
                 transform: `scale(${scale * zoom})`,
                 transformOrigin: 'top left',
               }}
-              dangerouslySetInnerHTML={{ __html: headerHtml }}
+              dangerouslySetInnerHTML={{ __html: headerMarkup }}
             />
           </div>
         )}
@@ -346,6 +334,7 @@ export function HtmlPageSheet({
           className="html-sheet-body-viewport"
           style={{
             width: printableWidthPx * zoom,
+            position: 'absolute', top: bodyTopPx * zoom,
             height: sliceHeightPx * zoom,
             maxHeight: sliceHeightPx * zoom,
           }}
@@ -357,7 +346,7 @@ export function HtmlPageSheet({
               transform: `scale(${scale * zoom}) translateY(-${page.start}px)`,
               transformOrigin: 'top left',
             }}
-            dangerouslySetInnerHTML={{ __html: sourceHtml }}
+            dangerouslySetInnerHTML={{ __html: sourceMarkup }}
           />
         </div>
 
@@ -366,6 +355,7 @@ export function HtmlPageSheet({
           <div
             className="html-sheet-footer-box"
             style={{
+              position: 'absolute', top: footerTopPx * zoom,
               height: footerHeightPx * zoom,
               width: printableWidthPx * zoom,
             }}
@@ -376,7 +366,7 @@ export function HtmlPageSheet({
                 transform: `scale(${scale * zoom})`,
                 transformOrigin: 'top left',
               }}
-              dangerouslySetInnerHTML={{ __html: footerHtml }}
+              dangerouslySetInnerHTML={{ __html: footerMarkup }}
             />
           </div>
         )}
@@ -389,8 +379,9 @@ export function HtmlPageSheet({
               ...(isCenter
                 ? { left: '50%', transform: 'translateX(-50%)' }
                 : { right: marginRightPx * zoom }),
-              bottom: Math.max(4, (marginBottomPx / 3) * zoom),
-              fontSize: Math.max(9, 10 * zoom),
+              top: (pageNumberYPx - 12) * zoom,
+              fontSize: 12 * zoom,
+              lineHeight: 1,
             }}
           >
             {pageNumberText}

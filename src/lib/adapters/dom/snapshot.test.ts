@@ -117,3 +117,22 @@ test('centered print roots start at the page origin while retaining internal mar
   expect(source.style.margin).toBe('24px 288px');
   expect(source.style.fontSize).toBe(clone.style.fontSize);
 });
+
+test('configured and class-based ignore selectors remove whole subtrees before layout', () => {
+  const source = document.createElement('div');
+  source.innerHTML = '<div class="filter"><img src="broken.png">excluded</div><p class="pdf-ignore">excluded</p><p>retained</p>';
+  const clone = cloneWithResolvedStyles(source, [
+    { selector: '.filter, .pdf-ignore', result: { kind: 'ignore' } },
+  ]);
+  expect(clone.querySelector('img')).toBeNull();
+  expect(clone.textContent).toBe('retained');
+  expect(source.querySelector('img')).not.toBeNull();
+});
+
+test('unreadable canvas fails explicitly instead of exporting a blank placeholder', () => {
+  const root = document.createElement('div');
+  root.innerHTML = '<canvas></canvas>';
+  const read = jest.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockImplementation(() => { throw new Error('SecurityError'); });
+  try { expect(() => cloneWithResolvedStyles(root)).toThrow('画布内容无法读取'); }
+  finally { read.mockRestore(); }
+});

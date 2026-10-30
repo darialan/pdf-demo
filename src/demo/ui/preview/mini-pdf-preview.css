@@ -217,3 +217,22 @@
   height: 100%;
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.05));
 }
+
+.mini-sheet-header, .mini-sheet-footer { border: 0; margin-top: 0; }
+.mini-sheet-page-num { color: #787878; font-family: sans-serif; font-weight: 400; }
+.mini-preview-header { cursor: default; flex-shrink: 0; }
+.mini-preview-icon-btn:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+.mini-pdf-preview-backdrop { backdrop-filter: none; }
+.mini-sheet-placeholder { background: #f2f2f2; }
+@media (max-width: 700px) {
+  .mini-pdf-preview-widget { right: 12px; bottom: 12px; max-width: calc(100vw - 24px); }
+  .mini-preview-body { height: min(380px, 50vh); }
+  .mini-preview-header { min-height: 44px; padding-inline: 8px; }
+  .mini-preview-icon-btn { width: 36px; height: 36px; }
+  .mini-preview-header-actions { gap: 0; }
+  .mini-pdf-preview-widget.is-fullscreen { inset: 8px; }
+  .mini-pdf-preview-widget.is-fullscreen .mini-preview-body { padding: 16px 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mini-pdf-preview-widget { transition: none; }
+}

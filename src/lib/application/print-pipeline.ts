@@ -1,5 +1,6 @@
 import { measureDocument } from '../adapters/dom/measurement';
 import { createPrintSnapshot } from '../adapters/dom/snapshot';
+import { waitForResources } from '../adapters/resources/resource-loader';
 import { calculateGeometry, PageGeometry } from '../core/geometry/page-geometry';
 import { DEFAULT_SETTINGS, resolvePaper } from '../core/geometry/paper';
 import { paginate } from '../core/pagination/paginator';
@@ -152,18 +153,25 @@ export async function prepareLayout(options: LayoutOptions): Promise<PreparedLay
   if (activeRoots.has(printElement)) {
     throw new Error('该区域正在导出，请勿重复提交');
   }
-  const width = printElement.getBoundingClientRect().width;
+  let width = printElement.getBoundingClientRect().width;
   if (!Number.isFinite(width) || width <= 0) {
     throw new Error('打印区域宽度为零，请先显示内容');
   }
   checkCancelled(signal);
   activeRoots.add(printElement);
-  const snapshot = createPrintSnapshot(width);
+  const rules = options.rules || (options.ruleConfig ? buildPrintRules(options.ruleConfig) : getPrintRules());
+  let snapshot: ReturnType<typeof createPrintSnapshot> | undefined;
   const cleanup = () => {
-    snapshot.dispose();
+    snapshot?.dispose();
     activeRoots.delete(printElement);
   };
   try {
+    // Readiness must precede style freezing: otherwise an image still loading
+    // can have its temporary 0px height frozen permanently into the snapshot.
+    await waitForResources(printElement, signal, rules);
+    width = printElement.getBoundingClientRect().width;
+    if (!Number.isFinite(width) || width <= 0) throw new Error('打印区域宽度为零，请先显示内容');
+    snapshot = createPrintSnapshot(width, rules);
     const root = snapshot.clone(printElement);
 
     let headerClone: HTMLElement | undefined;
@@ -185,20 +193,20 @@ export async function prepareLayout(options: LayoutOptions): Promise<PreparedLay
     snapshot.mount();
     await snapshot.ready(signal);
 
-    const hasPageNumber = options.settings?.pageNumber ? options.settings.pageNumber.enabled : true;
+    checkCancelled(signal);
+    const pageNumber = options.settings?.pageNumber ?? true;
     const geometry = calculateGeometry(
       paper,
       width,
       headerClone?.getBoundingClientRect().height,
       footerClone?.getBoundingClientRect().height,
-      hasPageNumber
+      pageNumber
     );
     const { pages, stats, timing } = planDocument({
       root,
       capacity: geometry.capacity,
       maxPages,
-      rules: options.rules,
-      ruleConfig: options.ruleConfig,
+      rules,
     });
     return {
       ...geometry,

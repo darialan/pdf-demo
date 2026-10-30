@@ -55,7 +55,7 @@ test('复杂图文页面承接技术文章，原样保留正文样式并保护�
     const root = document.getElementById('print-content-complex-mixed')!;
     expect(within(root).getByRole('heading', { level: 1 })).toHaveTextContent('用 TorchOptics 逆向设计一条凸 Accelerating Beam 轨迹');
     expect(await within(root).findByText('原文代码样式')).toBeInTheDocument();
-    expect(global.fetch).toHaveBeenCalledWith('/demo-assets/torchoptics-article.html');
+    expect(global.fetch).toHaveBeenCalledWith('/demo-assets/torchoptics-article.html', expect.objectContaining({ signal: expect.any(AbortSignal) }));
     expect(root.querySelector('.article-body > section')).toHaveStyle('font-size: 16px; line-height: 30px');
     expect(root.querySelector('pre')).toHaveAttribute('data-pdf-atomic', 'true');
     expect(root.querySelector('pre')).toHaveStyle('background: #123456');

@@ -20,18 +20,90 @@
   gap: 10px;
 }
 
-.print-paper-badge {
+/* 信息区：纸张规格等只读上下文，用文字而非"徽标盒子"，避免看起来像按钮 */
+.print-toolbar-meta {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  background: #f1f5f9;
-  color: #334155;
-  border: 1px solid #cbd5e1;
-  padding: 4px 10px;
-  border-radius: 4px;
+  gap: 6px;
+  min-width: 0;
+  color: var(--ink2, #64748b);
   font-size: 12px;
-  font-weight: 500;
+  line-height: 18px;
+  white-space: nowrap;
   user-select: none;
+}
+
+.print-meta-icon { flex: 0 0 auto; opacity: 0.6; }
+
+.print-meta-label { color: var(--ink2, #64748b); }
+
+.print-meta-value {
+  color: var(--ink, #0f172a);
+  font-weight: 600;
+}
+
+.print-meta-dim {
+  color: var(--ink2, #64748b);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 信息区和操作区之间的分隔线，用于在视觉上区分"展示"与"操作" */
+.print-toolbar-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--line, #cbd5e1);
+  flex-shrink: 0;
+}
+
+/* 操作区：可点击的按钮集合 */
+.print-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* 次要操作聚成一组，与右侧主操作（导出）拉开距离 */
+.print-toolbar-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 导出中：把操作区收敛为一条任务状态，取消降级为文字按钮 */
+.print-export-task {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 4px 2px 10px;
+  border-radius: 999px;
+  background: var(--bg2, #f1f5f9);
+  min-width: 0;
+}
+
+.print-export-task-text {
+  color: var(--ink2, #64748b);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.print-export-spinner {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  border: 2px solid var(--line, #cbd5e1);
+  border-top-color: var(--accent, #32745d);
+  animation: print-export-spin 0.8s linear infinite;
+}
+
+@keyframes print-export-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .print-export-spinner { animation-duration: 2.4s; }
 }
 
 .print-observability-panel {
@@ -163,8 +235,13 @@
   .print-tab-custom .print-tab-bar-extra {
     flex-wrap: wrap;
     justify-content: flex-end;
+    row-gap: 8px;
   }
-  .print-tab-custom .print-paper-badge {
+  .print-tab-custom .print-toolbar-meta {
+    display: none;
+  }
+  /* 纸张信息隐藏后信息区为空，分隔线也一起隐藏，避免出现孤立的竖线 */
+  .print-tab-custom .print-toolbar-divider {
     display: none;
   }
   /* Ant 按旧宽度算出的横向位移在窄屏下会把当前场景推出可视区，改为标签区原生横向滚动。 */
@@ -191,3 +268,26 @@
 .print-tab-custom .ant-tabs-tab { color:var(--ink2,#555c58); }
 .print-tab-custom .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn { color:var(--ink,#202321); }
 .print-tab-custom .ant-tabs-ink-bar { background:var(--accent,#32745d); }
+
+.print-scene-content { padding: 16px 12px 32px; }
+.print-scene-content[data-exporting="true"] { pointer-events: none; }
+.print-export-error { max-width: 1080px; margin: 12px auto; }
+.observability-metrics { flex-wrap: wrap; }
+@media (max-width: 1100px) {
+  .print-tab-custom .ant-tabs-nav { flex-wrap: wrap; }
+  .print-tab-custom .ant-tabs-extra-content { flex: 1 0 100%; padding-block: 8px; }
+  .print-tab-bar-extra { flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+}
+@media (max-width: 700px) {
+  .print-workbench-container { padding-inline: 0; }
+  .print-scene-content { padding-inline: 0; }
+  .print-tab-bar-extra .ant-btn { min-height: 40px; }
+  .print-observability-panel { padding: 10px; gap: 8px; }
+  /* 窄屏里进度文案可能很长，允许胶囊占满整行并截断，避免把取消按钮挤出屏幕 */
+  .print-export-task { max-width: 100%; }
+  .print-export-task-text { overflow: hidden; text-overflow: ellipsis; }
+}
+
+/* The document canvas follows white paper in both shell themes. Keep this on
+   the workbench surface; printable roots retain their original backgrounds. */
+.print-scene-content { background: #fff; color-scheme: light; }

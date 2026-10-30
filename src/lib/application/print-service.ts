@@ -37,12 +37,13 @@ export async function outputPDF({ filename, download = true, onProgress, ...opti
   const layout = await prepareLayout(options);
   const { root, headerHeight, footerHeight, ratio, pages } = layout;
   const layoutMs = performance.now() - started;
-  const renderer = createPageCapture(layout.width, options.signal);
-  const { capture, release } = renderer;
+  let renderer: ReturnType<typeof createPageCapture> | undefined;
   try {
+    renderer = createPageCapture(layout.width, options.signal);
+    const { capture, release } = renderer;
     const headerCanvas = layout.header ? await capture(layout.header, 0, headerHeight / ratio) : undefined;
     const footerCanvas = layout.footer ? await capture(layout.footer, 0, footerHeight / ratio) : undefined;
-    const pdfWriter = createPdfWriter({
+    const pdfWriter = await createPdfWriter({
       geometry: layout,
       settings: options.settings,
       headerCanvas,
@@ -69,30 +70,33 @@ export async function outputPDF({ filename, download = true, onProgress, ...opti
       bytes: blob.size,
     };
   } finally {
-    renderer.dispose();
+    renderer?.dispose();
     layout.cleanup();
   }
 }
 
-/** Run full snapshot measurement, pagination and source consistency check, returning structured diagnostics. */
+/** Run full snapshot measurement and pagination validation, returning structured diagnostics. */
 export async function inspectPrintLayout({
   contentElement,
   ...options
 }: PreviewPaginationOptions): Promise<PrintInspectionResult> {
   const started = performance.now();
   const target = resolvePrintElement(contentElement);
-  const layout = await prepareLayout({ element: target, maxPages: Number.MAX_SAFE_INTEGER, ...options });
+  const layout = await prepareLayout({ element: target, ...options });
   try {
     const pageBreaks = layout.pages.map(page => page.start);
     const rules = options.rules || (options.ruleConfig ? buildPrintRules(options.ruleConfig) : getPrintRules());
-    const sourceMeasurement = measureDocument(target!, layout.capacity, rules);
-    validatePageBreaks(layout.pages, sourceMeasurement.ranges);
+    // Removing ignore nodes can reflow flex/grid and collapse margins. Comparing
+    // those print coordinates with live source coordinates is invalid. Validate
+    // against the actual snapshot used by both preview and export instead.
+    const snapshotMeasurement = measureDocument(layout.root, layout.capacity, rules);
+    validatePageBreaks(layout.pages, snapshotMeasurement.ranges);
     const result: PrintInspectionResult = {
       pageBreaks,
       pages: layout.pages,
-      totalHeight: sourceMeasurement.height,
+      totalHeight: snapshotMeasurement.height,
       capacity: layout.capacity,
-      protectedRanges: sourceMeasurement.ranges,
+      protectedRanges: snapshotMeasurement.ranges,
       stats: layout.stats,
       timing: {
         measurementMs: layout.timing?.measurementMs ?? 0,
@@ -107,7 +111,7 @@ export async function inspectPrintLayout({
   }
 }
 
-/** Uses the exact snapshot measurement and page planner used by PDF export, verifying consistency with source DOM. */
+/** Uses the exact snapshot measurement and page planner used by PDF export, with coordinates relative to the prepared print snapshot. */
 export async function calculatePagesArray(options: PreviewPaginationOptions) {
   const result = await inspectPrintLayout(options);
   return result.pageBreaks;

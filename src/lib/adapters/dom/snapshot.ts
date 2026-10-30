@@ -1,4 +1,6 @@
 import { waitForResources } from '../resources/resource-loader';
+import { classifyPrintNode, getPrintRules } from '../../core/rules/print-rules';
+import { PrintRule } from '../../core/types';
 
 /** Freeze resolved CSS so moving the print root outside its original context does not change typography or layout. */
 export function copyResolvedStyle(source: Element, target: HTMLElement | SVGElement) {
@@ -29,7 +31,7 @@ export function copyResolvedStyle(source: Element, target: HTMLElement | SVGElem
  * (e.g. inside detached print containers or preview widgets, or from an iframe) does not alter typography,
  * inherited line-heights, or layout dimensions.
  */
-export function cloneWithResolvedStyles(source: HTMLElement): HTMLElement {
+export function cloneWithResolvedStyles(source: HTMLElement, rules: readonly PrintRule[] = getPrintRules()): HTMLElement {
   const ownerDoc = typeof document !== 'undefined' ? document : source.ownerDocument;
   const target = (ownerDoc?.importNode ? ownerDoc.importNode(source, true) : source.cloneNode(true)) as HTMLElement;
 
@@ -40,6 +42,14 @@ export function cloneWithResolvedStyles(source: HTMLElement): HTMLElement {
     const copy = targets[i];
     if (!copy || copy.nodeType !== 1) return;
 
+    // Exclude before resource decoding and layout, including configured selectors.
+    if (node !== source && classifyPrintNode(node, rules).kind === 'ignore') {
+      copy.remove();
+      return;
+    }
+    for (const attribute of Array.from(copy.attributes)) {
+      if (/^on/i.test(attribute.name) || attribute.name === 'autofocus') copy.removeAttribute(attribute.name);
+    }
     const tagName = (node.tagName || '').toLowerCase();
     if (tagName === 'input') {
       const srcInput = node as HTMLInputElement;
@@ -56,13 +66,20 @@ export function cloneWithResolvedStyles(source: HTMLElement): HTMLElement {
       canvasCopy.width = canvasSource.width;
       canvasCopy.height = canvasSource.height;
       try {
-        canvasCopy.getContext('2d')?.drawImage(canvasSource, 0, 0);
+        // Detect taint before html2canvas can silently omit an unreadable canvas.
+        canvasSource.toDataURL();
+        const context = canvasCopy.getContext('2d');
+        if (!context) throw new Error('canvas context unavailable');
+        context.drawImage(canvasSource, 0, 0);
       } catch {
-        // Safe fallback for context or tainted canvas
+        throw new Error('画布内容无法读取，请检查跨域图片或浏览器的画布支持');
       }
     } else if (tagName === 'img') {
       const imgCopy = copy as HTMLImageElement;
       imgCopy.loading = 'eager';
+      imgCopy.src = (node as HTMLImageElement).currentSrc || (node as HTMLImageElement).src;
+      imgCopy.removeAttribute('srcset');
+      imgCopy.removeAttribute('sizes');
       // Fail during preparation when a remote image cannot be used by canvas.
       if (/^https?:/.test(imgCopy.src) && typeof window !== 'undefined') {
         try {
@@ -101,12 +118,14 @@ export function cloneWithResolvedStyles(source: HTMLElement): HTMLElement {
 }
 
 /** Owns detached print DOM; callers dispose it on every success/error path. */
-export function createPrintSnapshot(width: number) {
+export function createPrintSnapshot(width: number, rules: readonly PrintRule[] = getPrintRules()) {
   const host = document.createElement('div');
   host.setAttribute('data-pdf-snapshot', 'true');
+  host.setAttribute('aria-hidden', 'true');
+  host.setAttribute('inert', '');
   host.style.cssText = `position:absolute;left:-100000px;top:0;width:${width}px;pointer-events:none;background:white;`;
   const clone = (source: HTMLElement) => {
-    const target = cloneWithResolvedStyles(source);
+    const target = cloneWithResolvedStyles(source, rules);
     target.style.width = `${width}px`;
     target.style.maxWidth = 'none';
     target.style.boxSizing = 'border-box';
@@ -119,4 +138,48 @@ export function createPrintSnapshot(width: number) {
     ready: (signal?: AbortSignal) => waitForResources(host, signal),
     dispose: () => host.remove(),
   };
+}
+
+/** A preview is passive: preserve live form/canvas values without executing source handlers. */
+export function serializePrintSnapshot(root: HTMLElement): string {
+  const clone = root.cloneNode(true) as HTMLElement;
+  let serializedRoot = clone;
+  const sources = [root, ...Array.from(root.querySelectorAll('*'))];
+  const targets = [clone, ...Array.from(clone.querySelectorAll('*'))];
+  sources.forEach((source, index) => {
+    const target = targets[index];
+    for (const attribute of Array.from(target.attributes)) {
+      if (/^on/i.test(attribute.name)) target.removeAttribute(attribute.name);
+    }
+    if (source instanceof HTMLCanvasElement) {
+      const image = document.createElement('img');
+      image.src = source.toDataURL('image/png');
+      image.style.cssText = (target as HTMLElement).style.cssText;
+      image.width = source.width;
+      image.height = source.height;
+      if (target === clone) serializedRoot = image;
+      else target.replaceWith(image);
+    } else if (source instanceof HTMLInputElement) {
+      target.setAttribute('value', source.type === 'password' ? '' : source.value);
+      target.toggleAttribute('checked', source.checked);
+    } else if (source instanceof HTMLTextAreaElement) {
+      target.textContent = source.value;
+    } else if (source instanceof HTMLOptionElement) {
+      target.toggleAttribute('selected', source.selected);
+    }
+    if (target.matches('a, button, input, textarea, select, [tabindex]')) target.setAttribute('tabindex', '-1');
+  });
+  return serializedRoot.outerHTML;
+}
+
+/** Isolate repeated preview IDs while preserving SVG paint servers and label references. */
+export function namespacePreviewHtml(html: string, namespace: string): string {
+  const ids = new Map<string, string>();
+  html.replace(/\sid="([^"]+)"/g, (_match, id: string) => { ids.set(id, `${namespace}-${id}`); return _match; });
+  return html.replace(/(\s(?:id|for|href|xlink:href|aria-labelledby|aria-describedby)="|url\(#)([^")]+)("|\))/g,
+    (match, start: string, value: string, end: string) => {
+      const hash = value.startsWith('#');
+      const parts = (hash ? value.slice(1) : value).split(' ').map(id => ids.get(id) || id).join(' ');
+      return `${start}${hash ? '#' : ''}${parts}${end}`;
+    });
 }

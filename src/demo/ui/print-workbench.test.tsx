@@ -6,6 +6,7 @@ import { PrintWorkbench } from './print-workbench';
 
 jest.mock('@darialan/web-pdf-printer', () => ({
   DEFAULT_SETTINGS: { pageNumber: { enabled: true } },
+  namespacePreviewHtml: (html: string) => html,
   resolvePrintElement: (el: HTMLElement) => el,
   resolvePaper: () => ({}),
   calculateGeometry: () => ({ capacity: 500 }),
@@ -105,4 +106,31 @@ test.each(['关闭预览小窗', '退出检查', '场景二'])('等待期间%s�
   expect(screen.queryByText('预览正文')).not.toBeInTheDocument();
   if (action === '关闭预览小窗') expect(screen.getByText('页面标记')).toBeInTheDocument();
   else expect(screen.queryByText('页面标记')).not.toBeInTheDocument();
+});
+
+test('关闭检查会主动取消尚未完成的预览任务', async () => {
+  let signal: AbortSignal | undefined;
+  (buildHtmlPreviewData as jest.Mock).mockImplementation(options => {
+    signal = options.signal;
+    return new Promise((_resolve, reject) => signal!.addEventListener('abort', () => reject(new Error('取消')), { once: true }));
+  });
+  setup();
+  await waitFor(() => expect(signal).toBeDefined());
+  fireEvent.click(screen.getByRole('button', { name: '退出检查' }));
+  expect(signal!.aborted).toBe(true);
+  await waitFor(() => expect(screen.queryByText('计算分页中…')).not.toBeInTheDocument());
+  expect(screen.queryByText(/纸张预览失败/)).not.toBeInTheDocument();
+});
+
+test('卸载工作台会取消预览并且不会重新插入结果', async () => {
+  let signal: AbortSignal | undefined;
+  (buildHtmlPreviewData as jest.Mock).mockImplementation(options => {
+    signal = options.signal;
+    return new Promise((_resolve, reject) => signal!.addEventListener('abort', () => reject(new Error('取消')), { once: true }));
+  });
+  const { unmount } = render(<PrintWorkbench scenes={[{ key: 'a', label: 'test', contentId: 'source', children: <div id="source" /> }]} />);
+  fireEvent.click(screen.getByRole('button', { name: '检查分页' }));
+  await waitFor(() => expect(signal).toBeDefined());
+  unmount();
+  expect(signal!.aborted).toBe(true);
 });

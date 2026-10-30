@@ -15,65 +15,6 @@ export function readRootHeight(root: HTMLElement): number {
   return height;
 }
 
-/**
- * Ignored subtrees (data-pdf-ignore) are still visible on the live page so they can keep working as normal
- * interactive UI (toolbars, filters), but they must behave as if absent from the print document: zero height,
- * nothing below shifted down to make room for them. The real print/export clone already removes these nodes
- * entirely (see cloneWithResolvedStyles), so its layout has no gap where the ignored block used to be.
- * To make a live-DOM measurement match that same coordinate system, every ignored subtree's rendered height
- * must be subtracted from the measurement of anything laid out after it in normal flow.
- */
-function collectIgnoredRanges(root: HTMLElement, bounds: DOMRect, rules: readonly PrintRule[]): Interval[] {
-  const ignored: Interval[] = [];
-  walkPrintTree(root, node => {
-    if (node.nodeType !== 1) return 'descend';
-    const rule = classifyPrintNode(node, rules);
-    if (rule.kind !== 'ignore') return 'descend';
-    const rect = (node as Element).getBoundingClientRect();
-    if (rect.width > 0 && rect.height > 0) {
-      // Removing the node in the clone (cloneWithResolvedStyles) also removes any
-      // margin it contributed to the gap before/after it, since margin collapsing
-      // has nothing left to collapse against. Extend the ignored interval by the
-      // element's own margin-top/margin-bottom so the live-DOM approximation
-      // matches the clone's layout exactly, not just the element's border box.
-      const element = node as Element;
-      const win = element.ownerDocument?.defaultView;
-      const style = win?.getComputedStyle ? win.getComputedStyle(element) : null;
-      const marginTop = style ? parseFloat(style.marginTop) || 0 : 0;
-      const marginBottom = style ? parseFloat(style.marginBottom) || 0 : 0;
-      ignored.push({
-        top: rect.top - bounds.top - marginTop,
-        bottom: rect.bottom - bounds.top + marginBottom,
-      });
-    }
-    return 'skip';
-  });
-  return ignored.sort((a, b) => a.top - b.top);
-}
-
-/** Builds a function that collapses out ignored ranges from a Y coordinate, in the sense of CSS `display:none`. */
-function createIgnoreCollapser(ignored: Interval[]) {
-  if (ignored.length === 0) return { collapse: (y: number) => y, totalIgnoredHeight: 0 };
-  const totalIgnoredHeight = ignored.reduce((sum, range) => sum + (range.bottom - range.top), 0);
-  const collapse = (y: number) => {
-    let offset = 0;
-    for (const range of ignored) {
-      if (range.bottom <= y) {
-        offset += range.bottom - range.top;
-      } else if (range.top <= y) {
-        // y falls inside an ignored range (should not normally happen since ignored
-        // subtrees are skipped before descending); clamp to the range's start.
-        offset += y - range.top;
-        break;
-      } else {
-        break;
-      }
-    }
-    return y - offset;
-  };
-  return { collapse, totalIgnoredHeight };
-}
-
 /** Read DOM geometry once; atomic subtrees do not need redundant text measurement. */
 export function measureDocument(
   root: HTMLElement,
@@ -81,13 +22,18 @@ export function measureDocument(
   rules: readonly PrintRule[] = DEFAULT_PRINT_RULES
 ): Required<DocumentMeasurement> {
   const bounds = root.getBoundingClientRect();
-  const rawHeight = readRootHeight(root);
-  const ignoredRanges = collectIgnoredRanges(root, bounds, rules);
-  const { collapse, totalIgnoredHeight } = createIgnoreCollapser(ignoredRanges);
-  const height = rawHeight - totalIgnoredHeight;
+  // Coordinates always belong to this DOM. The print snapshot removes ignored
+  // subtrees before measuring; live annotations retain the visible page layout.
+  const height = readRootHeight(root);
   const ranges: Interval[] = [];
-  const text = createTextMeasurer(bounds.top, collapse);
+  const text = createTextMeasurer(bounds.top);
   const stats = { visitedNodes: 0, atomicElements: 0, textNodes: 0, textFragments: 0 };
+  const rootRule = classifyPrintNode(root, rules);
+  if (rootRule.kind === 'ignore') throw new Error('打印区域已被 ignore 规则排除，请选择其他区域');
+  if (rootRule.kind === 'atomic' && resolveAtomicOverflow(rootRule, height, capacity,
+    root.getAttribute('data-pdf-label') || root.getAttribute('alt')) === 'protect') {
+    return { height, ranges: [{ top: 0, bottom: height }], stats: { ...stats, visitedNodes: 1, atomicElements: 1 } };
+  }
   const add = (interval: Interval) => {
     const top = Math.max(0, interval.top);
     const bottom = Math.min(height, interval.bottom);
@@ -113,7 +59,7 @@ export function measureDocument(
       return 'descend';
     }
     stats.atomicElements++;
-    add({ top: collapse(rect.top - bounds.top), bottom: collapse(rect.bottom - bounds.top) });
+    add({ top: rect.top - bounds.top, bottom: rect.bottom - bounds.top });
     return 'skip';
   });
   return { height, ranges, stats };

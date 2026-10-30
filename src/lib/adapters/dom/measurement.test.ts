@@ -95,13 +95,23 @@ test('an oversized explicit group reports the named region instead of silently c
   expect(() => measureDocument(root, 100)).toThrow('220px');
 });
 
-test('ignored toolbar margins disappear from both document height and protected row coordinates', () => {
+test('live measurements retain their DOM coordinate space; ignore removal belongs to snapshot layout', () => {
   const root = document.createElement('div');
   root.innerHTML = '<div data-pdf-ignore="true" style="margin-bottom:16px">filters</div><table><tbody><tr><td>row</td></tr></tbody></table>';
   setRect(root, 100, 548);
   setRect(root.firstElementChild!, 100, 32);
   setRect(root.querySelector('tr')!, 248, 55);
   const result = measureDocument(root, 300);
-  expect(result.height).toBe(500);
-  expect(result.ranges).toEqual([{ top: 100, bottom: 155 }]);
+  expect(result.height).toBe(548);
+  expect(result.ranges).toEqual([{ top: 148, bottom: 203 }]);
+});
+
+test('the selected root itself honors atomic and ignore protocols', () => {
+  const root = document.createElement('section');
+  root.setAttribute('data-pdf-atomic', 'true');
+  setRect(root, 0, 300);
+  expect(measureDocument(root, 500).ranges).toEqual([{ top: 0, bottom: 300 }]);
+  expect(() => measureDocument(root, 200)).toThrow('超过');
+  root.setAttribute('data-pdf-ignore', 'true');
+  expect(() => measureDocument(root, 500)).toThrow('ignore');
 });

@@ -9,6 +9,10 @@ import { PrintSettingsButton } from '../config-panel/settings-panel';
 import './print-toolbar.css';
 
 export interface PrintToolbarActionsProps {
+  ready?: boolean;
+  progress?: string;
+  previewOpen?: boolean;
+  onOpenPreview?: () => void;
   loading: boolean;
   exporting: boolean;
   settings: PrintSettings;
@@ -20,6 +24,7 @@ export interface PrintToolbarActionsProps {
 }
 
 export function PrintToolbarActions({
+  ready = true, progress, previewOpen = true, onOpenPreview,
   loading,
   exporting,
   settings,
@@ -34,37 +39,58 @@ export function PrintToolbarActions({
   const displayWidth = Number((paper.widthMm * unitFactor).toFixed(1));
   const displayHeight = Number((paper.heightMm * unitFactor).toFixed(1));
 
-  const paperLabel =
-    settings.paper === 'custom'
-      ? `自定义 · ${displayWidth} × ${displayHeight} ${settings.unit || 'mm'}`
-      : `${settings.paper.toUpperCase()} · ${displayWidth} × ${displayHeight} ${settings.unit || 'mm'}`;
+  const paperName = settings.paper === 'custom' ? '自定义' : settings.paper.toUpperCase();
+  const paperSize = `${displayWidth} × ${displayHeight} ${settings.unit || 'mm'}`;
 
   return (
     <div className="print-tab-bar-extra">
-      <span className="print-paper-badge">
-        📄 {paperLabel}
-      </span>
+      {/* 信息区：只读的文档上下文，弱化为文字，不与按钮抢视觉 */}
+      <div className="print-toolbar-meta" aria-label="纸张规格">
+        <svg className="print-meta-icon" width="13" height="13" viewBox="0 0 16 16" fill="none"
+          stroke="currentColor" strokeWidth="1.3" aria-hidden="true">
+          <path d="M4 1.5h5L13 5.5v9H4z" strokeLinejoin="round" />
+          <path d="M9 1.5v4h4" strokeLinejoin="round" />
+        </svg>
+        <span className="print-meta-label">纸张</span>
+        <span className="print-meta-value">{paperName}</span>
+        <span className="print-meta-dim">{paperSize}</span>
+      </div>
 
-      <PrintSettingsButton value={settings} disabled={loading} onChange={onSettingsChange} />
+      <span className="print-toolbar-divider" aria-hidden="true" />
 
-      <Button
-        type={debugActive ? 'primary' : 'default'}
-        danger={debugActive}
-        onClick={onToggleDebug}
-        disabled={loading}
-      >
-        {debugActive ? '退出检查' : '🔍 检查分页'}
-      </Button>
+      {/* 操作区：导出进行中时整体收敛成一条任务状态，不再和禁用按钮混排 */}
+      <div className="print-toolbar-actions">
+        {exporting ? (
+          <div className="print-export-task" role="status" aria-live="polite">
+            <span className="print-export-spinner" aria-hidden="true" />
+            <span className="print-export-task-text">{progress || '正在导出…'}</span>
+            <Button type="text" size="small" danger onClick={onCancelExport}>取消导出</Button>
+          </div>
+        ) : (
+          <>
+            <div className="print-toolbar-group">
+              <PrintSettingsButton value={settings} disabled={loading} onChange={onSettingsChange} />
 
-      <Button type="primary" onClick={onExport} loading={exporting} disabled={loading && !exporting}>
-        导出 PDF
-      </Button>
+              <Button
+                type={debugActive ? 'primary' : 'default'}
+                ghost={debugActive}
+                onClick={onToggleDebug}
+                disabled={loading || !ready}
+                aria-pressed={debugActive}
+              >
+                {debugActive ? '退出检查' : '检查分页'}
+              </Button>
 
-      {exporting && (
-        <Button onClick={onCancelExport} danger>
-          取消
-        </Button>
-      )}
+              {debugActive && !previewOpen && onOpenPreview && (
+                <Button onClick={onOpenPreview} disabled={loading}>打开预览</Button>
+              )}
+            </div>
+            <Button type="primary" onClick={onExport} disabled={!ready || loading}>
+              导出 PDF
+            </Button>
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -90,11 +116,11 @@ export function PrintObservabilityBanner({
         </span>
         <span style={{ color: 'var(--line, #cbd5e1)' }}>•</span>
         <span>
-          版面容量: <strong>{Math.round(inspection.capacity)}px</strong>
+          每页正文高度: <strong>{Math.round(inspection.capacity)}px</strong>
         </span>
         <span style={{ color: 'var(--line, #cbd5e1)' }}>•</span>
         <span>
-          测量耗时: <strong>{inspection.timing.totalMs.toFixed(1)}ms</strong>
+          标记耗时: <strong>{inspection.timing.totalMs.toFixed(1)}ms</strong>
         </span>
       </div>
 
@@ -110,6 +136,7 @@ export function PrintObservabilityBanner({
         <span className="legend-item legend-item-line">
           ✂️ page-break
         </span>
+        {(stats?.ignore ?? 0) > 0 && <span className="legend-item legend-item-ignore">ignore: {stats?.ignore}</span>}
         {onClose && (
           <button
             type="button"

@@ -26,8 +26,14 @@ export function createPageCapture(width: number, signal?: AbortSignal) {
         backgroundColor: '#ffffff',
         logging: false,
         imageTimeout: 15000,
-        ignoreElements: node =>
-          node.hasAttribute('data-pdf-debug') || node.getAttribute('data-pdf-ignore') === 'true',
+        ignoreElements: node => {
+          if (node.hasAttribute('data-pdf-debug') || node.getAttribute('data-pdf-ignore') === 'true') return true;
+          // html2canvas otherwise clones the entire document for EACH page,
+          // including the original long article and every HTML preview copy.
+          // Keep this snapshot, its ancestors and head resources only.
+          if (node.tagName === 'HEAD' || node.closest('head')) return false;
+          return node !== element && !node.contains(element) && !element.contains(node);
+        },
       });
       canvases.add(canvas);
       if (signal?.aborted) throw new Error('导出已取消');

@@ -44,7 +44,7 @@
   ],
   "peerDependencies": {
     "html2canvas": ">=1.4.0",
-    "jspdf": ">=2.5.0",
+    "jspdf": ">=4.2.1",
     "react": ">=16.8.0 || >=17.0.0 || >=18.0.0",
     "react-dom": ">=16.8.0 || >=17.0.0 || >=18.0.0"
   },
@@ -65,15 +65,20 @@
     "prepublishOnly": "npm run test:once && npm run build:lib",
     "postinstall": "node -e \"const fs=require('fs');if(!fs.existsSync('src/lib'))process.exit(0);const p='node_modules/@darialan';try{fs.mkdirSync(p,{recursive:true});fs.rmSync(p+'/web-pdf-printer',{force:true,recursive:true});fs.symlinkSync('../../src/lib',p+'/web-pdf-printer','junction')}catch(e){}\"",
     "start": "react-scripts start",
-    "build": "CI=false PUBLIC_URL=/ react-scripts build",
+    "build": "PUBLIC_URL=/ react-scripts build",
     "build:lib": "vite build --config vite.config.lib.ts && tsc -p tsconfig.lib.json && node -e \"require('fs').writeFileSync('dist/index.d.ts', \\\"export * from './types/index';\\\\n\\\")\"",
     "test": "react-scripts test",
     "test:once": "react-scripts test --watchAll=false",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run test:once -- --runInBand && npm run build:lib && npm run build && npm run test:e2e"
   },
   "devDependencies": {
     "@ant-design/icons": "^5.2.6",
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@playwright/test": "^1.56.1",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -85,7 +90,8 @@
     "antd": "^5.10.3",
     "caniuse-lite": "^1.0.30001820",
     "html2canvas": "^1.4.1",
-    "jspdf": "^2.5.1",
+    "jspdf": "^4.2.1",
+    "pdfjs-dist": "^4.10.38",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",

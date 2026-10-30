@@ -42,3 +42,42 @@ test('validatePageBreaks tolerates subpixel rounding but throws on real intersec
   expect(() => validatePageBreaks([{ start: 0, end: 100.04 }, { start: 100.04, end: 200 }], ranges)).not.toThrow();
   expect(() => validatePageBreaks([{ start: 0, end: 107 }, { start: 107, end: 200 }], ranges)).toThrow('穿过受保护内容');
 });
+
+test('seeded fractional layouts preserve content coverage and every protected interval', () => {
+  let seed = 104729;
+  const random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 2 ** 32; };
+  for (let trial = 0; trial < 300; trial++) {
+    const capacity = 80 + random() * 800;
+    const ranges: { top: number; bottom: number }[] = [];
+    let y = 0;
+    for (let i = 0; i < 80; i++) {
+      y += random() * 10;
+      const bottom = y + random() * capacity * 0.7;
+      ranges.push({ top: y, bottom });
+      // Mixed inline fragments overlapping the same row.
+      ranges.push({ top: y + (bottom - y) * 0.25, bottom });
+      y = bottom;
+    }
+    const height = y + random() * 30;
+    const input = ranges.map(range => ({ ...range }));
+    const pages = paginate(height, capacity, ranges, 1000);
+    expect(pages[0].start).toBe(0);
+    expect(pages[pages.length - 1].end).toBe(height);
+    pages.forEach((page, index) => {
+      expect(page.end).toBeGreaterThan(page.start);
+      expect(page.end - page.start).toBeLessThanOrEqual(capacity + 1e-8);
+      if (index > 0) expect(page.start).toBe(pages[index - 1].end);
+    });
+    expect(() => validatePageBreaks(pages, ranges, 0)).not.toThrow();
+    expect(ranges).toEqual(input);
+  }
+});
+
+test('large text documents have bounded work and reject invalid limits', () => {
+  const ranges = Array.from({ length: 50000 }, (_, i) => ({ top: i * 2, bottom: i * 2 + 1.5 }));
+  expect(paginate(100000, 1000, ranges, 1000)).toHaveLength(100);
+  expect(() => paginate(10, 5, [], 1.5)).toThrow('无效');
+  expect(() => paginate(10, NaN, [])).toThrow('无效');
+  expect(() => paginate(10, 5, [{ top: 1, bottom: Infinity }])).toThrow('无效');
+  expect(paginate(10, 5, [{ top: -100, bottom: -20 }, { top: 20, bottom: 30 }])).toHaveLength(2);
+});
