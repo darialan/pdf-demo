@@ -38,7 +38,7 @@
 | 项 | 结果 |
 | --- | --- |
 | 提交 | `c454d8f refactor!: 项目更名为 Web Printer，npm 包改为 @darialan/web-printer`（更名）；`95287be`（首页二期与依赖调整）；`877c1d2`、`6726057`（输出设置） |
-| npm 包 | `@darialan/web-printer@1.0.0` 已发布，`dist-tags.latest = 1.0.0`；旧包 `@darialan/web-pdf-printer@1.0.2` 保持可下载 |
+| npm 包 | `@darialan/web-printer@1.0.1` 已发布，`dist-tags.latest = 1.0.1`（1.0.1 修正了 repository / bugs 指向新仓库）；旧包 `@darialan/web-pdf-printer@1.0.2` 保持可下载 |
 | 线上站点 | https://pdf-demo-phi.vercel.app 已发布新品牌生产构建（Vercel 项目 `pdf-demo`，部署 `pdf-demo-re1kz9d1l`） |
 | 类型检查 / 单测 | `tsc --noEmit` 通过；24 个套件 103 项测试通过（含新旧协议兼容、Hook 导出与取消清理） |
 | 构建 | `build:lib` 产出 `index.mjs/index.cjs/react.mjs/react.cjs` 与 `dist/types`；前端 `build` 通过 |
@@ -48,7 +48,7 @@
 
 ### 仓库更名结果
 
-仓库已在 GitHub 端更名为 `darialan/web-printer`，旧地址 `darialan/web-pdf-printer` 返回 301 跳转到新地址。代码内所有指向源码仓库的链接（package.json 的 repository / bugs、首页与工作台的 GitHub 入口、release 脚本输出、e2e 断言）与 git remote 一并切换到新地址。
+仓库已在 GitHub 端更名为 `darialan/web-printer`，旧地址 `darialan/web-pdf-printer` 返回 301 跳转到新地址。代码内所有指向源码仓库的链接（package.json 的 repository / bugs、首页与工作台的 GitHub 入口、release 脚本输出、e2e 断言）与 git remote 一并切换到新地址。npm 包为此发布 1.0.1，只改元数据，不涉及运行时行为。
 
 ### 本轮确认保留的旧名
 
