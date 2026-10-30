@@ -11,6 +11,8 @@ export interface OutputWriterOptions {
   footerCanvas?: HTMLCanvasElement;
   totalPages: number;
   signal?: AbortSignal;
+  /** Encoded image retention budget; defaults to 128 MiB. */
+  maxBytes?: number;
 }
 
 export interface OutputWriter {

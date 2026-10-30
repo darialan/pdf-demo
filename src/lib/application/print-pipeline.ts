@@ -53,6 +53,8 @@ export interface PaginationPipelineOptions {
 }
 
 export interface LayoutOptions {
+  /** Omit selected source elements from snapshots without mutating the live page. */
+  excludedElements?: readonly Element[];
   element: HTMLElement | null;
   header?: HTMLElement | null;
   footer?: HTMLElement | null;
@@ -168,10 +170,10 @@ export async function prepareLayout(options: LayoutOptions): Promise<PreparedLay
   try {
     // Readiness must precede style freezing: otherwise an image still loading
     // can have its temporary 0px height frozen permanently into the snapshot.
-    await waitForResources(printElement, signal, rules);
+    await waitForResources(printElement, signal, rules, options.excludedElements);
     width = printElement.getBoundingClientRect().width;
     if (!Number.isFinite(width) || width <= 0) throw new Error('打印区域宽度为零，请先显示内容');
-    snapshot = createPrintSnapshot(width, rules);
+    snapshot = createPrintSnapshot(width, rules, options.excludedElements);
     const root = snapshot.clone(printElement);
 
     let headerClone: HTMLElement | undefined;

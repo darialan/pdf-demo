@@ -31,3 +31,5 @@ export type { ObservabilityStats } from './overlay/page-break-overlay';
 
 // Format-specific output writers and their extension contract.
 export * from './output';
+
+export * from "./application/print-session";

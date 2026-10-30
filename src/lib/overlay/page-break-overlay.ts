@@ -24,7 +24,8 @@ export function clearPageBreaks(owner?: Document | HTMLElement) {
 export function visualizePageBreaks(
   pages: number[],
   element: HTMLElement,
-  rules: readonly PrintRule[] = getPrintRules()
+  rules: readonly PrintRule[] = getPrintRules(),
+  excludedElements: readonly Element[] = []
 ): ObservabilityStats {
   clearPageBreaks(element);
 
@@ -61,7 +62,7 @@ export function visualizePageBreaks(
     const el = node as HTMLElement;
     if (el.hasAttribute('data-print-debug')) return 'skip';
 
-    const rule = classifyPrintNode(el, rules);
+    const rule = excludedElements.includes(el) ? { kind: 'ignore' as const } : classifyPrintNode(el, rules);
 
     // 1. ignore (不打印：交互控件 / 分页器 / 隐藏元素)
     if (rule.kind === 'ignore') {

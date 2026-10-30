@@ -1,4 +1,4 @@
-name: Playground quality gate
+name: Web Printer quality gate
 on:
   pull_request:
   push:

@@ -1,3 +1,4 @@
+import { freezePositioning, FrozenPosition, normalizeSnapshotPositions, registerFrozenPositions } from './positioning';
 import { waitForResources } from '../resources/resource-loader';
 import { classifyPrintNode, getPrintRules } from '../../core/rules/print-rules';
 import { PrintRule } from '../../core/types';
@@ -31,9 +32,12 @@ export function copyResolvedStyle(source: Element, target: HTMLElement | SVGElem
  * (e.g. inside detached print containers or preview widgets, or from an iframe) does not alter typography,
  * inherited line-heights, or layout dimensions.
  */
-export function cloneWithResolvedStyles(source: HTMLElement, rules: readonly PrintRule[] = getPrintRules()): HTMLElement {
+export function cloneWithResolvedStyles(source: HTMLElement, rules: readonly PrintRule[] = getPrintRules(), excludedElements: readonly Element[] = []): HTMLElement {
   const ownerDoc = typeof document !== 'undefined' ? document : source.ownerDocument;
   const target = (ownerDoc?.importNode ? ownerDoc.importNode(source, true) : source.cloneNode(true)) as HTMLElement;
+
+  const rootRect = source.getBoundingClientRect();
+  const anchors: FrozenPosition[] = [];
 
   // Preserve form and canvas state that cloneNode/importNode does not copy.
   const sources = [source, ...Array.from(source.querySelectorAll('*'))];
@@ -43,7 +47,7 @@ export function cloneWithResolvedStyles(source: HTMLElement, rules: readonly Pri
     if (!copy || copy.nodeType !== 1) return;
 
     // Exclude before resource decoding and layout, including configured selectors.
-    if (node !== source && classifyPrintNode(node, rules).kind === 'ignore') {
+    if (node !== source && (excludedElements.includes(node) || /^(SCRIPT|NOSCRIPT)$/.test(node.tagName) || classifyPrintNode(node, rules).kind === 'ignore')) {
       copy.remove();
       return;
     }
@@ -94,6 +98,10 @@ export function cloneWithResolvedStyles(source: HTMLElement, rules: readonly Pri
 
     if ((copy as any).style) {
       copyResolvedStyle(node, copy as HTMLElement);
+      if (node !== source) {
+        const anchor = freezePositioning(node, copy as HTMLElement, rootRect);
+        if (anchor) anchors.push(anchor);
+      }
     }
   });
   target.querySelectorAll('[data-print-debug], [data-print-ignore="true"], [data-pdf-debug], [data-pdf-ignore="true"]').forEach(node => node.remove());
@@ -102,40 +110,47 @@ export function cloneWithResolvedStyles(source: HTMLElement, rules: readonly Pri
   // centering margins). A page slice supplies its own origin and paper margins;
   // carrying those external offsets into it shifts/crops the captured document.
   // Descendant margins remain frozen above to preserve the internal layout.
-  target.style.margin = '0';
-  target.style.setProperty('margin-inline', '0');
-  target.style.setProperty('margin-block', '0');
+  target.style.setProperty('margin', '0', 'important');
+  target.style.setProperty('position', 'relative', 'important');
+  for (const property of ['inset', 'inset-inline', 'inset-block']) target.style.setProperty(property, 'auto', 'important');
+  target.style.setProperty('float', 'none', 'important');
+  target.style.setProperty('margin-inline', '0', 'important');
+  target.style.setProperty('margin-block', '0', 'important');
 
   // Lock root target width to source element width so rendering outside original flow never shrink-wraps or alters line wrapping
   const sourceWidth = source.getBoundingClientRect().width;
   if (sourceWidth > 0) {
-    target.style.width = `${sourceWidth}px`;
-    target.style.maxWidth = 'none';
-    target.style.boxSizing = 'border-box';
+    target.style.setProperty('width', `${sourceWidth}px`, 'important');
+    target.style.setProperty('max-width', 'none', 'important');
+    target.style.setProperty('box-sizing', 'border-box', 'important');
   }
 
+  registerFrozenPositions(target, anchors);
   return target;
 }
 
 /** Owns detached print DOM; callers dispose it on every success/error path. */
-export function createPrintSnapshot(width: number, rules: readonly PrintRule[] = getPrintRules()) {
+export function createPrintSnapshot(width: number, rules: readonly PrintRule[] = getPrintRules(), excludedElements: readonly Element[] = []) {
   const host = document.createElement('div');
   host.setAttribute('data-print-snapshot', 'true');
   host.setAttribute('aria-hidden', 'true');
   host.setAttribute('inert', '');
   host.style.cssText = `position:absolute;left:-100000px;top:0;width:${width}px;pointer-events:none;background:white;`;
   const clone = (source: HTMLElement) => {
-    const target = cloneWithResolvedStyles(source, rules);
-    target.style.width = `${width}px`;
-    target.style.maxWidth = 'none';
-    target.style.boxSizing = 'border-box';
+    const target = cloneWithResolvedStyles(source, rules, excludedElements);
+    target.style.setProperty('width', `${width}px`, 'important');
+    target.style.setProperty('max-width', 'none', 'important');
+    target.style.setProperty('box-sizing', 'border-box', 'important');
     host.appendChild(target);
     return target;
   };
   return {
     clone,
     mount: () => document.body.appendChild(host),
-    ready: (signal?: AbortSignal) => waitForResources(host, signal),
+    ready: async (signal?: AbortSignal) => {
+      await waitForResources(host, signal);
+      Array.from(host.children).forEach(root => normalizeSnapshotPositions(root as HTMLElement));
+    },
     dispose: () => host.remove(),
   };
 }

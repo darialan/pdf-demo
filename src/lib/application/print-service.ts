@@ -5,7 +5,7 @@ import { validatePageBreaks } from '../core/pagination/paginator';
 import { buildPrintRules, getPrintRules } from '../core/rules/print-rules';
 import { Interval, MeasurementStats, PageSlice } from '../core/types';
 import { checkCancelled } from './cancellation';
-import { LayoutOptions, prepareLayout, resolvePrintElement } from './print-pipeline';
+import { LayoutOptions, PreparedLayout, prepareLayout, resolvePrintElement } from './print-pipeline';
 
 export interface ExportOptions extends LayoutOptions {
   filename: string;
@@ -40,8 +40,18 @@ export async function outputDocument({ format = 'pdf', filename, download = true
   validateOutputFormat(format);
   const started = performance.now();
   const layout = await prepareLayout(options);
+  try {
+    const result = await exportPreparedLayout(layout, { format, filename, download, onProgress, settings: options.settings, signal: options.signal }, performance.now() - started);
+    return { ...result, totalMs: performance.now() - started };
+  } finally { layout.cleanup(); }
+}
+
+/** Export an already frozen layout. The session owns its cleanup. */
+export async function exportPreparedLayout(layout: PreparedLayout, options: Omit<DocumentExportOptions, 'element'>, layoutMs = 0) {
+  const { format = 'pdf', filename, download = true, onProgress } = options;
+  validateOutputFormat(format);
+  const started = performance.now();
   const { root, headerHeight, footerHeight, ratio, pages } = layout;
-  const layoutMs = performance.now() - started;
   let renderer: ReturnType<typeof createPageCapture> | undefined;
   let writer: OutputWriter | undefined;
   try {
@@ -79,7 +89,6 @@ export async function outputDocument({ format = 'pdf', filename, download = true
   } finally {
     writer?.dispose?.();
     renderer?.dispose();
-    layout.cleanup();
   }
 }
 

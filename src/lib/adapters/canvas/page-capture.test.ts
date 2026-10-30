@@ -30,3 +30,14 @@ test('each page clones only its snapshot and head resources, excluding source an
   expect(canvas.height).toBe(0);
   source.remove(); preview.remove(); host.remove();
 });
+
+test('disposing while html2canvas is pending also releases the late canvas', async () => {
+  let finish: (canvas: HTMLCanvasElement) => void = () => {};
+  (html2canvas as jest.Mock).mockReturnValueOnce(new Promise<HTMLCanvasElement>(resolve => { finish=resolve; }));
+  const renderer=createPageCapture(800);
+  const pending=renderer.capture(document.createElement('article'),0,1000);
+  renderer.dispose();
+  const canvas=document.createElement('canvas');canvas.width=800;canvas.height=1000;finish(canvas);
+  await expect(pending).rejects.toThrow('取消');expect(canvas.width).toBe(0);expect(canvas.height).toBe(0);
+  await expect(renderer.capture(document.createElement('article'),0,1000)).rejects.toThrow('取消');
+});

@@ -142,3 +142,25 @@ test('legacy ignore attributes and classes still disappear from snapshots', () =
   root.innerHTML = '<p data-pdf-ignore="true">old attribute</p><p class="pdf-ignore">old class</p><p>keep</p>';
   expect(cloneWithResolvedStyles(root).textContent).toBe('keep');
 });
+
+test('selected exclusions are omitted without adding attributes or mutating source DOM', () => {
+  const root=document.createElement('article');root.innerHTML='<p>Keep</p><aside><img src="blocked.png">Exclude</aside><script>window.untrusted=true</script>';
+  const aside=root.querySelector('aside')!;const before=root.outerHTML;
+  const clone=cloneWithResolvedStyles(root,undefined,[aside]);
+  expect(clone.querySelector('aside')).toBeNull();expect(clone.querySelector('script')).toBeNull();expect(clone.textContent).toBe('Keep');expect(root.outerHTML).toBe(before);
+});
+
+test('root external absolute placement is normalized without moving the original page',()=>{
+  const root=document.createElement('section');root.style.cssText='position:absolute;inset:100px 40px auto 200px;float:right;padding:24px';
+  const before=root.getAttribute('style');const clone=cloneWithResolvedStyles(root);
+  expect(clone.style.position).toBe('relative');expect(clone.style.inset).toBe('auto');expect(clone.style.cssFloat).toBe('none');expect(clone.style.padding).toBe('24px');expect(root.getAttribute('style')).toBe(before);
+});
+
+test('sticky becomes normal-flow relative and fixed becomes snapshot-local without source mutations',()=>{
+  const root=document.createElement('article');root.innerHTML='<header style="position:sticky!important;top:40px!important">Header</header><aside style="position:fixed;left:60px;top:124px;width:120px;height:32px">Pin</aside>';
+  root.getBoundingClientRect=()=>({left:20,top:100,width:800,height:1000} as DOMRect);
+  root.querySelector('aside')!.getBoundingClientRect=()=>({left:60,top:124,width:120,height:32} as DOMRect);
+  const original=root.outerHTML;const clone=cloneWithResolvedStyles(root);
+  expect(clone.querySelector('header')!.style.position).toBe('relative');expect(clone.querySelector('header')!.style.top).not.toBe('40px');expect(clone.querySelector('header')!.style.inset).toBe('auto');
+  const pin=clone.querySelector('aside')!;expect(pin.style.position).toBe('absolute');expect(pin.style.left).toBe('40px');expect(pin.style.top).toBe('24px');expect(pin.style.width).toBe('120px');expect(root.outerHTML).toBe(original);
+});

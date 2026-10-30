@@ -77,13 +77,15 @@ export const BASE_PRINT_RULES: readonly PrintRule[] = [
   },
   // 4. 不可分割规则（表格行与复合原子项：放不下整块换页，超高深入拆分）
   {
-    selector: '[data-print-keep-together="split"], .print-keep-or-split, [data-pdf-keep-together="split"], .pdf-keep-or-split, tr',
+    selector: '[data-print-keep-together="split"], .print-keep-or-split, [data-pdf-keep-together="split"], .pdf-keep-or-split, tr, [role="row"]',
     result: { kind: 'atomic', label: '表格行与复合块', overflow: 'split' },
   },
+  // Standard code/formula blocks are protected independently of framework or CSS position.
+  { selector: 'pre, math', result: { kind: 'atomic', label: '代码或公式', overflow: 'error' } },
   // 5. 原生不可切图片媒体与标题
   {
-    selector: 'img, canvas, svg',
-    result: { kind: 'atomic', label: '图片媒体', overflow: 'error' },
+    selector: 'img, canvas, svg, input, button, select, textarea',
+    result: { kind: 'atomic', label: '图片媒体与表单控件', overflow: 'error' },
   },
   {
     selector: 'h1, h2, h3, h4, h5, h6',

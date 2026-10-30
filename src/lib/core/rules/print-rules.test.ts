@@ -141,3 +141,9 @@ test('new and legacy HTML protocols produce identical classifications', () => {
     expect(classifyPrintNode(host.children[0])).toEqual(classifyPrintNode(host.children[1]));
   }
 });
+
+test('preset semantics split paragraphs and whole tables, protect rows, media and code/formula blocks',()=>{
+  for(const tag of ['article','p','table','tbody'])expect(classifyPrintNode(document.createElement(tag))).toMatchObject({kind:'container'});
+  for(const tag of ['tr','img','svg','pre','math'])expect(classifyPrintNode(document.createElement(tag))).toMatchObject({kind:'atomic'});
+  const text=document.createTextNode('A complete text line');expect(classifyPrintNode(text)).toMatchObject({kind:'text'});
+});

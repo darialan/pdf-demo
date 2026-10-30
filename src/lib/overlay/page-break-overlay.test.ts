@@ -118,3 +118,12 @@ test('标记层的 z-index 保持在吸顶工具栏与站点导航之下', () =>
 
   container.remove();
 });
+
+test('explicit exclusions render ignore markers without changing source attributes', () => {
+  const root=document.createElement('article');const excluded=document.createElement('aside');excluded.textContent='广告';root.append(excluded);document.body.append(root);
+  root.getBoundingClientRect=()=>({left:0,top:0,width:400,height:200} as DOMRect);
+  excluded.getBoundingClientRect=()=>({left:0,top:20,width:400,height:40} as DOMRect);
+  const attrs=excluded.outerHTML;
+  const stats=visualizePageBreaks([],root,undefined,[excluded]);
+  expect(stats.ignore).toBeGreaterThan(0);expect(root.querySelector('[data-print-debug]')?.textContent).toBe('ignore');expect(excluded.outerHTML).toBe(attrs);clearPageBreaks(root);root.remove();
+});
