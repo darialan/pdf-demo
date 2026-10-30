@@ -46,6 +46,8 @@ export function PrintWorkbench({ scenes, initialSceneKey }: { scenes: PrintScene
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewAttempt, setPreviewAttempt] = useState(0);
+  // 用 hook 版 message，toast 才会继承 AntD 主题（静态方法固定用默认蓝色）
+  const [messageApi, messageHolder] = message.useMessage();
   const workbenchRoot = useRef<HTMLDivElement>(null);
   const inspectionRun = useRef(0);
   const mounted = useRef(true);
@@ -224,7 +226,7 @@ export function PrintWorkbench({ scenes, initialSceneKey }: { scenes: PrintScene
     const abort = new AbortController();
     controller.current = abort;
     const outputLabel = outputFormat === 'pdf' ? 'PDF' : 'PNG 图片';
-    const hideLoading = message.loading(`正在生成 ${outputLabel}…`, 0);
+    const hideLoading = messageApi.loading(`正在生成 ${outputLabel}…`, 0);
     try {
       await previewTask.current;
       if (abort.signal.aborted) return;
@@ -238,7 +240,7 @@ export function PrintWorkbench({ scenes, initialSceneKey }: { scenes: PrintScene
           if (mounted.current) setProgress(`正在生成 ${outputLabel}：${completed} / ${total} 页`);
         },
       });
-      if (mounted.current) message.success(`已导出 ${result.pages} 页 ${outputLabel}，用时 ${(result.totalMs / 1000).toFixed(1)} 秒`);
+      if (mounted.current) messageApi.success(`已导出 ${result.pages} 页 ${outputLabel}，用时 ${(result.totalMs / 1000).toFixed(1)} 秒`);
     } catch (error) {
       if (mounted.current && !abort.signal.aborted) setExportError(errorText(error));
     } finally {
@@ -250,6 +252,7 @@ export function PrintWorkbench({ scenes, initialSceneKey }: { scenes: PrintScene
   };
 
   return <div ref={workbenchRoot} className="print-workbench-container">
+    {messageHolder}
     <div className="print-console-card">
       <Tabs className="print-tab-custom" activeKey={tab}
         items={scenes.map(({ key, label, children }) => ({ key, label, disabled: exporting, children: <div>

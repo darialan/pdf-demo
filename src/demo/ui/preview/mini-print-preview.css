@@ -55,8 +55,9 @@
 }
 
 .mini-preview-badge {
-  background: #2563eb;
-  color: #ffffff;
+  /* 面板头是深色底，用浅一档的品牌绿保证对比度 */
+  background: #9fcbb3;
+  color: #0f172a;
   font-size: 11px;
   padding: 1px 7px;
   border-radius: 10px;

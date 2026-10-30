@@ -1,5 +1,8 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
+import { ConfigProvider } from 'antd';
 import { LandingPage } from './landing/landing-page';
+import { createAntdTheme } from './landing/antd-theme';
+import { ThemeProvider } from './landing/theme';
 import { trackRoute } from './analytics';
 import './App.css';
 
@@ -18,11 +21,17 @@ function App() {
   useEffect(() => {
     trackRoute(hash);
   }, [hash]);
-  return hash.startsWith('#/playground') ? (
-    <Suspense fallback={<div className="page-loading" role="status">正在打开打印工作台…</div>}>
-      <WorkbenchPage />
-    </Suspense>
-  ) : <LandingPage />;
+  return (
+    <ThemeProvider>
+      <ConfigProvider theme={createAntdTheme()}>
+        {hash.startsWith('#/playground') ? (
+          <Suspense fallback={<div className="page-loading" role="status">正在打开打印工作台…</div>}>
+            <WorkbenchPage />
+          </Suspense>
+        ) : <LandingPage />}
+      </ConfigProvider>
+    </ThemeProvider>
+  );
 }
 
 export default App;

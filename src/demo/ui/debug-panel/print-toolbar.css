@@ -300,14 +300,7 @@
 }
 
 .print-toolbar-actions .ant-btn { box-shadow: none; text-shadow: none; }
-.print-export-control .ant-btn-primary:not(:disabled) {
-  background: var(--accent, #32745d);
-  border-color: var(--accent, #32745d);
-}
-.print-export-control .ant-btn-primary:not(:disabled):hover {
-  background: var(--accent-hover, #285e4c);
-  border-color: var(--accent-hover, #285e4c);
-}
+/* 主色由 AntD token（品牌绿）统一提供，这里不再另写一份颜色 */
 .print-tab-custom .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn { text-shadow: none; }
 .print-export-control .ant-btn-compact-item.ant-btn-primary:not([disabled]) + .ant-btn-compact-item.ant-btn-primary:not([disabled])::before {
   background-color: rgba(255, 255, 255, 0.25);

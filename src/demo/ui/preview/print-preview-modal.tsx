@@ -157,18 +157,14 @@ export function PrintPreviewModal({
           <span className="print-preview-title">📄 打印效果预览 (HTML 虚拟纸张)</span>
           <div className="print-preview-tags">
             {previewData?.paperLabel && (
-              <Tag color="blue" style={{ margin: 0, fontSize: 11 }}>
+              <Tag color="green" style={{ margin: 0, fontSize: 11 }}>
                 {previewData.paperLabel}
               </Tag>
             )}
             {previewData && (
               <>
-                <Tag color="cyan" style={{ margin: 0, fontSize: 11 }}>
-                  共 {previewData.pages.length} 页
-                </Tag>
-                <Tag color="green" style={{ margin: 0, fontSize: 11 }}>
-                  即时渲染: {previewData.totalMs.toFixed(0)}ms
-                </Tag>
+                <Tag style={{ margin: 0, fontSize: 11 }}>共 {previewData.pages.length} 页</Tag>
+                <Tag style={{ margin: 0, fontSize: 11 }}>即时渲染: {previewData.totalMs.toFixed(0)}ms</Tag>
               </>
             )}
           </div>
