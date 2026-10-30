@@ -76,17 +76,17 @@ npm run build:lib
 
 ```bash
 # 使用 npm
-npm install @darialan/web-pdf-printer html2canvas jspdf
+npm install @darialan/web-pdf-printer
 
 # 使用 yarn
-yarn add @darialan/web-pdf-printer html2canvas jspdf
+yarn add @darialan/web-pdf-printer
 
 # 使用 pnpm
-pnpm add @darialan/web-pdf-printer html2canvas jspdf
+pnpm add @darialan/web-pdf-printer
 ```
 
 #### 依赖架构设计：
-- **`html2canvas`** 与 **`jspdf`** 被声明为 `peerDependencies`。原因在于不同公司或项目可能对这两个底层库有不同版本锁定或定制插件，避免在 `node_modules` 中产生多份冗余副本。
+- **`html2canvas`** 与 **`jspdf`** 是库内部必需的运行时依赖，声明在 `dependencies` 中，安装本包时由包管理器自动安装。构建时保持 external，由消费项目的打包工具解析，兼容版本可由包管理器去重，无需使用方单独声明。
 - **`react`** 为可选的对等依赖（`peerDependenciesMeta.react.optional = true`）。若开发者在纯 JS 或 Vue 项目中使用，无需安装 React。
 
 ### 2.2 构建工具适配 (Vite / Webpack / Next.js)

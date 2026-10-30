@@ -4,6 +4,7 @@ import WorkbenchPage from './demo/workbench-page';
 import { purchaseOrderRows, orderedTotal } from './demo/purchase-order';
 
 jest.mock('jspdf', () => jest.fn());
+jest.mock('./landing/product-preview', () => ({ ProductPreview: () => <div aria-label="实际分页预览" /> }));
 
 beforeEach(() => {
   Object.defineProperty(window, 'matchMedia', {
@@ -77,12 +78,11 @@ test('首页展示产品介绍，并能进入工作台和返回首页', async ()
   window.history.replaceState(null, '', '/');
   const scrollTo = jest.spyOn(window, 'scrollTo').mockImplementation(() => {});
   render(<App />);
-  expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('为复杂业务页面，做好 PDF 分页。');
+  expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('长网页，分好每一页。');
   expect(screen.queryByRole('tab', { name: '长表格' })).not.toBeInTheDocument();
-  fireEvent.click(screen.getByRole('button', { name: '签字盖章' }));
-  expect(screen.getByAltText('示例印章')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: '复制安装命令' })).toBeInTheDocument();
 
-  const entry = screen.getAllByRole('link', { name: '打开打印工作台' })[0];
+  const entry = screen.getAllByRole('link', { name: '查看分页效果' })[0];
   expect(entry).toHaveAttribute('href', '#/playground');
   window.history.pushState(null, '', '/#/playground');
   fireEvent(window, new HashChangeEvent('hashchange'));
@@ -93,7 +93,7 @@ test('首页展示产品介绍，并能进入工作台和返回首页', async ()
 
   window.history.pushState(null, '', '/#/');
   fireEvent(window, new HashChangeEvent('hashchange'));
-  expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('为复杂业务页面，做好 PDF 分页。');
+  expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('长网页，分好每一页。');
   scrollTo.mockRestore();
   window.history.replaceState(null, '', '/');
 });
@@ -108,7 +108,7 @@ test('场景链接打开对应的工作台单据，接入示例支持键盘切�
   expect(screen.getByRole('tabpanel')).toHaveTextContent('marginTopMm: 12');
   fireEvent.keyDown(screen.getByRole('tab', { name: 'JavaScript' }), { key: 'ArrowRight' });
   expect(screen.getByRole('tab', { name: 'React' })).toHaveAttribute('aria-selected', 'true');
-  expect(screen.getByRole('tabpanel')).toHaveTextContent('usePdfPrint');
+  expect(screen.getByRole('tabpanel')).toHaveTextContent("format: 'png'");
   expect(screen.getByRole('tab', { name: 'React' })).toHaveFocus();
 
   window.history.pushState(null, '', '/#/playground?scene=purchase-order');

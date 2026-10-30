@@ -70,14 +70,14 @@ npm run build      # 打包本地 Demo 工作台为生产静态资源到 build/
 ## 📦 安装核心库
 
 ```bash
-npm install @darialan/web-pdf-printer html2canvas jspdf
+npm install @darialan/web-pdf-printer
 # 或者
-yarn add @darialan/web-pdf-printer html2canvas jspdf
+yarn add @darialan/web-pdf-printer
 # 或者
-pnpm add @darialan/web-pdf-printer html2canvas jspdf
+pnpm add @darialan/web-pdf-printer
 ```
 
-> **说明**：`html2canvas` 和 `jspdf` 为对等依赖（Peer Dependencies），需要安装在项目中。如果使用 React Hook，需确保项目安装了 `react` (>=16.8.0)。
+> **说明**：`html2canvas` 和 `jspdf` 已声明为运行时依赖，安装本包时会自动安装，无需单独添加。如果使用 React Hook，需确保项目安装了 `react` (>=16.8.0)。
 
 ---
 

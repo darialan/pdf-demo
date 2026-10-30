@@ -728,7 +728,7 @@ capacity    = (footerY - <span class="n">6</span> - bodyTop) / ratio;
     <div class="card">
       <div class="mono" style="font-size:11px;color:var(--primary);margin-bottom:6px">RULE 02</div>
       <h3 style="font-family:'Outfit',sans-serif;font-weight:600;font-size:15px">第三方库只出现在 adapters</h3>
-      <p class="small muted" style="margin:0"><code class="mono">html2canvas</code>、<code class="mono">jspdf</code>、<code class="mono">react</code> 的 import 各自集中在一个文件里，且在构建时被标记为 external，由使用方自带版本。</p>
+      <p class="small muted" style="margin:0"><code class="mono">html2canvas</code>、<code class="mono">jspdf</code> 声明为运行时依赖，安装本包时自动安装；构建时保留 external，交由消费项目的打包工具解析与复用。<code class="mono">react</code> 保留为使用方提供的可选对等依赖。</p>
     </div>
     <div class="card">
       <div class="mono" style="font-size:11px;color:var(--primary);margin-bottom:6px">RULE 03</div>

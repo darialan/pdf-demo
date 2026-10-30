@@ -21,7 +21,7 @@
 
 - **双模块导出规范**：构建产物位于 `dist/`，包含 ESM 格式（`index.mjs`）、CommonJS 格式（`index.cjs`）及全套 TypeScript 声明（`index.d.ts` 与 `types/`）。
 - **Scoped 包公开权限**：`package.json` 已配置 `"publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/" }`，避免 Scoped 包默认被判定为私有包而触发 402 错误。
-- **依赖隔离**：核心打印引擎仅将 `html2canvas`、`jspdf` 和 `react` 声明为 `peerDependencies`，Demo 依赖（`antd`、`react-scripts`、单测套件等）已安全移入 `devDependencies`，外部项目安装体积仅约 **89 KB**。
+- **依赖隔离**：`html2canvas` 与 `jspdf` 声明为 `dependencies`，安装本包时自动安装；React 相关包保留为可选对等依赖。Demo 依赖（`antd`、`react-scripts`、单测套件等）仅放在 `devDependencies`，不会安装到消费项目。发布压缩包大小不等于包含运行时依赖后的总安装体积，应以实际打包和安装结果为准。
 - **自动化安全守卫**：配置了 `prepublishOnly` 脚本，在执行发布前会自动拦截并运行 `npm run test:once && npm run build:lib`，单测失败或打包报错将自动中断发布。
 
 ---

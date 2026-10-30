@@ -14,7 +14,9 @@ export default defineConfig({
       fileName: format => `index.${format === 'es' ? 'mjs' : 'cjs'}`,
     },
     rollupOptions: {
-      // Third-party consumers provide their own html2canvas, jspdf, and react
+      // Runtime dependencies are installed automatically via dependencies.
+      // Keep them external so consumers' bundlers can deduplicate them;
+      // React remains a host-provided optional peer dependency.
       external: [
         'html2canvas',
         'jspdf',

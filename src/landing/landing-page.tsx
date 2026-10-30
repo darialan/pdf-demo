@@ -7,7 +7,7 @@ import './landing-page.css';
 
 const REPO = 'https://github.com/darialan/web-pdf-printer';
 const DOCS = `${REPO}#readme`;
-const INSTALL_CMD = 'npm install @darialan/web-pdf-printer html2canvas jspdf';
+const INSTALL_CMD = 'npm install @darialan/web-pdf-printer';
 
 const scenes = [
   { key: 'purchase-order', title: '45 行采购明细表', description: '单独一张长表格，展示整行保护与单元格文字分页。', detail: '第一类：长表格', icon: 'grid' },
@@ -17,13 +17,14 @@ const scenes = [
 ] as const;
 
 const codeExamples = {
-  JavaScript: `import { outputPDF } from '@darialan/web-pdf-printer';
+  JavaScript: `import { outputDocument } from '@darialan/web-pdf-printer';
 
 const element = document.getElementById('report');
 
-await outputPDF({
+await outputDocument({
   element,
-  filename: '采购订单.pdf',
+  filename: 'report',
+  format: 'pdf', // 改为 'png'，下载逐页图片 ZIP
   settings: {
     paper: 'a4',
     marginTopMm: 12,
@@ -32,34 +33,40 @@ await outputPDF({
     marginRightMm: 14,
   },
 });`,
-  React: `import { useRef } from 'react';
-import { usePdfPrint } from '@darialan/web-pdf-printer';
+  React: `import { useRef, useState } from 'react';
+import { outputDocument } from '@darialan/web-pdf-printer';
 
 export function Report() {
   const reportRef = useRef<HTMLDivElement>(null);
-  const { exportPDF, isPrinting, error } = usePdfPrint();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
 
   async function handleExport() {
-    if (!reportRef.current) return;
+    if (!reportRef.current || busy) return;
+    setBusy(true);
+    setError('');
     try {
-      await exportPDF({
+      await outputDocument({
         element: reportRef.current,
-        filename: '采购订单.pdf',
+        filename: 'report',
+        format: 'png', // PDF 改为 'pdf'
       });
-    } catch { /* error 会更新为导出错误 */ }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '导出失败');
+    } finally { setBusy(false); }
   }
 
   return <>
-    <button disabled={isPrinting} onClick={handleExport}>
-      {isPrinting ? '正在导出…' : '导出 PDF'}
+    <button disabled={busy} onClick={handleExport}>
+      {busy ? '正在导出…' : '导出分页图片'}
     </button>
-    {error && <p role="alert">{error.message}</p>}
-    <div ref={reportRef}>{/* 你的报表内容 */}</div>
+    {error && <p role="alert">{error}</p>}
+    <div ref={reportRef}>{/* 你的页面内容 */}</div>
   </>;
 }`,
   Vue: `<script setup>
 import { ref } from 'vue';
-import { outputPDF } from '@darialan/web-pdf-printer';
+import { outputDocument } from '@darialan/web-pdf-printer';
 
 const reportRef = ref(null);
 const busy = ref(false);
@@ -70,9 +77,10 @@ async function exportReport() {
   busy.value = true;
   error.value = '';
   try {
-    await outputPDF({
+    await outputDocument({
       element: reportRef.value,
-      filename: '采购订单.pdf',
+      filename: 'report',
+      format: 'pdf',
     });
   } catch (err) {
     error.value = err instanceof Error ? err.message : '导出失败';
@@ -115,6 +123,14 @@ function CopyButton({ text, label = '复制命令' }: { text: string; label?: st
       <span role="status">{state === 'copied' ? '已复制' : state === 'error' ? '请手动复制' : '复制'}</span>
     </button>
   );
+}
+
+function InstallCommand({ copyLabel = '复制命令' }: { copyLabel?: string }) {
+  return <div className="command-block">
+    <span className="shell-prompt" aria-hidden="true">$</span>
+    <pre tabIndex={0} aria-label="npm 安装命令"><code>{INSTALL_CMD}</code></pre>
+    <CopyButton text={INSTALL_CMD} label={copyLabel} />
+  </div>;
 }
 
 export function LandingPage() {
@@ -163,91 +179,69 @@ export function LandingPage() {
       <main id="main">
         <header className="hero landing-container">
           <div className="hero-copy">
-            <p className="hero-label"><span className="status-dot" />浏览器端的 Web 页面转 PDF 工具</p>
-            <h1><span className="hero-title-line">为复杂业务页面，</span><br /><span className="hero-title-line hero-title-accent">做好 PDF 分页。</span></h1>
-            <p className="lede">把已有的报表、订单和审批单导出为 PDF。<br className="desktop-break" />按文字行分页，让表格行与签章区域完整换页。</p>
+            <h1>长网页，<br />分好每一页。</h1>
+            <p className="lede">面向已渲染 HTML 的分页库。保留网页现有样式，按文字行与表格行换页；自定义页面尺寸，导出 PDF 或逐页 PNG 图片。</p>
             <div className="cta-row">
-              <a href="#/playground" className="btn btn-dark">打开打印工作台 <Icon name="arrow" size={16} /></a>
-              <a href="#quickstart" className="btn btn-ghost"><Icon name="code" size={16} />查看接入代码</a>
+              <a href={REPO} className="btn btn-dark" target="_blank" rel="noreferrer"><Icon name="github" size={17} />GitHub Star</a>
+              <a href="#/playground" className="text-link">查看分页效果 <Icon name="arrow" size={16} /></a>
             </div>
-            <p className="hero-note">MIT 开源许可 <span aria-hidden="true">/</span> 在浏览器中完成导出</p>
-            <div className="hero-capabilities" aria-label="主要能力">
-              <span><Icon name="check" size={14} />文字行防截断</span>
-              <span><Icon name="check" size={14} />表格行整体换页</span>
-              <span><Icon name="check" size={14} />自定义页眉页脚</span>
-            </div>
+            <InstallCommand copyLabel="复制安装命令" />
+            <p className="hero-note">MIT 开源许可 · 浏览器本地运行 · 框架无关</p>
           </div>
           <figure className="hero-visual">
             <ProductPreview />
-            <figcaption>这是可操作的示例。切换文档，再导出一份 PDF。</figcaption>
+            <figcaption>同一份内容，切换尺寸重新分页。这里运行的就是工作台的分页引擎。</figcaption>
           </figure>
         </header>
 
         <div className="compatibility landing-container">
-          <span>接入已有的前端页面</span>
+          <span>传入页面里的 DOM 元素</span>
           <div className="compatibility-logos" aria-label="接入方式">
-            <span>JavaScript</span><span>TypeScript</span><span>React Hook</span><span>Vue</span><span>同源 iframe</span>
+            <span>JavaScript</span><span>TypeScript</span><span>React</span><span>Vue</span><span>PDF / PNG</span>
           </div>
         </div>
 
         <section id="features" className="features-section landing-container">
-          <div className="section-heading">
-            <div><p className="section-label">分页能力</p><h2>照顾换页时的每一个细节。</h2></div>
-            <p className="section-description">从屏幕到纸张，处理文字、表格与整块内容的分页关系。</p>
-          </div>
-          <div className="feature-grid">
-            <article className="feature-primary">
-              <div className="break-example" aria-hidden="true">
-                <div className="break-example-lines"><span /><span /><span /></div>
-                <div className="break-boundary"><span>本页结束</span></div>
-                <div className="break-protected"><Icon name="check" size={15} /><span>完整的一行，留到下一页</span></div>
-                <div className="break-example-lines short"><span /><span /></div>
-              </div>
-              <h3>换一页，保留完整的一行。</h3>
-              <p>测量文字在页面里的实际位置，避开行内切割。表格行放不下时，优先整体移到下一页。</p>
-              <a href="#/playground?scene=purchase-order" className="text-link">查看长表格示例 <Icon name="arrow" size={15} /></a>
-            </article>
-            <div className="feature-list">
-              <article><Icon name="grid" size={21} /><div><h3>签字与盖章，一起保留</h3><p>用 <code>data-pdf-atomic</code> 标记签章或图表区域，在页尾放不下时整块换页。</p></div></article>
-              <article><Icon name="sliders" size={21} /><div><h3>每一页都有自己的位置</h3><p>设置纸张、方向与页边距，添加重复页眉页脚和动态总页码。</p></div></article>
-              <article><Icon name="file" size={21} /><div><h3>长单据按页渲染</h3><p>逐页生成画布，写入 PDF 后释放，减少一次绘制超长图片的内存压力。</p></div></article>
-              <article><Icon name="code" size={21} /><div><h3>沿用已有页面的样式</h3><p>导出前复制元素的计算样式，保留现有布局，减少另写打印模板的工作。</p></div></article>
-            </div>
+          <div className="section-heading"><h2>换页规则，由内容决定。</h2><p className="section-description">长内容自然延续，需要完整呈现的区域整块换页。</p></div>
+          <div className="capability-columns">
+            <article><h3>沿用页面样式</h3><p>从已渲染的 HTML 开始，复制计算样式和当前表单值。保留页面原有排版，减少另写一套打印模板的工作。</p></article>
+            <article><h3>控制内容怎么换页</h3><p>文字按实际行测量，表格行优先完整换页。图片、公式和代码块可设为整体保护，指定区域可从输出中排除。</p></article>
+            <article><h3>同一套分页，两种输出</h3><p>纸张尺寸、图片比例、边距和页眉页脚统一配置。PDF 与逐页 PNG 共用分页逻辑，图片统一打包为 ZIP。</p></article>
           </div>
         </section>
 
         <section id="playground" className="studio-section landing-container">
           <div className="section-heading">
-            <div><p className="section-label">场景演示</p><h2>用一份完整单据，试试分页。</h2></div>
-            <p className="section-description">工作台提供四个演示场景。调整输出设置，查看分页标线，再导出 PDF 或分页图片。</p>
+            <div><h2>四种内容，直接看结果。</h2></div>
+            <p className="section-description">用完整内容验证文字、表格和图文混排。每个示例都可以调整尺寸、检查分页并下载结果。</p>
           </div>
           <div className="scene-list">
             {scenes.map(scene => (
               <a key={scene.key} className="scene-link" href={`#/playground?scene=${scene.key}`}>
-                <span className="scene-icon"><Icon name={scene.icon} size={21} /></span>
+                <img src={`${process.env.PUBLIC_URL}/landing/${['table', 'article', 'mixed', 'brand'][scenes.indexOf(scene)]}.png`} alt={`${scene.detail.replace(/第.类：/, '')}的实际工作台与分页预览`} loading="lazy" width="1440" height="1000" />
                 <span className="scene-info"><strong>{scene.title}</strong><span>{scene.description}</span></span>
-                <span className="scene-detail">{scene.detail}</span>
+                <span className="scene-detail">打开示例</span>
                 <Icon name="arrow" size={18} />
               </a>
             ))}
-            <div className="scene-footnote"><Icon name="sliders" size={15} /><span>A4 / A3 / A5 / Letter / 自定义纸张，支持横向与纵向。</span></div>
+            <div className="scene-footnote"><Icon name="sliders" size={15} /><span>从 A4 到 1:1、3:4、9:16，页面宽高与边距均可配置。</span></div>
           </div>
         </section>
 
         <section id="quickstart" className="quickstart-section landing-container">
           <div className="quickstart-copy">
-            <p className="section-label">接入方式</p>
-            <h2>给你的页面，<br />加一个导出按钮。</h2>
-            <p className="sub">传入需要导出的 DOM 元素，设置文件名。测量、分页和 PDF 生成由引擎完成。</p>
+
+            <h2>安装后，传入你的页面。</h2>
+            <p className="sub">页面渲染完成后传入 DOM 元素。在同一接口中选择 PDF 或 PNG，按需配置页面尺寸和分页规则。</p>
             <ol className="setup-steps">
-              <li><span>1</span><div><strong>安装依赖</strong><p>包含 html2canvas 与 jsPDF。</p></div></li>
-              <li><span>2</span><div><strong>传入内容容器</strong><p>保留现有页面，按需标记整块保护区域。</p></div></li>
-              <li><span>3</span><div><strong>调用导出，检查结果</strong><p>使用真实业务数据验证分页与资源加载。</p></div></li>
+              <li><div><strong>安装组件</strong><p>一条命令完成安装，依赖自动处理。</p></div></li>
+              <li><div><strong>传入内容容器</strong><p>保留现有页面，按需标记整块保护区域。</p></div></li>
+              <li><div><strong>调用导出，检查结果</strong><p>使用真实业务数据验证分页与资源加载。</p></div></li>
             </ol>
             <a href={DOCS} target="_blank" rel="noreferrer" className="text-link">阅读完整接入文档 <Icon name="external" size={14} /></a>
           </div>
           <div className="quickstart-example">
-            <div className="install-bar"><code>{INSTALL_CMD}</code><CopyButton text={INSTALL_CMD} /></div>
+            <InstallCommand />
             <div className="code-window">
               <div className="code-toolbar">
                 <div role="tablist" aria-label="接入示例语言">
@@ -271,19 +265,21 @@ export function LandingPage() {
         </section>
 
         <section id="faq" className="faq-section landing-container">
-          <div><p className="section-label">常见问题</p><h2>接入前，<br />你可能想知道。</h2><p className="sub">关于运行环境和导出结果。</p></div>
+          <div><h2>接入前的几个问题。</h2><p className="sub">输出格式、内容保护和使用范围。</p></div>
           <div className="faq-list">
-            <details><summary><span>需要部署 PDF 生成服务吗？</span><span className="faq-plus" aria-hidden="true">+</span></summary><p>导出过程在浏览器内完成，无需单独部署 PDF 生成服务。页面中的图片和字体仍需正常加载；跨域资源需要对应服务器允许 CORS。</p></details>
-            <details><summary><span>可以在 Vue、React 或原生 JavaScript 中使用吗？</span><span className="faq-plus" aria-hidden="true">+</span></summary><p>可以。<code>outputPDF</code> 接收 DOM 元素，可在页面渲染后调用。React 项目也可以使用 <code>usePdfPrint</code> 管理导出状态；服务端渲染项目需要在客户端调用。</p></details>
-            <details><summary><span>表格行和签章区域如何避免被切开？</span><span className="faq-plus" aria-hidden="true">+</span></summary><p>表格行默认优先整体换页，签章等区域可以添加 <code>data-pdf-atomic="true"</code>。整块内容高于一页时，需要调整布局、纸张，或改用允许拆分的标记。</p></details>
-            <details><summary><span>支持 iframe 内的文档吗？</span><span className="faq-plus" aria-hidden="true">+</span></summary><p>支持能够访问 DOM 的同源 iframe，包括 <code>srcdoc</code> 文档。将内部元素传给导出方法即可；跨域 iframe 仍受浏览器同源策略限制。</p></details>
-            <details><summary><span>导出的 PDF 可以搜索和复制文字吗？</span><span className="faq-plus" aria-hidden="true">+</span></summary><p>当前通过画布渲染页面，再将图像写入 PDF，正文不包含可搜索、可复制的文本层。如果这项能力是必要条件，可以评估浏览器打印或文本型 PDF 方案。</p></details>
+            <details><summary><span>需要部署生成服务吗？</span><span className="faq-plus" aria-hidden="true">+</span></summary><p>导出过程在浏览器内完成，无需单独部署生成服务。页面中的图片和字体仍需正常加载；跨域资源需要对应服务器允许 CORS。</p></details>
+            <details><summary><span>支持哪些前端框架？</span><span className="faq-plus" aria-hidden="true">+</span></summary><p>可以。<code>outputDocument</code> 接收 DOM 元素，可在页面渲染后调用。React 项目也可以使用 <code>usePdfPrint</code> 管理导出状态；服务端渲染项目需要在客户端调用。</p></details>
+            <details><summary><span>长表格、图片和代码如何换页？</span><span className="faq-plus" aria-hidden="true">+</span></summary><p>表格行默认优先整体换页，图片、公式和代码块可以添加 <code>data-pdf-atomic="true"</code>。整块内容高于一页时，需要调整布局、纸张，或改用允许拆分的标记。</p></details>
+            <details><summary><span>PDF 和分页图片有什么区别？</span><span className="faq-plus" aria-hidden="true">+</span></summary><p>两种格式共享分页与页面尺寸。PDF 将页面装订为一份文件；PNG 为每一页生成一张完整图片，以 ZIP 下载。图片像素尺寸还受截图清晰度和画布预算影响，设置中的 px 用于页面布局。</p></details>
+            <details><summary><span>现有网页都能直接使用吗？</span><span className="faq-plus" aria-hidden="true">+</span></summary><p>可以传入能访问的 DOM 元素。图片和字体应加载完成，跨域图片需允许 CORS。复杂 CSS 的还原受画布渲染能力影响，建议先用自己的内容验证；跨域 <code>&lt;iframe&gt;</code>、视频和 Shadow DOM 不属于完整支持范围。</p></details>
+            <details><summary><span>能用于商业项目吗？</span><span className="faq-plus" aria-hidden="true">+</span></summary><p>当前 NPM 包采用 MIT 许可，可以用于商业项目；分发时按许可证要求保留版权和许可声明。安装和接入文档中提供完整配置说明。</p></details>
+            <details><summary><span>PDF 文字可以搜索、复制吗？</span><span className="faq-plus" aria-hidden="true">+</span></summary><p>当前通过画布渲染页面，再将图像写入 PDF，正文不包含可搜索、可复制的文本层。接入前请确认这一输出形式适合你的使用需求。</p></details>
           </div>
         </section>
 
         <section className="closing-section landing-container">
-          <div><h2>下一份单据，先试着导出。</h2><p>从最接近你业务的场景开始，看看内容如何落在纸上。</p></div>
-          <a href="#/playground" className="btn btn-dark">打开打印工作台 <Icon name="arrow" size={16} /></a>
+          <div><h2>让长内容，完整交付。</h2><p>安装 NPM 包，从现有页面开始接入。</p></div>
+          <a href={REPO} className="btn btn-dark" target="_blank" rel="noreferrer"><Icon name="github" size={17} />在 GitHub 上支持项目</a>
         </section>
       </main>
       <footer className="landing-footer">
