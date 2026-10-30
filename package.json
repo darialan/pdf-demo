@@ -1,7 +1,7 @@
 {
-  "name": "@darialan/web-pdf-printer",
-  "version": "1.0.2",
-  "description": "高性能客户端 DOM 分页与 PDF 导出引擎（防文字截断、防表格跨页腰斩、计算样式冻结与低内存按页微切片）",
+  "name": "@darialan/web-printer",
+  "version": "1.0.0",
+  "description": "保留网页样式的 HTML 分页引擎，支持文字行、表格与图文内容保护，输出 PDF 和逐页 PNG。",
   "author": "darialan",
   "license": "MIT",
   "repository": {
@@ -11,17 +11,17 @@
   "bugs": {
     "url": "https://github.com/darialan/web-pdf-printer/issues"
   },
-  "homepage": ".",
+  "homepage": "https://pdf-demo-phi.vercel.app/",
   "keywords": [
+    "web-printer",
+    "html-pagination",
+    "pagination",
     "pdf",
+    "png",
+    "dom-to-image",
     "printer",
     "html2canvas",
-    "jspdf",
-    "pagination",
-    "dom-to-pdf",
-    "avoid-cut-off",
-    "web-pdf-printer",
-    "darialan"
+    "jspdf"
   ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -31,6 +31,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
+    },
+    "./react": {
+      "types": "./dist/types/react.d.ts",
+      "import": "./dist/react.mjs",
+      "require": "./dist/react.cjs"
     }
   },
   "publishConfig": {
@@ -40,7 +45,9 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "docs/migration-to-web-printer.md",
+    "docs/output-formats.md"
   ],
   "dependencies": {
     "html2canvas": "^1.4.1",
@@ -65,10 +72,9 @@
     "release:minor": "node scripts/release.mjs minor",
     "release:major": "node scripts/release.mjs major",
     "prepublishOnly": "npm run test:once && npm run build:lib",
-    "postinstall": "node -e \"const fs=require('fs');if(!fs.existsSync('src/lib'))process.exit(0);const p='node_modules/@darialan';try{fs.mkdirSync(p,{recursive:true});fs.rmSync(p+'/web-pdf-printer',{force:true,recursive:true});fs.symlinkSync('../../src/lib',p+'/web-pdf-printer','junction')}catch(e){}\"",
     "start": "react-scripts start",
     "build": "PUBLIC_URL=/ react-scripts build",
-    "build:lib": "vite build --config vite.config.lib.ts && tsc -p tsconfig.lib.json && node -e \"require('fs').writeFileSync('dist/index.d.ts', \\\"export * from './types/index';\\\\n\\\")\"",
+    "build:lib": "vite build --config vite.config.lib.ts && tsc -p tsconfig.lib.json && node scripts/write-type-entries.mjs",
     "test": "react-scripts test",
     "test:once": "react-scripts test --watchAll=false",
     "eject": "react-scripts eject",
@@ -101,7 +107,8 @@
   },
   "jest": {
     "moduleNameMapper": {
-      "^@darialan/web-pdf-printer$": "<rootDir>/src/lib/index.ts"
+      "^@darialan/web-printer$": "<rootDir>/src/lib/index.ts",
+      "^@darialan/web-printer/react$": "<rootDir>/src/lib/react.ts"
     }
   },
   "eslintConfig": {
@@ -121,5 +128,12 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "typesVersions": {
+    "*": {
+      "react": [
+        "dist/types/react.d.ts"
+      ]
+    }
   }
 }

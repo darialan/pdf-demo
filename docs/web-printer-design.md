@@ -1,4 +1,4 @@
-# @darialan/web-pdf-printer · 实现速览
+# @darialan/web-printer · 实现速览
 
 > 客户端 DOM 分页与 PDF 导出引擎。**把浏览器排版结果重新解释成一份可计算的分页计划。**
 
@@ -152,7 +152,7 @@ flowchart LR
 
 | 层级 | 入口 | 适用 |
 |---|---|---|
-| 声明式 | `data-pdf-atomic` / `-splittable` / `-ignore`（含类名别名） | 业务方最常用，零配置 |
+| 声明式 | `data-print-atomic` / `-splittable` / `-ignore`（含类名别名） | 业务方最常用，零配置 |
 | 配置化 | `PrintRuleConfig { atomic, splittable, ignore, customRules }` | `customRules` **前置优先**，可覆盖 `tr`/`h1~h6` 默认行为 |
 | 全局注册 | `configurePrint()` / `getPrintRules()` / `resetPrintRules()` | 多技术栈适配（`.el-table__row` 等） |
 | 单次覆盖 | `rules` / `ruleConfig` 参数 | 同页多套规则，**不污染全局** |
@@ -160,9 +160,9 @@ flowchart LR
 
 ```ts
 // 业务侧只需加属性
-<div data-pdf-atomic="true">签字盖章栏</div>
+<div data-print-atomic="true">签字盖章栏</div>
 <tr>...</tr>                    // tr 默认 atomic
-<button data-pdf-ignore="true">导出</button>
+<button data-print-ignore="true">导出</button>
 ```
 
 ---

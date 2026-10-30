@@ -25,7 +25,7 @@ test('ignore selectors reflow real grid layout, preserve internal styles, and re
       canvas: serializePrintSnapshot(layout.root).includes('data:image/png;base64,') };
     layout.cleanup();
     const pdf = await outputPDF({ element: root, settings: DEFAULT_SETTINGS, ruleConfig, filename: 'test', download: false });
-    return { ...measured, exportedPages: pdf.pages, bytes: pdf.bytes, snapshots: document.querySelectorAll('[data-pdf-snapshot]').length };
+    return { ...measured, exportedPages: pdf.pages, bytes: pdf.bytes, snapshots: document.querySelectorAll('[data-print-snapshot]').length };
   });
   expect(result).toMatchObject({ cloneMargin: '0px', sourceMargin: '24px auto', ignored: true,
     background: 'rgb(12, 34, 56)', padding: '20px', note: true, canvas: true, snapshots: 0 });
@@ -38,10 +38,10 @@ test('oversized atomic content fails clearly, frees its lock, and succeeds after
     const { prepareLayout } = window.engine;
     const root = document.getElementById('fixture');
     root.style.width = '800px';
-    root.innerHTML = '<div data-pdf-atomic="true" style="height:2000px">too tall</div>';
+    root.innerHTML = '<div data-print-atomic="true" style="height:2000px">too tall</div>';
     let error = '';
     try { await prepareLayout({ element: root }); } catch (e) { error = e.message; }
-    const cleaned = document.querySelectorAll('[data-pdf-snapshot]').length;
+    const cleaned = document.querySelectorAll('[data-print-snapshot]').length;
     root.firstElementChild.style.height = '100px';
     const layout = await prepareLayout({ element: root });
     const pages = layout.pages.length;
@@ -70,7 +70,7 @@ test('aborting stuck resources cleans the snapshot and permits a subsequent expo
     root.querySelector('img').remove();
     const layout = await prepareLayout({ element: root });
     layout.cleanup();
-    return { error, remaining: document.querySelectorAll('[data-pdf-snapshot]').length };
+    return { error, remaining: document.querySelectorAll('[data-print-snapshot]').length };
   });
   expect(result.error).toContain('取消');
   expect(result.remaining).toBe(0);

@@ -63,7 +63,7 @@ for (const [label, id] of scenes) {
     await expect(page.locator('.observability-legend')).toContainText('atomic:');
     await expect(page.locator('.observability-legend')).toContainText('splittable:');
     await expect(page.locator('.observability-legend')).toContainText('page-break');
-    expect(await page.locator('[data-pdf-debug]').allTextContents()).not.toEqual(expect.arrayContaining(['整行保护', '允许切分', '不打印']));
+    expect(await page.locator('[data-print-debug]').allTextContents()).not.toEqual(expect.arrayContaining(['整行保护', '允许切分', '不打印']));
     const offsets = await preview.locator('.mini-sheet-content').first().evaluate(element => {
       const root = element.firstElementChild;
       const a = element.getBoundingClientRect(), b = root.getBoundingClientRect();
@@ -75,7 +75,7 @@ for (const [label, id] of scenes) {
       page.waitForEvent('download'), page.getByRole('button', { name: '导出 PDF', exact: true }).click(),
     ]);
     await readPdf(download, count);
-    await expect(page.locator('[data-pdf-snapshot]')).toHaveCount(0);
+    await expect(page.locator('[data-print-snapshot]')).toHaveCount(0);
     await expect(page.getByRole('button', { name: '导出 PDF', exact: true })).toBeEnabled();
     await page.screenshot({ path: testInfo.outputPath('inspection.png') });
     expect(errors).toEqual([]);
@@ -102,15 +102,15 @@ test('inspection can close, reopen, and cancel pending previews across scene swi
   await page.goto('/#/playground?scene=long-article');
   await inspect(page);
   await page.getByRole('button', { name: '关闭预览小窗' }).click();
-  await expect(page.locator('[data-pdf-debug]').first()).toBeVisible();
+  await expect(page.locator('[data-print-debug]').first()).toBeVisible();
   await page.getByRole('button', { name: '打开预览', exact: true }).click();
   await expect(page.locator('.mini-sheet-content').first()).toBeVisible();
   await page.getByRole('tab', { name: '长表格', exact: true }).click();
   await expect(page.getByRole('region', { name: '纸张预览' })).toHaveCount(0);
-  await expect(page.locator('[data-pdf-debug]')).toHaveCount(0);
+  await expect(page.locator('[data-print-debug]')).toHaveCount(0);
   await page.getByRole('button', { name: '检查分页', exact: true }).click();
   await page.getByRole('button', { name: '退出检查', exact: true }).click();
-  await expect(page.locator('[data-pdf-snapshot]')).toHaveCount(0);
+  await expect(page.locator('[data-print-snapshot]')).toHaveCount(0);
   await expect(page.getByRole('region', { name: '纸张预览' })).toHaveCount(0);
 });
 
@@ -201,7 +201,7 @@ for (const [label] of scenes) {
     }
     expect(index).toBe(count);
     expect(dimensions.every(size => size[0] === dimensions[0][0] && size[1] === dimensions[0][1])).toBe(true);
-    await expect(page.locator('[data-pdf-snapshot]')).toHaveCount(0);
+    await expect(page.locator('[data-print-snapshot]')).toHaveCount(0);
     await expect(page.getByRole('button', { name: '导出图片', exact: true })).toBeEnabled();
     await page.screenshot({ path: testInfo.outputPath('png-export.png') });
     await page.getByRole('button', { name: '选择导出格式', exact: true }).click();

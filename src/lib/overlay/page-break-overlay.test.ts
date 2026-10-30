@@ -19,7 +19,7 @@ test('visualizePageBreaks 能够全覆盖标记 atomic, splittable 与 ignore �
       </tbody>
     </table>
     <p style="width: 200px; height: 40px;">段落说明，可按行自由切分</p>
-    <div data-pdf-ignore="true" style="width: 200px; height: 20px;">忽略按钮</div>
+    <div data-print-ignore="true" style="width: 200px; height: 20px;">忽略按钮</div>
   `;
   document.body.appendChild(container);
 
@@ -40,7 +40,7 @@ test('visualizePageBreaks 能够全覆盖标记 atomic, splittable 与 ignore �
   expect(stats.ignore).toBe(1);     // 忽略元素 (ignore 不打印)
 
   // 页面上存在调试遮罩层
-  const debugNodes = container.querySelectorAll('[data-pdf-debug="true"]');
+  const debugNodes = container.querySelectorAll('[data-print-debug="true"]');
   expect(debugNodes.length).toBeGreaterThan(0);
   const labels = Array.from(debugNodes).flatMap(node => Array.from(node.querySelectorAll('span')).map(span => span.textContent));
   expect(labels).toEqual(expect.arrayContaining(['atomic', 'splittable', 'ignore']));
@@ -48,7 +48,7 @@ test('visualizePageBreaks 能够全覆盖标记 atomic, splittable 与 ignore �
 
   // 清除后完全移除
   clearPageBreaks();
-  expect(container.querySelectorAll('[data-pdf-debug="true"]')).toHaveLength(0);
+  expect(container.querySelectorAll('[data-print-debug="true"]')).toHaveLength(0);
 
   container.remove();
 });
@@ -65,10 +65,10 @@ test('a custom splittable rule overrides native table atomic rules and cleanup i
   const stats = visualizePageBreaks([0, 50], first, [{ selector: '.can-split', result: { kind: 'container' } }]);
   expect(stats.atomic).toBe(0);
   visualizePageBreaks([0], second);
-  expect(first.querySelector('[data-pdf-debug]')).not.toBeNull();
+  expect(first.querySelector('[data-print-debug]')).not.toBeNull();
   clearPageBreaks(first);
-  expect(first.querySelector('[data-pdf-debug]')).toBeNull();
-  expect(second.querySelector('[data-pdf-debug]')).not.toBeNull();
+  expect(first.querySelector('[data-print-debug]')).toBeNull();
+  expect(second.querySelector('[data-print-debug]')).not.toBeNull();
   clearPageBreaks(second);
   first.remove(); second.remove();
 });
@@ -76,7 +76,7 @@ test('a custom splittable rule overrides native table atomic rules and cleanup i
 test('媒体包装段落（<p> 里只有一张图）标为 atomic，而不是 splittable', () => {
   const container = document.createElement('div');
   container.innerHTML = `
-    <p style="height: 120px;"><img data-pdf-atomic="true" alt="结果图" style="height: 120px;"></p>
+    <p style="height: 120px;"><img data-print-atomic="true" alt="结果图" style="height: 120px;"></p>
     <p style="height: 40px;">普通段落，可被分页线切断</p>
   `;
   document.body.appendChild(container);
@@ -91,7 +91,7 @@ test('媒体包装段落（<p> 里只有一张图）标为 atomic，而不是 sp
   expect(stats.atomic).toBe(1);
   expect(stats.splittable).toBe(1);
 
-  const badges = Array.from(container.querySelectorAll('[data-pdf-debug="true"] span'))
+  const badges = Array.from(container.querySelectorAll('[data-print-debug="true"] span'))
     .map(span => span.textContent);
   expect(badges.filter(text => text === 'atomic')).toHaveLength(1);
   expect(badges.filter(text => text === 'splittable')).toHaveLength(1);
@@ -110,7 +110,7 @@ test('标记层的 z-index 保持在吸顶工具栏与站点导航之下', () =>
 
   visualizePageBreaks([0, 300], container);
 
-  const debugNodes = Array.from(container.querySelectorAll<HTMLElement>('[data-pdf-debug="true"]'));
+  const debugNodes = Array.from(container.querySelectorAll<HTMLElement>('[data-print-debug="true"]'));
   const layerOf = (node: HTMLElement) => Number(node.style.zIndex || node.querySelector<HTMLElement>('span')?.style.zIndex || 0);
   const top = Math.max(...debugNodes.map(layerOf));
   // 工具栏 z-index 20、站点导航 z-index 100：标记必须更低，否则会把它们盖住

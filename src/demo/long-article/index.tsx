@@ -14,7 +14,7 @@ export function LongArticleDemo() {
     <h1>把时间留给步行</h1>
     {sections.map(section => <section key={section.title}>
       <h2>{section.title}</h2>
-      {section.paragraphs.map(text => <p key={text} data-pdf-splittable="true">{text}</p>)}
+      {section.paragraphs.map(text => <p key={text} data-print-splittable="true">{text}</p>)}
     </section>)}
   </article>;
 }

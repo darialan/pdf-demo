@@ -1,6 +1,6 @@
-# WebPDF Printer (@darialan/web-pdf-printer) NPM 官方源发布与一键迭代指南
+# Web Printer (@darialan/web-printer) NPM 官方源发布与一键迭代指南
 
-本文档作为项目维护者专用指南，详细记录将 `@darialan/web-pdf-printer` 发布至 [NPM 官方注册表](https://www.npmjs.com/package/@darialan/web-pdf-printer) 的前置准备、**一键自动化发版（One-Click Release）** 机制，以及常见故障排查手册。
+本文档作为项目维护者专用指南，详细记录将 `@darialan/web-printer` 发布至 [NPM 官方注册表](https://www.npmjs.com/package/@darialan/web-printer) 的前置准备、**一键自动化发版（One-Click Release）** 机制，以及常见故障排查手册。
 
 ---
 
@@ -44,7 +44,7 @@ npm login
 > 验证命令：`npm whoami`，应正确输出你的 NPM 用户名。
 
 ### 3. 确认命名空间权限
-当前包名为 `@darialan/web-pdf-printer`：
+当前包名为 `@darialan/web-printer`：
 - 若你的 NPM 账号名即为 `darialan`，默认拥有该 Scope 权限。
 - 若你的账号名为其他名称，需在 [npmjs.com](https://www.npmjs.com/) 网页端点击右上角头像 -> **Add Organization** -> 创建名为 `darialan` 的免费公开（Public）组织并将自己设为主管理员。
 
@@ -166,11 +166,11 @@ git push && git push --tags
   }
   ```
 
-### Q2: 报错 `403 Forbidden` 或 `You do not have permission to publish "@darialan/web-pdf-printer"`
+### Q2: 报错 `403 Forbidden` 或 `You do not have permission to publish "@darialan/web-printer"`
 - **原因**：当前登录的 NPM 账号不是 `darialan`，且没有 `@darialan` 组织的所有权或写权限。
 - **解决办法**：
   1. 登录 [npmjs.com](https://www.npmjs.com/)，在个人账号下创建名为 `darialan` 的公开组织；
-  2. 或者在 `package.json` 中将包名命名空间改为你的 NPM 用户名（如 `@<你的用户名>/web-pdf-printer`）。
+  2. 或者在 `package.json` 中将包名命名空间改为你的 NPM 用户名（如 `@<你的用户名>/web-printer`）。
 
 ### Q3: 报错 `ENEEDAUTH` 或 `401 Unauthorized`
 - **原因**：本地 NPM 未登录或登录 Token 已过期失效。

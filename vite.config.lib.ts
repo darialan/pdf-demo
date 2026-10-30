@@ -8,10 +8,10 @@ export default defineConfig({
     emptyOutDir: true,
     sourcemap: true,
     lib: {
-      entry: path.resolve(__dirname, 'src/lib/index.ts'),
-      name: 'WebPDFPrinter',
+      entry: { index: path.resolve(__dirname, 'src/lib/index.ts'), react: path.resolve(__dirname, 'src/lib/react.ts') },
+      name: 'WebPrinter',
       formats: ['es', 'cjs'],
-      fileName: format => `index.${format === 'es' ? 'mjs' : 'cjs'}`,
+      fileName: (format, entryName) => `${entryName}.${format === 'es' ? 'mjs' : 'cjs'}`,
     },
     rollupOptions: {
       // Runtime dependencies are installed automatically via dependencies.

@@ -1,5 +1,5 @@
 import { prepareLayout, serializePrintSnapshot, DEFAULT_SETTINGS } from '../../../lib';
-import { buildHtmlPreviewData } from './pdf-preview-modal';
+import { buildHtmlPreviewData } from './print-preview-modal';
 
 jest.mock('../../../lib', () => ({
   ...jest.requireActual('../../../lib'), prepareLayout: jest.fn(), serializePrintSnapshot: jest.fn(),

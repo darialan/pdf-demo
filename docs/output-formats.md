@@ -7,7 +7,7 @@
 工作台通过导出按钮右侧的箭头选择格式，按钮主体直接导出当前格式。默认 PDF；「PNG 分页图片」将每一页保存为一张完整纸张图片，并统一打包下载，避免多文件自动下载被浏览器拦截。文件按 `page-001.png`、`page-002.png` 排序。图片包含当前纸张尺寸、方向、边距、页眉页脚与页码，末页保留完整纸张高度。切换输出格式不改变分页或关闭预览。输出设置提供 A4/A3/A5/Letter、常见社媒图片比例（3:4、4:5、1:1、9:16）、电商长图和自定义尺寸；社媒图片预设使用像素单位，页面宽高和内边距仍统一换算为毫米保存。设置区同时显示扣除边距后的正文可用尺寸。
 
 ```ts
-import { outputDocument, outputPDF } from '@darialan/web-pdf-printer';
+import { outputDocument, outputPDF } from '@darialan/web-printer';
 
 const controller = new AbortController();
 const result = await outputDocument({
@@ -36,7 +36,7 @@ await outputPDF({ element: document.getElementById('content'), filename: '报告
 - `output/image-writer.ts`：按共享 geometry 合成完整纸张，逐页编码 PNG 后立即释放合成 canvas。
 - `output/zip.ts`：PNG 已压缩，ZIP 使用 STORE，无新增运行时依赖；写入 CRC32 与中央目录。页码文件名固定 ASCII，文档标题仅用于下载包名称。
 
-扩展格式时实现 `OutputWriter`，注册到格式工厂，并增加工具栏选项即可；分页算法、快照和截图链路不需要增加格式判断。原有 React `usePdfPrint().exportPDF()` 继续专用于 PDF；非 React 和 React 调用方均可直接调用 `outputDocument()`。
+扩展格式时实现 `OutputWriter`，注册到格式工厂，并增加工具栏选项即可；分页算法、快照和截图链路不需要增加格式判断。React 项目可从 `@darialan/web-printer/react` 导入 `useWebPrinter()`，用 `exportDocument()` 选择格式；`usePdfPrint().exportPDF()` 作为兼容接口保留。非 React 和 React 调用方均可直接调用核心入口的 `outputDocument()`。
 
 ## 失败与取消
 

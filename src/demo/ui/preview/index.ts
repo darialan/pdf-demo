@@ -1,2 +1,2 @@
-export * from './pdf-preview-modal';
-export * from './mini-pdf-preview';
+export * from './print-preview-modal';
+export * from './mini-print-preview';

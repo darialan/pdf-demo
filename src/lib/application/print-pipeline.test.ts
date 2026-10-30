@@ -20,7 +20,7 @@ test('cleans snapshots after resource failure and allows retry', async () => {
   });
   try {
     await expect(prepareLayout({ element: root })).rejects.toThrow('损坏的凭证');
-    expect(document.querySelector('[data-pdf-snapshot]')).toBeNull();
+    expect(document.querySelector('[data-print-snapshot]')).toBeNull();
     await expect(prepareLayout({ element: root })).rejects.toThrow('损坏的凭证');
   } finally {
     if (decode) Object.defineProperty(HTMLImageElement.prototype, 'decode', decode);
@@ -36,7 +36,7 @@ test('cancellation is rejected before any snapshot allocation', async () => {
   const controller = new AbortController();
   controller.abort();
   await expect(prepareLayout({ element: root, signal: controller.signal })).rejects.toThrow('取消');
-  expect(document.querySelector('[data-pdf-snapshot]')).toBeNull();
+  expect(document.querySelector('[data-print-snapshot]')).toBeNull();
   root.remove();
 });
 

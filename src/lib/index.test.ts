@@ -1,17 +1,17 @@
+import { useWebPrinter, usePdfPrint } from './react';
 import {
   calculateGeometry,
   clearPageBreaks,
   DEFAULT_SETTINGS,
   outputPDF,
   paginate,
-  PDF_PRINT_ATTRIBUTES,
-  PDF_PRINT_CLASSES,
+  PRINT_ATTRIBUTES,
+  PRINT_CLASSES,
   resolvePaper,
-  usePdfPrint,
   visualizePageBreaks,
 } from './index';
 
-describe('Web PDF Printer Lib Entry Point', () => {
+describe('Web Printer Lib Entry Point', () => {
   it('exports core pagination and geometry functions', () => {
     expect(typeof paginate).toBe('function');
     expect(typeof calculateGeometry).toBe('function');
@@ -20,17 +20,18 @@ describe('Web PDF Printer Lib Entry Point', () => {
   });
 
   it('exports attributes and class standards', () => {
-    expect(PDF_PRINT_ATTRIBUTES.ATOMIC).toContain('data-pdf-atomic');
-    expect(PDF_PRINT_ATTRIBUTES.SPLITTABLE).toContain('data-pdf-splittable');
-    expect(PDF_PRINT_ATTRIBUTES.IGNORE).toContain('data-pdf-ignore');
-    expect(PDF_PRINT_CLASSES.ATOMIC).toBe('pdf-atomic');
+    expect(PRINT_ATTRIBUTES.ATOMIC).toContain('data-print-atomic');
+    expect(PRINT_ATTRIBUTES.SPLITTABLE).toContain('data-print-splittable');
+    expect(PRINT_ATTRIBUTES.IGNORE).toContain('data-print-ignore');
+    expect(PRINT_CLASSES.ATOMIC).toBe('print-atomic');
   });
 
   it('exports application export service and visual debugger', () => {
     expect(typeof outputPDF).toBe('function');
     expect(typeof visualizePageBreaks).toBe('function');
     expect(typeof clearPageBreaks).toBe('function');
-    expect(typeof usePdfPrint).toBe('function');
+    expect(typeof useWebPrinter).toBe('function');
+    expect(usePdfPrint).toBe(useWebPrinter);
   });
 
   it('calculates page slices correctly with paginate', () => {

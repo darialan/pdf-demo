@@ -28,5 +28,5 @@ export function BrandMark() {
 }
 
 export function BrandWordmark() {
-  return <span className="brand-wordmark">WebPDF<span className="brand-suffix"> Printer</span></span>;
+  return <span className="brand-wordmark">Web<span className="brand-suffix"> Printer</span></span>;
 }

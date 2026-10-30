@@ -1,6 +1,6 @@
-# @darialan/web-pdf-printer 开发者接入教程与底层算法原理深度指南
+# @darialan/web-printer 开发者接入教程与底层算法原理深度指南
 
-本文档面向第三方开发者与系统架构师，详细阐述 `@darialan/web-pdf-printer` 的工程定位、打包构建架构、在不同前端技术栈中的配置与集成方案，以及核心算法与底层机制的设计推导。
+本文档面向第三方开发者与系统架构师，详细阐述 `@darialan/web-printer` 的工程定位、打包构建架构、在不同前端技术栈中的配置与集成方案，以及核心算法与底层机制的设计推导。
 
 ---
 
@@ -13,7 +13,7 @@
 3. [快速上手与多场景实战](#三快速上手与多场景实战)
    - [3.1 原生 JS / Vanilla 极简调用](#31-原生-js--vanilla-极简调用)
    - [3.2 Vue 3 / Vite 组合式 API 接入](#32-vue-3--vite-组合式-api-接入)
-   - [3.3 React 18 / 19 接入 (结合 usePdfPrint)](#33-react-18--19-接入-结合-usepdfprint)
+   - [3.3 React 18 / 19 接入 (结合 useWebPrinter)](#33-react-18--19-接入-结合-usewebprinter)
    - [3.4 带有固定页眉、页脚与页码的复杂单据](#34-带有固定页眉页脚与页码的复杂单据)
 4. [核心底层机制与算法数学推导](#四核心底层机制与算法数学推导)
    - [4.1 页面几何换算模型与物理容量方程](#41-页面几何换算模型与物理容量方程)
@@ -34,7 +34,7 @@
 
 本项目采用 **双模式工程架构**：
 1. **工作台 / Demo 演示层**：基于 React 18 + Ant Design，用于业务单据可视化调试与测试验证（执行 `npm start` 即可运行）。
-2. **核心库打包层 (`@darialan/web-pdf-printer`)**：基于 Vite Library Mode + TypeScript 编译器，输出零污染、支持 Tree-shaking 的标准化产物。
+2. **核心库打包层 (`@darialan/web-printer`)**：基于 Vite Library Mode + TypeScript 编译器，输出零污染、支持 Tree-shaking 的标准化产物。
 
 ```
 项目根目录
@@ -48,7 +48,7 @@
 │   │   ├── core/                  # 【领域核心】纯数学几何换算、分页避让算法、规则定义（无 DOM 依赖）
 │   │   ├── adapters/              # 【基础设施】DOM 测量、样式冻结、html2canvas 切片、jsPDF 组装
 │   │   ├── application/           # 【应用服务】print-pipeline 串联流水线、print-service、任务取消机制
-│   │   ├── hooks/                 # 【框架适配】React usePdfPrint Hook
+│   │   ├── hooks/                 # 【框架适配】React useWebPrinter Hook
 │   │   └── overlay/               # 【可视化调试】分页线叠加层（原生 DOM，无 React 依赖）
 │   └── demo/                      # 【示例业务场景】采购订单、验收单、结算单等案例
 │       └── ui/                    # 【展示层】React 调试面板、迷你预览、工作台
@@ -76,13 +76,13 @@ npm run build:lib
 
 ```bash
 # 使用 npm
-npm install @darialan/web-pdf-printer
+npm install @darialan/web-printer
 
 # 使用 yarn
-yarn add @darialan/web-pdf-printer
+yarn add @darialan/web-printer
 
 # 使用 pnpm
-pnpm add @darialan/web-pdf-printer
+pnpm add @darialan/web-printer
 ```
 
 #### 依赖架构设计：
@@ -91,7 +91,7 @@ pnpm add @darialan/web-pdf-printer
 
 ### 2.2 构建工具适配 (Vite / Webpack / Next.js)
 
-`@darialan/web-pdf-printer` 遵循标准 `package.json` 的 `exports` 字段规范：
+`@darialan/web-printer` 遵循标准 `package.json` 的 `exports` 字段规范：
 
 ```json
 {
@@ -103,6 +103,11 @@ pnpm add @darialan/web-pdf-printer
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
+    },
+    "./react": {
+      "types": "./dist/types/react.d.ts",
+      "import": "./dist/react.mjs",
+      "require": "./dist/react.cjs"
     }
   }
 }
@@ -114,7 +119,7 @@ pnpm add @darialan/web-pdf-printer
   因为 PDF 测量与 Canvas 渲染依赖浏览器全局对象（`document`、`window`、`Range`、`HTMLCanvasElement`），因此在 Next.js 服务端渲染环境下，请在客户端组件中调用：
   ```tsx
   'use client'; // Next.js App Router 客户端组件标记
-  import { outputPDF } from '@darialan/web-pdf-printer';
+  import { outputPDF } from '@darialan/web-printer';
   ```
 
 ---
@@ -143,7 +148,7 @@ pnpm add @darialan/web-pdf-printer
 </div>
 
 <script type="module">
-  import { outputPDF } from '@darialan/web-pdf-printer';
+  import { outputPDF } from '@darialan/web-printer';
 
   document.getElementById('btn-export').addEventListener('click', async () => {
     const el = document.getElementById('print-content');
@@ -179,7 +184,7 @@ pnpm add @darialan/web-pdf-printer
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
-import { outputPDF } from '@darialan/web-pdf-printer';
+import { outputPDF } from '@darialan/web-printer';
 
 const reportRef = ref<HTMLElement | null>(null);
 const isExporting = ref(false);
@@ -212,18 +217,18 @@ const handleExport = async () => {
 </script>
 ```
 
-### 3.3 React 18 / 19 接入 (结合 `usePdfPrint`)
+### 3.3 React 18 / 19 接入 (结合 `useWebPrinter`)
 
 使用内置的 React Hook 能够极大简化进度反馈、异常处理与任务取消管理：
 
 ```tsx
 import React, { useRef } from 'react';
-import { usePdfPrint } from '@darialan/web-pdf-printer';
+import { useWebPrinter } from '@darialan/web-printer/react';
 import { Button, Progress, message } from 'antd';
 
 export const PurchaseOrderExportView: React.FC = () => {
   const printAreaRef = useRef<HTMLDivElement>(null);
-  const { isPrinting, progress, exportPDF, cancel } = usePdfPrint();
+  const { isPrinting, progress, exportPDF, cancel } = useWebPrinter();
 
   const handleExport = async () => {
     if (!printAreaRef.current) return;
@@ -279,7 +284,7 @@ export const PurchaseOrderExportView: React.FC = () => {
 
 在企业报表中，通常要求**每一页都有公司的统一页眉（Logo/标题）和固定页脚（制表人/防伪章），并在右下角打上 `页码 / 总页数`**。
 
-在 `@darialan/web-pdf-printer` 中，只需传入独立的页眉和页脚 DOM 元素即可：
+在 `@darialan/web-printer` 中，只需传入独立的页眉和页脚 DOM 元素即可：
 
 ```ts
 const contentEl = document.getElementById('report-body');
@@ -316,7 +321,7 @@ if (!iframeDoc) throw new Error('无法访问 iframe 内容，请确保同源或
 // 2. 提取 iframe 内部待打印的目标容器
 const printTarget = iframeDoc.getElementById('iframe-report-content') || iframeDoc.body;
 
-// 3. 一键交由 @darialan/web-pdf-printer 打印
+// 3. 一键交由 @darialan/web-printer 打印
 await outputPDF({
   element: printTarget as HTMLElement,
   filename: 'iframe-report.pdf',
@@ -498,7 +503,7 @@ while (start < height) {
   $$224.4 \times 4 \approx 897.6\text{ MB}$$
 - 绝大多数移动端及低内存 PC 浏览器在此阶段会直接触发内核 OOM 崩溃、白屏或浏览器崩溃重启。
 
-#### `@darialan/web-pdf-printer` 的微切片策略：
+#### `@darialan/web-printer` 的微切片策略：
 
 ```ts
 // 仅渲染当前页对应的长方形区域 [start, end]
@@ -529,10 +534,10 @@ canvas.height = 0;
 
 | 规则类型 | HTML Attribute | CSS Class | 行为逻辑 |
 | --- | --- | --- | --- |
-| **原子不可分割** | `data-pdf-atomic="true"` | `.pdf-atomic` | 当前页放不下整块移到下一页，单块超过整页报明确错误 |
-| **流式可分割** | `data-pdf-splittable="true"` | `.pdf-splittable` | 允许切断，深入测量子元素或文本行 |
-| **打印忽略** | `data-pdf-ignore="true"` | `.pdf-ignore` | 完全排除在 PDF 之外 |
-| **复合块避让** | `data-pdf-keep-together="split"` | `.pdf-keep-or-split` | 优先整块推移；若单块超出整页高度，降级为可拆分容器 |
+| **原子不可分割** | `data-print-atomic="true"` | `.print-atomic` | 当前页放不下整块移到下一页，单块超过整页报明确错误 |
+| **流式可分割** | `data-print-splittable="true"` | `.print-splittable` | 允许切断，深入测量子元素或文本行 |
+| **打印忽略** | `data-print-ignore="true"` | `.print-ignore` | 完全排除在 PDF 之外 |
+| **复合块避让** | `data-print-keep-together="split"` | `.print-keep-or-split` | 优先整块推移；若单块超出整页高度，降级为可拆分容器 |
 
 ### 5.2 编程式规则配置 (`PrintRuleConfig`)
 
@@ -566,7 +571,7 @@ await outputPDF({
 
 ### 5.3 常见 UI 组件库（Ant Design、Element Plus 等）适配规则
 
-`@darialan/web-pdf-printer` 默认内置了与主流组件库无缝兼容的规则：
+`@darialan/web-printer` 默认内置了与主流组件库无缝兼容的规则：
 - **表格行**：所有 `tr`、`.ant-table-row`、`.el-table__row` 自动作为原子项保护，表格行永远不会从中间被斩断。
 - **交互控件**：所有 `.ant-pagination`、分页器、隐藏标签自动忽略。
 - **标题与媒体**：`h1~h6`、`img`、`svg`、`canvas` 自动作为原子保护。
@@ -583,7 +588,7 @@ await outputPDF({
 引擎提供了框架无关的可视化诊断工具：
 
 ```ts
-import { inspectPrintLayout, visualizePageBreaks, clearPageBreaks } from '@darialan/web-pdf-printer';
+import { inspectPrintLayout, visualizePageBreaks, clearPageBreaks } from '@darialan/web-printer';
 
 const element = document.getElementById('my-report');
 
@@ -632,10 +637,10 @@ console.table({
 - **原因**：某个被标记为 `atomic`（或 `img`）的单体元素高度超过了当前纸张正文的最大容量（例如 A4 纵向容量约为 950px，但有一张高度为 1500px 的整屏大图）。任何避让算法都无法在不裁切它的前提下把它放在任何一页中。
 - **解决方式**：
   1. 将过大的图片限制最大高度（例如在 CSS 中设置 `max-height: 800px; object-fit: contain;`）。
-  2. 若该容器本身是文字卡片，请为其增加 `data-pdf-splittable="true"` 或 `data-pdf-keep-together="split"`，允许引擎深入其内部进行按行分割。
+  2. 若该容器本身是文字卡片，请为其增加 `data-print-splittable="true"` 或 `data-print-keep-together="split"`，允许引擎深入其内部进行按行分割。
 
 ---
 
 ## 结语
 
-`@darialan/web-pdf-printer` 通过将计算样式冻结、行级 Range 测量、贪心回退分页与按页微切片渲染分层解耦，构筑起一套高保真、低内存、零截断的前端打印基础设施。欢迎在各类中后台单据与报表导出场景中深度应用！
+`@darialan/web-printer` 通过将计算样式冻结、行级 Range 测量、贪心回退分页与按页微切片渲染分层解耦，构筑起一套高保真、低内存、零截断的前端打印基础设施。欢迎在各类中后台单据与报表导出场景中深度应用！

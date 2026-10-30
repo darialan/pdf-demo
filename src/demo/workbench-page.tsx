@@ -15,7 +15,7 @@ export default function WorkbenchPage() {
       <a className="skip-link" href="#main">跳至主要内容</a>
       <header className="workbench-topbar">
         <div className="workbench-topbar-inner">
-          <a className="brand" href="#/" aria-label="WebPDF Printer 首页">
+          <a className="brand" href="#/" aria-label="Web Printer 首页">
             <BrandMark /><BrandWordmark />
           </a>
           <span className="workbench-topbar-title">打印工作台</span>

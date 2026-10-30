@@ -3,7 +3,7 @@ import {
   buildPrintRules,
   classifyPrintNode,
   configurePrint,
-  PDF_PRINT_CLASSES,
+  PRINT_CLASSES,
   resetPrintRules,
 } from './print-rules';
 
@@ -35,43 +35,43 @@ test('基础层技术无关且仅使用原生标准协议与标签', () => {
 test('支持三大标准属性协议与类名约定 (atomic, splittable, ignore)', () => {
   // 1. 不可分割 (Atomic)
   const elAtomicAttr = document.createElement('div');
-  elAtomicAttr.setAttribute('data-pdf-atomic', 'true');
+  elAtomicAttr.setAttribute('data-print-atomic', 'true');
   expect(classifyPrintNode(elAtomicAttr)).toMatchObject({ kind: 'atomic' });
 
   const elAtomicClass = document.createElement('div');
-  elAtomicClass.className = PDF_PRINT_CLASSES.ATOMIC;
+  elAtomicClass.className = PRINT_CLASSES.ATOMIC;
   expect(classifyPrintNode(elAtomicClass)).toMatchObject({ kind: 'atomic' });
 
   // 兼容别名 (keep-together / keep-or-split)
   const elKeepAttr = document.createElement('div');
-  elKeepAttr.setAttribute('data-pdf-keep-together', 'true');
+  elKeepAttr.setAttribute('data-print-keep-together', 'true');
   expect(classifyPrintNode(elKeepAttr)).toMatchObject({ kind: 'atomic' });
 
   const elSplitAttr = document.createElement('div');
-  elSplitAttr.setAttribute('data-pdf-keep-together', 'split');
+  elSplitAttr.setAttribute('data-print-keep-together', 'split');
   expect(classifyPrintNode(elSplitAttr)).toMatchObject({ kind: 'atomic' });
 
   // 2. 自由可分割流式项 (Splittable)
   const elSplittableAttr = document.createElement('div');
-  elSplittableAttr.setAttribute('data-pdf-splittable', 'true');
+  elSplittableAttr.setAttribute('data-print-splittable', 'true');
   expect(classifyPrintNode(elSplittableAttr)).toMatchObject({ kind: 'container' });
 
   const elSplittableClass = document.createElement('div');
-  elSplittableClass.className = PDF_PRINT_CLASSES.SPLITTABLE;
+  elSplittableClass.className = PRINT_CLASSES.SPLITTABLE;
   expect(classifyPrintNode(elSplittableClass)).toMatchObject({ kind: 'container' });
 
   // 兼容别名 force-split
   const elBreakAttr = document.createElement('div');
-  elBreakAttr.setAttribute('data-pdf-break', 'split');
+  elBreakAttr.setAttribute('data-print-break', 'split');
   expect(classifyPrintNode(elBreakAttr)).toMatchObject({ kind: 'container' });
 
   // 3. 忽略打印 (Ignore)
   const elIgnoreAttr = document.createElement('div');
-  elIgnoreAttr.setAttribute('data-pdf-ignore', 'true');
+  elIgnoreAttr.setAttribute('data-print-ignore', 'true');
   expect(classifyPrintNode(elIgnoreAttr)).toMatchObject({ kind: 'ignore' });
 
   const elIgnoreClass = document.createElement('div');
-  elIgnoreClass.className = PDF_PRINT_CLASSES.IGNORE;
+  elIgnoreClass.className = PRINT_CLASSES.IGNORE;
   expect(classifyPrintNode(elIgnoreClass)).toMatchObject({ kind: 'ignore' });
 });
 
@@ -124,4 +124,20 @@ test('explicit atomic configuration rejects overflow while keepOrSplit remains a
   expect(() => resolveAtomicOverflow(strict, 600, 500)).toThrow('超过');
   const flexible = classifyPrintNode(node, buildPrintRules({ keepOrSplit: ['.group'] }));
   expect(resolveAtomicOverflow(flexible, 600, 500)).toBe('descend');
+});
+
+test('new and legacy HTML protocols produce identical classifications', () => {
+  const pairs = [
+    ['data-print-atomic="true"', 'data-pdf-atomic="true"'],
+    ['data-print-splittable="true"', 'data-pdf-splittable="true"'],
+    ['data-print-ignore="true"', 'data-pdf-ignore="true"'],
+    ['class="print-atomic"', 'class="pdf-atomic"'],
+    ['class="print-splittable"', 'class="pdf-splittable"'],
+    ['class="print-ignore"', 'class="pdf-ignore"'],
+    ['data-print-keep-together="split"', 'data-pdf-keep-together="split"'],
+  ];
+  for (const [current, legacy] of pairs) {
+    const host = document.createElement('div'); host.innerHTML = `<div ${current}>same</div><div ${legacy}>same</div>`;
+    expect(classifyPrintNode(host.children[0])).toEqual(classifyPrintNode(host.children[1]));
+  }
 });

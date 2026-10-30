@@ -43,7 +43,7 @@ export function CustomHeaderFooterDemo() {
     <div className="business-total"><span>申请金额 <strong>{money(total)}</strong></span><span>核准金额 <strong>{money(total)}</strong></span></div>
    </BusinessSection>
    <BusinessSection title="票据附件" extra="点击图片查看原图 · 2 张">
-    <figure className="business-attachment" data-pdf-atomic="true">
+    <figure className="business-attachment" data-print-atomic="true">
      <Image src={demoAsset('expense-receipts.png')} alt="酒店与出租车票据示例照片" />
      <figcaption>酒店住宿票据.jpg / 出租车票据.jpg<small>林晓上传 · 2026-10-24 09:38 · 模拟票据照片，仅供演示</small></figcaption>
     </figure>

@@ -8,7 +8,7 @@ test('each page clones only its snapshot and head resources, excluding source an
   const source = document.createElement('article');
   const preview = document.createElement('aside');
   const host = document.createElement('div');
-  host.innerHTML = '<article><p>print content</p><span data-pdf-debug>marker</span></article>';
+  host.innerHTML = '<article><p>print content</p><span data-print-debug>marker</span></article>';
   const root = host.firstElementChild as HTMLElement;
   document.body.append(source, preview, host);
   const canvas = document.createElement('canvas');
@@ -23,7 +23,7 @@ test('each page clones only its snapshot and head resources, excluding source an
   expect(ignoreElements(root)).toBe(false);
   expect(ignoreElements(root.querySelector('p'))).toBe(false);
   expect(ignoreElements(document.head.querySelector('style'))).toBe(false);
-  expect(ignoreElements(root.querySelector('[data-pdf-debug]'))).toBe(true);
+  expect(ignoreElements(root.querySelector('[data-print-debug]'))).toBe(true);
   expect(scale * scale * width * height).toBeLessThanOrEqual(8_000_000);
   renderer.dispose();
   expect(canvas.width).toBe(0);

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>@darialan/web-pdf-printer 架构拆解 · 面试讲稿</title>
+<title>@darialan/web-printer 架构拆解 · 面试讲稿</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 <style>
@@ -204,7 +204,7 @@ footer{margin-top:60px;padding-top:22px;border-top:1px solid var(--line);font-si
 
 <!-- ==================== HERO ==================== -->
 <header class="hero" id="overview">
-  <h1><code class="mono" style="font-size:.62em">@darialan/web-pdf-printer</code><br>架构拆解与设计答辩</h1>
+  <h1><code class="mono" style="font-size:.62em">@darialan/web-printer</code><br>架构拆解与设计答辩</h1>
   <p class="lede">一个客户端 DOM 分页与 PDF 导出引擎的完整拆解：架构、流程、数据流、工程机制，以及面试时如何回答"这个库为什么这么设计"。</p>
 
   <div class="thesis">
@@ -245,7 +245,7 @@ footer{margin-top:60px;padding-top:22px;border-top:1px solid var(--line);font-si
       <div class="pd-good">
         <div class="tag">决策 A</div>
         <h3>语义协议 + 行级测量 + 贪心回退</h3>
-        <p>三重解法：① <span class="mono">data-pdf-atomic / splittable / ignore</span> 三标签协议，把"能不能切"从算法里拿出来交给业务声明；② 用 <span class="mono">Range.getClientRects()</span> 取每个文本行的真实包围盒，精确到行而非节点；③ <span class="mono">paginate()</span> 遇到跨页受保护区就把切点<strong>回退到该元素顶部</strong>。</p>
+        <p>三重解法：① <span class="mono">data-print-atomic / splittable / ignore</span> 三标签协议，把"能不能切"从算法里拿出来交给业务声明；② 用 <span class="mono">Range.getClientRects()</span> 取每个文本行的真实包围盒，精确到行而非节点；③ <span class="mono">paginate()</span> 遇到跨页受保护区就把切点<strong>回退到该元素顶部</strong>。</p>
       </div>
     </div>
 
@@ -315,7 +315,7 @@ footer{margin-top:60px;padding-top:22px;border-top:1px solid var(--line);font-si
           <span class="layer-role">框架绑定 · 调试可视化</span>
         </div>
         <div class="chips">
-          <span class="chip ext">use-pdf-print.ts</span>
+          <span class="chip ext">use-web-printer.ts</span>
           <span class="chip ext">page-break-overlay.ts</span>
         </div>
         <div class="layer-note">把库的异步能力包成 React 状态机（<span class="mono">isPrinting / progress / error / inspection</span> + AbortController 取消），并用<strong>原生 DOM</strong>（非 React）画分页切割线与 atomic/splittable/ignore 语义徽标。选择原生 DOM 是因为覆盖层要嵌在任意业务 DOM 里，React 渲染会引入额外依赖与生命周期问题。</div>
@@ -769,7 +769,7 @@ capacity    = (footerY - <span class="n">6</span> - bodyTop) / ratio;
       <ul class="small" style="padding-left:17px;color:var(--ink-2);margin:8px 0 0">
         <li style="margin-bottom:6px"><b>快照</b>：<code class="mono">prepareLayout()</code> 的 <code class="mono">cleanup()</code> 挂在 try/catch/finally 三处，出口路径全收。同时从 <code class="mono">activeRoots</code>（WeakSet）移除，解除重复提交锁。</li>
         <li style="margin-bottom:6px"><b>Canvas</b>：<code class="mono">release(canvas)</code> 立即把宽高置 0 释放显存；<code class="mono">dispose()</code> 兜底清理所有残留。两者都在 finally 中调用。</li>
-        <li style="margin-bottom:6px"><b>调试图层</b>：<code class="mono">clearPageBreaks()</code> 按 <code class="mono">[data-pdf-debug]</code> 选择器批量移除，并还原临时改写的 <code class="mono">position</code>。</li>
+        <li style="margin-bottom:6px"><b>调试图层</b>：<code class="mono">clearPageBreaks()</code> 按 <code class="mono">[data-print-debug]</code> 选择器批量移除，并还原临时改写的 <code class="mono">position</code>。</li>
       </ul>
     </div>
     <div class="card">
@@ -788,10 +788,10 @@ capacity    = (footerY - <span class="n">6</span> - bodyTop) / ratio;
   <h3 style="font-family:'Outfit',sans-serif;font-weight:600;font-size:17px;margin:30px 0 12px">6.3 扩展点：从声明式到替换式，共 4 个层级</h3>
   <div class="grid g2">
     <div class="ext">
-      <span class="api">data-pdf-atomic / data-pdf-splittable / data-pdf-ignore</span>
+      <span class="api">data-print-atomic / data-print-splittable / data-print-ignore</span>
       <h3>L1 · 声明式标记（最常用）</h3>
-      <p>业务方在自己写的组件上直接加属性或类名即可，<b>不需要写任何配置</b>。同时提供 <code class="mono">.pdf-atomic</code> 等类名别名与 <code class="mono">keep-together</code> 等兼容别名，便于从旧方案平滑迁移。</p>
-      <span class="where">core/rules/print-rules.ts · PDF_PRINT_ATTRIBUTES</span>
+      <p>业务方在自己写的组件上直接加属性或类名即可，<b>不需要写任何配置</b>。同时提供 <code class="mono">.print-atomic</code> 等类名别名与 <code class="mono">keep-together</code> 等兼容别名，便于从旧方案平滑迁移。</p>
+      <span class="where">core/rules/print-rules.ts · PRINT_ATTRIBUTES</span>
     </div>
     <div class="ext">
       <span class="api">PrintRuleConfig { atomic, splittable, ignore, customRules }</span>
@@ -884,7 +884,7 @@ capacity    = (footerY - <span class="n">6</span> - bodyTop) / ratio;
   <div class="qa">
     <div class="qa-q"><span class="qn">Q5</span><strong>分页怎么保证不切开文字和表格行？</strong></div>
     <div class="qa-a">
-      <p>三步：① 用 <code class="mono">data-pdf-atomic / splittable / ignore</code> 把 DOM 标注成三类语义；② 测量时，原子元素整体注册为一个 <code class="mono">Interval</code>，文本节点则用 <code class="mono">Range.getClientRects()</code> 拆成逐行区间——表格行天然命中 atomic 规则，所以"表格行不腰斩"是算法自然结果而非特判；③ <code class="mono">paginate()</code> 遇到切点穿过受保护区，就把切点<strong>回退到该元素顶部</strong>，并迭代回退直到落在空白缝隙。</p>
+      <p>三步：① 用 <code class="mono">data-print-atomic / splittable / ignore</code> 把 DOM 标注成三类语义；② 测量时，原子元素整体注册为一个 <code class="mono">Interval</code>，文本节点则用 <code class="mono">Range.getClientRects()</code> 拆成逐行区间——表格行天然命中 atomic 规则，所以"表格行不腰斩"是算法自然结果而非特判；③ <code class="mono">paginate()</code> 遇到切点穿过受保护区，就把切点<strong>回退到该元素顶部</strong>，并迭代回退直到落在空白缝隙。</p>
       <div class="why"><b>关键洞察：</b>"能不能切"这件事被从算法里<strong>抽出来交给了业务声明</strong>。库不猜你是表格还是卡片，它只认协议。这也是为什么它能做成技术无关的——核心规则里没有任何一个组件库的类名。</div>
     </div>
   </div>
@@ -963,7 +963,7 @@ capacity    = (footerY - <span class="n">6</span> - bodyTop) / ratio;
 
 <footer>
   <div>
-    <strong style="color:var(--ink-2)">@darialan/web-pdf-printer</strong> · 架构拆解 ·
+    <strong style="color:var(--ink-2)">@darialan/web-printer</strong> · 架构拆解 ·
     <span class="mono">src/lib</span> 全量精读（39 文件 / 约 1400 行实现 + 485 行测试）
   </div>
   <div>依赖图、错误清单均由脚本实测得出，非推测</div>

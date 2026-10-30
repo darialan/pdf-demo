@@ -1,6 +1,6 @@
 /**
- * WebPDF Printer (@darialan/web-pdf-printer)
- * High-performance, pixel-accurate client-side DOM-to-PDF pagination and export engine.
+ * Web Printer (@darialan/web-printer)
+ * High-performance, pixel-accurate client-side HTML pagination engine with PDF and PNG output.
  */
 
 // Core types & definitions
@@ -28,17 +28,6 @@ export {
   clearPageBreaks,
 } from './overlay/page-break-overlay';
 export type { ObservabilityStats } from './overlay/page-break-overlay';
-
-// React Hook (Convenience binding for React applications)
-export {
-  usePdfPrint,
-} from './hooks/use-pdf-print';
-export type {
-  UsePdfPrintProgress,
-  UsePdfPrintState,
-  ExportPdfParams,
-  InspectLayoutParams,
-} from './hooks/use-pdf-print';
 
 // Format-specific output writers and their extension contract.
 export * from './output';

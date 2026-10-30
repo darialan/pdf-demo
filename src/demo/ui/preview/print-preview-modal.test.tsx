@@ -1,8 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
-import { HtmlPreviewData, PdfPreviewModal } from './pdf-preview-modal';
+import { HtmlPreviewData, PrintPreviewModal } from './print-preview-modal';
 
-describe('PdfPreviewModal 组件 (HTML 虚拟纸张即时预览)', () => {
+describe('PrintPreviewModal 组件 (HTML 虚拟纸张即时预览)', () => {
   const mockPreviewData: HtmlPreviewData = {
     paperLabel: 'A4 · 210 × 297 mm',
     pages: [
@@ -31,7 +31,7 @@ describe('PdfPreviewModal 组件 (HTML 虚拟纸张即时预览)', () => {
 
   test('当 loading 为 true 时展示排版计算中指示', () => {
     render(
-      <PdfPreviewModal
+      <PrintPreviewModal
         open={true}
         loading={true}
         onClose={jest.fn()}
@@ -48,7 +48,7 @@ describe('PdfPreviewModal 组件 (HTML 虚拟纸张即时预览)', () => {
     const onClose = jest.fn();
 
     render(
-      <PdfPreviewModal
+      <PrintPreviewModal
         open={true}
         loading={false}
         previewData={mockPreviewData}

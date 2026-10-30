@@ -1,10 +1,10 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { measureDocument, visualizePageBreaks } from '@darialan/web-pdf-printer';
-import { buildHtmlPreviewData } from './preview/pdf-preview-modal';
+import { measureDocument, visualizePageBreaks } from '@darialan/web-printer';
+import { buildHtmlPreviewData } from './preview/print-preview-modal';
 import { PrintWorkbench } from './print-workbench';
 
-jest.mock('@darialan/web-pdf-printer', () => ({
+jest.mock('@darialan/web-printer', () => ({
   DEFAULT_SETTINGS: { pageNumber: { enabled: true } },
   namespacePreviewHtml: (html: string) => html,
   resolvePrintElement: (el: HTMLElement) => el,
@@ -15,9 +15,9 @@ jest.mock('@darialan/web-pdf-printer', () => ({
   paginate: () => [{ start: 0, end: 500 }],
   outputPDF: jest.fn(),
   visualizePageBreaks: jest.fn(),
-  clearPageBreaks: () => global.document.querySelectorAll('[data-pdf-debug]').forEach(el => el.remove()),
+  clearPageBreaks: () => global.document.querySelectorAll('[data-print-debug]').forEach(el => el.remove()),
 }));
-jest.mock('./preview/pdf-preview-modal', () => ({ buildHtmlPreviewData: jest.fn() }));
+jest.mock('./preview/print-preview-modal', () => ({ buildHtmlPreviewData: jest.fn() }));
 jest.mock('./debug-panel/print-toolbar', () => ({
   PrintObservabilityBanner: () => <div>标记统计</div>,
   PrintToolbarActions: ({ debugActive, onToggleDebug }: any) => <button onClick={onToggleDebug}>{debugActive ? '退出检查' : '检查分页'}</button>,
@@ -53,7 +53,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   (visualizePageBreaks as jest.Mock).mockImplementation((_pages, root) => {
     const marker = document.createElement('span');
-    marker.setAttribute('data-pdf-debug', 'true');
+    marker.setAttribute('data-print-debug', 'true');
     marker.textContent = '页面标记';
     root.appendChild(marker);
     return { atomic: 1, splittable: 1, ignore: 0 };

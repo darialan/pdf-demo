@@ -27,7 +27,7 @@ export function createPageCapture(width: number, signal?: AbortSignal) {
         logging: false,
         imageTimeout: 15000,
         ignoreElements: node => {
-          if (node.hasAttribute('data-pdf-debug') || node.getAttribute('data-pdf-ignore') === 'true') return true;
+          if (node.hasAttribute('data-print-debug') || node.getAttribute('data-print-ignore') === 'true') return true;
           // html2canvas otherwise clones the entire document for EACH page,
           // including the original long article and every HTML preview copy.
           // Keep this snapshot, its ancestors and head resources only.

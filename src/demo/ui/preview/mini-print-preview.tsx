@@ -7,10 +7,10 @@ import {
 import { Button, Spin } from 'antd';
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { namespacePreviewHtml } from '../../../lib';
-import { HtmlPreviewData } from './pdf-preview-modal';
-import './mini-pdf-preview.css';
+import { HtmlPreviewData } from './print-preview-modal';
+import './mini-print-preview.css';
 
-export interface MiniPdfPreviewProps {
+export interface MiniPrintPreviewProps {
   data: HtmlPreviewData | null;
   loading?: boolean;
   error?: string | null;
@@ -192,7 +192,7 @@ function MiniPreviewPage({ index, page, data, currentZoom, fullscreen, eager }: 
   );
 }
 
-export function MiniPdfPreview({ data, loading = false, error, onRetry, onClose }: MiniPdfPreviewProps) {
+export function MiniPrintPreview({ data, loading = false, error, onRetry, onClose }: MiniPrintPreviewProps) {
   const [minimized, setMinimized] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [viewportWidth, setViewportWidth] = useState(() => window.innerWidth);
@@ -242,7 +242,7 @@ export function MiniPdfPreview({ data, loading = false, error, onRetry, onClose 
     <>
       {fullscreen && (
         <div
-          className="mini-pdf-preview-backdrop"
+          className="mini-print-preview-backdrop"
           onClick={() => setFullscreen(false)}
         />
       )}
@@ -253,7 +253,7 @@ export function MiniPdfPreview({ data, loading = false, error, onRetry, onClose 
         aria-modal={fullscreen || undefined}
         aria-label="纸张预览"
         aria-busy={loading}
-        className={`mini-pdf-preview-widget ${fullscreen ? 'is-fullscreen' : ''}`}
+        className={`mini-print-preview-widget ${fullscreen ? 'is-fullscreen' : ''}`}
         style={{
           width: fullscreen ? 'auto' : minimized ? '200px' : '272px',
         }}
@@ -364,7 +364,7 @@ export class MiniPreviewBoundary extends React.Component<{
 
   render() {
     if (!this.state.error) return this.props.children;
-    return <div className="mini-pdf-preview-widget">
+    return <div className="mini-print-preview-widget">
       <div className="mini-preview-header">
         <span className="mini-preview-title-wrap">📄 纸张预览</span>
         <button className="mini-preview-icon-btn" aria-label="关闭预览小窗" onClick={this.props.onClose}>×</button>

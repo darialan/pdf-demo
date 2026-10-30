@@ -120,9 +120,9 @@ test('centered print roots start at the page origin while retaining internal mar
 
 test('configured and class-based ignore selectors remove whole subtrees before layout', () => {
   const source = document.createElement('div');
-  source.innerHTML = '<div class="filter"><img src="broken.png">excluded</div><p class="pdf-ignore">excluded</p><p>retained</p>';
+  source.innerHTML = '<div class="filter"><img src="broken.png">excluded</div><p class="print-ignore">excluded</p><p>retained</p>';
   const clone = cloneWithResolvedStyles(source, [
-    { selector: '.filter, .pdf-ignore', result: { kind: 'ignore' } },
+    { selector: '.filter, .print-ignore', result: { kind: 'ignore' } },
   ]);
   expect(clone.querySelector('img')).toBeNull();
   expect(clone.textContent).toBe('retained');
@@ -135,4 +135,10 @@ test('unreadable canvas fails explicitly instead of exporting a blank placeholde
   const read = jest.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockImplementation(() => { throw new Error('SecurityError'); });
   try { expect(() => cloneWithResolvedStyles(root)).toThrow('画布内容无法读取'); }
   finally { read.mockRestore(); }
+});
+
+test('legacy ignore attributes and classes still disappear from snapshots', () => {
+  const root = document.createElement('div');
+  root.innerHTML = '<p data-pdf-ignore="true">old attribute</p><p class="pdf-ignore">old class</p><p>keep</p>';
+  expect(cloneWithResolvedStyles(root).textContent).toBe('keep');
 });

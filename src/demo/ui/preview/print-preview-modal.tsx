@@ -10,7 +10,7 @@ import {
 } from '../../../lib';
 import { Button, Modal, Spin, Tag } from 'antd';
 import React, { useId, useMemo, useState } from 'react';
-import './pdf-preview-modal.css';
+import './print-preview-modal.css';
 
 export interface HtmlPaperGeometry {
   paperWidthPx: number;
@@ -118,7 +118,7 @@ export async function buildHtmlPreviewData({ contentElement, header, footer, set
   } finally { layout.cleanup(); }
 }
 
-export interface PdfPreviewModalProps {
+export interface PrintPreviewModalProps {
   open: boolean;
   loading?: boolean;
   previewData?: HtmlPreviewData | null;
@@ -127,14 +127,14 @@ export interface PdfPreviewModalProps {
   onRefresh?: () => void;
 }
 
-export function PdfPreviewModal({
+export function PrintPreviewModal({
   open,
   loading = false,
   previewData,
   onClose,
   onExport,
   onRefresh,
-}: PdfPreviewModalProps) {
+}: PrintPreviewModalProps) {
   const [zoom, setZoom] = useState(0.85);
 
   const handleZoomIn = () => setZoom(prev => Math.min(1.5, Number((prev + 0.1).toFixed(2))));
@@ -143,7 +143,7 @@ export function PdfPreviewModal({
 
   return (
     <Modal
-      className="pdf-preview-modal"
+      className="print-preview-modal"
       open={open}
       onCancel={onClose}
       footer={null}
@@ -152,10 +152,10 @@ export function PdfPreviewModal({
       destroyOnClose={false}
       closable={false}
     >
-      <div className="pdf-preview-header">
-        <div className="pdf-preview-title-area">
-          <span className="pdf-preview-title">📄 打印效果预览 (HTML 虚拟纸张)</span>
-          <div className="pdf-preview-tags">
+      <div className="print-preview-header">
+        <div className="print-preview-title-area">
+          <span className="print-preview-title">📄 打印效果预览 (HTML 虚拟纸张)</span>
+          <div className="print-preview-tags">
             {previewData?.paperLabel && (
               <Tag color="blue" style={{ margin: 0, fontSize: 11 }}>
                 {previewData.paperLabel}
@@ -175,11 +175,11 @@ export function PdfPreviewModal({
         </div>
 
         {/* 缩放控制器 */}
-        <div className="pdf-preview-center-controls">
+        <div className="print-preview-center-controls">
           <Button size="small" type="text" onClick={handleZoomOut} disabled={zoom <= 0.4}>
             －
           </Button>
-          <span className="pdf-preview-zoom-text">{Math.round(zoom * 100)}%</span>
+          <span className="print-preview-zoom-text">{Math.round(zoom * 100)}%</span>
           <Button size="small" type="text" onClick={handleZoomIn} disabled={zoom >= 1.5}>
             ＋
           </Button>
@@ -188,7 +188,7 @@ export function PdfPreviewModal({
           </Button>
         </div>
 
-        <div className="pdf-preview-actions">
+        <div className="print-preview-actions">
           {onRefresh && (
             <Button size="small" onClick={onRefresh} disabled={loading}>
               🔄 重新排版
@@ -207,9 +207,9 @@ export function PdfPreviewModal({
 
       <div className="html-preview-workspace">
         {loading && (
-          <div className="pdf-preview-loading">
+          <div className="print-preview-loading">
             <Spin size="large" />
-            <div className="pdf-preview-loading-text">正在计算物理纸张排版与切片视窗…</div>
+            <div className="print-preview-loading-text">正在计算物理纸张排版与切片视窗…</div>
           </div>
         )}
 
@@ -229,7 +229,7 @@ export function PdfPreviewModal({
           ))
         ) : (
           !loading && (
-            <div className="pdf-preview-empty">
+            <div className="print-preview-empty">
               <span>暂无预览数据</span>
               {onRefresh && (
                 <Button type="primary" size="small" onClick={onRefresh}>

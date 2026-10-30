@@ -36,3 +36,7 @@ yarn-error.log*
 # Browser test artifacts
 /playwright-report/
 /test-results/
+.vercel
+
+# npm pack artifacts
+*.tgz

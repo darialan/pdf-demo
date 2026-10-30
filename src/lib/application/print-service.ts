@@ -117,6 +117,8 @@ export async function inspectPrintLayout({
         totalMs: performance.now() - started,
       },
     };
+    window.dispatchEvent(new CustomEvent('print-inspection', { detail: result }));
+    // Existing integrations can migrate their listener without a breaking change.
     window.dispatchEvent(new CustomEvent('pdf-print-inspection', { detail: result }));
     return result;
   } finally {

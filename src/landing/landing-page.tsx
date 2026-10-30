@@ -7,7 +7,7 @@ import './landing-page.css';
 
 const REPO = 'https://github.com/darialan/web-pdf-printer';
 const DOCS = `${REPO}#readme`;
-const INSTALL_CMD = 'npm install @darialan/web-pdf-printer';
+const INSTALL_CMD = 'npm install @darialan/web-printer';
 
 const scenes = [
   { key: 'purchase-order', title: '45 行采购明细表', description: '单独一张长表格，展示整行保护与单元格文字分页。', detail: '第一类：长表格', icon: 'grid' },
@@ -17,7 +17,7 @@ const scenes = [
 ] as const;
 
 const codeExamples = {
-  JavaScript: `import { outputDocument } from '@darialan/web-pdf-printer';
+  JavaScript: `import { outputDocument } from '@darialan/web-printer';
 
 const element = document.getElementById('report');
 
@@ -34,7 +34,7 @@ await outputDocument({
   },
 });`,
   React: `import { useRef, useState } from 'react';
-import { outputDocument } from '@darialan/web-pdf-printer';
+import { outputDocument } from '@darialan/web-printer';
 
 export function Report() {
   const reportRef = useRef<HTMLDivElement>(null);
@@ -66,7 +66,7 @@ export function Report() {
 }`,
   Vue: `<script setup>
 import { ref } from 'vue';
-import { outputDocument } from '@darialan/web-pdf-printer';
+import { outputDocument } from '@darialan/web-printer';
 
 const reportRef = ref(null);
 const busy = ref(false);
@@ -154,7 +154,7 @@ export function LandingPage() {
       <a className="skip-link" href="#main">跳至主要内容</a>
       <nav className="landing-nav" aria-label="全局导航">
         <div className="landing-container nav-wrap">
-          <a className="brand" href="#/" aria-label="WebPDF Printer 首页">
+          <a className="brand" href="#/" aria-label="Web Printer 首页">
             <BrandMark /><BrandWordmark />
           </a>
           <div className="nav-links">
@@ -268,8 +268,8 @@ export function LandingPage() {
           <div><h2>接入前的几个问题。</h2><p className="sub">输出格式、内容保护和使用范围。</p></div>
           <div className="faq-list">
             <details><summary><span>需要部署生成服务吗？</span><span className="faq-plus" aria-hidden="true">+</span></summary><p>导出过程在浏览器内完成，无需单独部署生成服务。页面中的图片和字体仍需正常加载；跨域资源需要对应服务器允许 CORS。</p></details>
-            <details><summary><span>支持哪些前端框架？</span><span className="faq-plus" aria-hidden="true">+</span></summary><p>可以。<code>outputDocument</code> 接收 DOM 元素，可在页面渲染后调用。React 项目也可以使用 <code>usePdfPrint</code> 管理导出状态；服务端渲染项目需要在客户端调用。</p></details>
-            <details><summary><span>长表格、图片和代码如何换页？</span><span className="faq-plus" aria-hidden="true">+</span></summary><p>表格行默认优先整体换页，图片、公式和代码块可以添加 <code>data-pdf-atomic="true"</code>。整块内容高于一页时，需要调整布局、纸张，或改用允许拆分的标记。</p></details>
+            <details><summary><span>支持哪些前端框架？</span><span className="faq-plus" aria-hidden="true">+</span></summary><p>可以。<code>outputDocument</code> 接收 DOM 元素，可在页面渲染后调用。React 项目也可以使用 <code>useWebPrinter</code> 管理导出状态；服务端渲染项目需要在客户端调用。</p></details>
+            <details><summary><span>长表格、图片和代码如何换页？</span><span className="faq-plus" aria-hidden="true">+</span></summary><p>表格行默认优先整体换页，图片、公式和代码块可以添加 <code>data-print-atomic="true"</code>。整块内容高于一页时，需要调整布局、纸张，或改用允许拆分的标记。</p></details>
             <details><summary><span>PDF 和分页图片有什么区别？</span><span className="faq-plus" aria-hidden="true">+</span></summary><p>两种格式共享分页与页面尺寸。PDF 将页面装订为一份文件；PNG 为每一页生成一张完整图片，以 ZIP 下载。图片像素尺寸还受截图清晰度和画布预算影响，设置中的 px 用于页面布局。</p></details>
             <details><summary><span>现有网页都能直接使用吗？</span><span className="faq-plus" aria-hidden="true">+</span></summary><p>可以传入能访问的 DOM 元素。图片和字体应加载完成，跨域图片需允许 CORS。复杂 CSS 的还原受画布渲染能力影响，建议先用自己的内容验证；跨域 <code>&lt;iframe&gt;</code>、视频和 Shadow DOM 不属于完整支持范围。</p></details>
             <details><summary><span>能用于商业项目吗？</span><span className="faq-plus" aria-hidden="true">+</span></summary><p>当前 NPM 包采用 MIT 许可，可以用于商业项目；分发时按许可证要求保留版权和许可声明。安装和接入文档中提供完整配置说明。</p></details>
@@ -284,7 +284,7 @@ export function LandingPage() {
       </main>
       <footer className="landing-footer">
         <div className="landing-container footer-wrap">
-          <a className="brand" href="#/" aria-label="WebPDF Printer 首页"><BrandMark /><BrandWordmark /></a>
+          <a className="brand" href="#/" aria-label="Web Printer 首页"><BrandMark /><BrandWordmark /></a>
           <span className="footer-note">MIT 开源许可</span>
           <div className="footer-links"><a href="#quickstart">接入方式</a><a href={DOCS} target="_blank" rel="noreferrer">文档</a><a href={REPO} target="_blank" rel="noreferrer">GitHub <Icon name="external" size={12} /></a></div>
         </div>

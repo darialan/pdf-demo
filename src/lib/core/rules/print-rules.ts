@@ -17,29 +17,41 @@ const ELEMENT_NODE_TYPE = 1;
  * 2. splittable: 可分割流式内容，允许分页线从中穿透
  * 3. ignore: 不打印，完全排除在打印纸张外
  */
-export const PDF_PRINT_ATTRIBUTES = {
+export const PRINT_ATTRIBUTES = {
   /** 不可分割：最小原子化单元，严禁跨页切断，当前页放不下整块换到下一页 */
-  ATOMIC: 'data-pdf-atomic="true"',
+  ATOMIC: 'data-print-atomic="true"',
   /** 可分割：声明为流式内容，允许分页线直接穿透内部 */
-  SPLITTABLE: 'data-pdf-splittable="true"',
+  SPLITTABLE: 'data-print-splittable="true"',
   /** 打印忽略：不参与测量、快照与打印渲染 */
-  IGNORE: 'data-pdf-ignore="true"',
+  IGNORE: 'data-print-ignore="true"',
 
   // 兼容别名
-  KEEP_TOGETHER: 'data-pdf-keep-together="true"',
-  KEEP_OR_SPLIT: 'data-pdf-keep-together="split"',
-  FORCE_SPLIT: 'data-pdf-break="split"',
+  KEEP_TOGETHER: 'data-print-keep-together="true"',
+  KEEP_OR_SPLIT: 'data-print-keep-together="split"',
+  FORCE_SPLIT: 'data-print-break="split"',
 } as const;
 
-export const PDF_PRINT_CLASSES = {
-  ATOMIC: 'pdf-atomic',
-  SPLITTABLE: 'pdf-splittable',
-  IGNORE: 'pdf-ignore',
+export const PRINT_CLASSES = {
+  ATOMIC: 'print-atomic',
+  SPLITTABLE: 'print-splittable',
+  IGNORE: 'print-ignore',
 
   // 兼容别名
-  KEEP_TOGETHER: 'pdf-keep-together',
-  KEEP_OR_SPLIT: 'pdf-keep-or-split',
-  FORCE_SPLIT: 'pdf-force-split',
+  KEEP_TOGETHER: 'print-keep-together',
+  KEEP_OR_SPLIT: 'print-keep-or-split',
+  FORCE_SPLIT: 'print-force-split',
+} as const;
+
+/** @deprecated Use PRINT_ATTRIBUTES. Legacy attributes remain accepted. */
+export const PDF_PRINT_ATTRIBUTES = {
+  ATOMIC: 'data-pdf-atomic="true"', SPLITTABLE: 'data-pdf-splittable="true"',
+  IGNORE: 'data-pdf-ignore="true"', KEEP_TOGETHER: 'data-pdf-keep-together="true"',
+  KEEP_OR_SPLIT: 'data-pdf-keep-together="split"', FORCE_SPLIT: 'data-pdf-break="split"',
+} as const;
+/** @deprecated Use PRINT_CLASSES. Legacy classes remain accepted. */
+export const PDF_PRINT_CLASSES = {
+  ATOMIC: 'pdf-atomic', SPLITTABLE: 'pdf-splittable', IGNORE: 'pdf-ignore',
+  KEEP_TOGETHER: 'pdf-keep-together', KEEP_OR_SPLIT: 'pdf-keep-or-split', FORCE_SPLIT: 'pdf-force-split',
 } as const;
 
 /**
@@ -49,23 +61,23 @@ export const PDF_PRINT_CLASSES = {
 export const BASE_PRINT_RULES: readonly PrintRule[] = [
   // 1. 忽略规则（不打印：标准不可见标签与协议标记）
   {
-    selector: 'script, style, template, [hidden], [data-pdf-debug], [data-pdf-ignore="true"], .pdf-ignore',
+    selector: 'script, style, template, [hidden], [data-print-debug], [data-print-ignore="true"], .print-ignore, [data-pdf-debug], [data-pdf-ignore="true"], .pdf-ignore',
     result: { kind: 'ignore' },
   },
   // 2. 自由可分割规则（流式容器与段落流，允许分页线穿透）
   {
-    selector: '[data-pdf-splittable="true"], .pdf-splittable, [data-pdf-break="split"], .pdf-force-split',
+    selector: '[data-print-splittable="true"], .print-splittable, [data-print-break="split"], .print-force-split, [data-pdf-splittable="true"], .pdf-splittable, [data-pdf-break="split"], .pdf-force-split',
     result: { kind: 'container' },
   },
   // 3. 不可分割规则（显式声明的原子保护块：严禁拆分，超高报错）
   {
     selector:
-      '[data-pdf-atomic="true"], .pdf-atomic, [data-pdf-keep-together="true"], .pdf-keep-together',
+      '[data-print-atomic="true"], .print-atomic, [data-print-keep-together="true"], .print-keep-together, [data-pdf-atomic="true"], .pdf-atomic, [data-pdf-keep-together="true"], .pdf-keep-together',
     result: { kind: 'atomic', label: '不可分割区域', overflow: 'error' },
   },
   // 4. 不可分割规则（表格行与复合原子项：放不下整块换页，超高深入拆分）
   {
-    selector: '[data-pdf-keep-together="split"], .pdf-keep-or-split, tr',
+    selector: '[data-print-keep-together="split"], .print-keep-or-split, [data-pdf-keep-together="split"], .pdf-keep-or-split, tr',
     result: { kind: 'atomic', label: '表格行与复合块', overflow: 'split' },
   },
   // 5. 原生不可切图片媒体与标题

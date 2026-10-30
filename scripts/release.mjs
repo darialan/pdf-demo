@@ -61,7 +61,7 @@ function runCapture(cmd) {
 async function main() {
   console.log(`${colors.bold}${colors.magenta}`);
   console.log('╔═════════════════════════════════════════════════════════╗');
-  console.log('║       WebPDF Printer (@darialan/web-pdf-printer)        ║');
+  console.log('║       Web Printer (@darialan/web-printer)        ║');
   console.log('║               一键快速发布到 NPM 官方源                 ║');
   console.log('╚═════════════════════════════════════════════════════════╝');
   console.log(colors.reset);
@@ -184,7 +184,7 @@ async function main() {
       '  2. 权限问题：请确认你当前登录的账号是否拥有 @darialan 命名空间的所有权或权限。'
     );
   }
-  success(`已成功发布 @darialan/web-pdf-printer@${finalVersion} 到 NPM！`);
+  success(`已成功发布 ${pkgName}@${finalVersion} 到 NPM！`);
 
   // 10. 推送 Git Commit 和 Tag 到远程仓库
   step('9. 同步推送 Git 提交与 Tag 到 GitHub');

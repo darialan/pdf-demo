@@ -7,8 +7,8 @@ import { visualizePageBreaks } from '../../lib';
 import { Alert, Button, message, Tabs } from 'antd';
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import { PrintObservabilityBanner, PrintToolbarActions } from './debug-panel/print-toolbar';
-import { buildHtmlPreviewData, HtmlPreviewData } from './preview/pdf-preview-modal';
-import { MiniPdfPreview, MiniPreviewBoundary } from './preview/mini-pdf-preview';
+import { buildHtmlPreviewData, HtmlPreviewData } from './preview/print-preview-modal';
+import { MiniPrintPreview, MiniPreviewBoundary } from './preview/mini-print-preview';
 import './debug-panel/print-toolbar.css';
 
 export interface PrintSceneItem {
@@ -117,10 +117,10 @@ export function PrintWorkbench({ scenes, initialSceneKey }: { scenes: PrintScene
       updateReady();
       handleCloseDebug();
     };
-    window.addEventListener('pdf-demo-content-change', invalidate);
+    window.addEventListener('print-demo-content-change', invalidate);
     return () => {
       observer?.disconnect();
-      window.removeEventListener('pdf-demo-content-change', invalidate);
+      window.removeEventListener('print-demo-content-change', invalidate);
     };
     // Scene DOM has committed before this subscription is installed.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -274,7 +274,7 @@ export function PrintWorkbench({ scenes, initialSceneKey }: { scenes: PrintScene
       />
     </div>
     {debugActive && previewOpen && <MiniPreviewBoundary key={previewAttempt} onRetry={handleRetryPreview} onClose={handleClosePreview}>
-      <MiniPdfPreview data={miniPreviewData} loading={previewLoading} error={previewError}
+      <MiniPrintPreview data={miniPreviewData} loading={previewLoading} error={previewError}
         onRetry={handleRetryPreview} onClose={handleClosePreview} />
     </MiniPreviewBoundary>}
   </div>;

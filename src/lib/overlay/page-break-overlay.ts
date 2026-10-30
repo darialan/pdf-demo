@@ -12,7 +12,7 @@ const restorers = new Map<HTMLElement, () => void>();
 
 export function clearPageBreaks(owner?: Document | HTMLElement) {
   const scope = owner || document;
-  scope.querySelectorAll('[data-pdf-debug]').forEach(node => node.remove());
+  scope.querySelectorAll('[data-print-debug]').forEach(node => node.remove());
   for (const [root, restore] of Array.from(restorers)) {
     if (!owner || owner === root || (owner.nodeType === 9 && root.ownerDocument === owner)) {
       restore();
@@ -59,7 +59,7 @@ export function visualizePageBreaks(
   walkPrintTree(element, node => {
     if (node.nodeType !== 1) return 'skip';
     const el = node as HTMLElement;
-    if (el.hasAttribute('data-pdf-debug')) return 'skip';
+    if (el.hasAttribute('data-print-debug')) return 'skip';
 
     const rule = classifyPrintNode(el, rules);
 
@@ -144,7 +144,7 @@ export function visualizePageBreaks(
   pages.slice(1).forEach((breakY, index) => {
     const lineY = breakY - borderTop;
     const lineContainer = element.ownerDocument.createElement('div');
-    lineContainer.setAttribute('data-pdf-debug', 'true');
+    lineContainer.setAttribute('data-print-debug', 'true');
     lineContainer.style.cssText = `
       position: absolute;
       left: 0;
@@ -184,7 +184,7 @@ export function visualizePageBreaks(
 }
 
 const SPLIT_CONTAINER_SELECTOR =
-  '[data-pdf-splittable="true"], .pdf-splittable, [data-pdf-break="split"], .pdf-force-split';
+  '[data-print-splittable="true"], .print-splittable, [data-print-break="split"], .print-force-split, [data-pdf-splittable="true"], .pdf-splittable, [data-pdf-break="split"], .pdf-force-split';
 
 /**
  * 标记层必须留在页面内容与站点外壳之间：
@@ -228,7 +228,7 @@ function createOverlay(opts: {
   badgePosition?: 'left' | 'right';
 }): HTMLElement {
   const box = document.createElement('div');
-  box.setAttribute('data-pdf-debug', 'true');
+  box.setAttribute('data-print-debug', 'true');
   box.style.cssText = `
     position: absolute;
     left: ${opts.left}px;

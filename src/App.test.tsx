@@ -58,9 +58,9 @@ test('复杂图文页面承接技术文章，原样保留正文样式并保护�
     expect(await within(root).findByText('原文代码样式')).toBeInTheDocument();
     expect(global.fetch).toHaveBeenCalledWith('/demo-assets/torchoptics-article.html', expect.objectContaining({ signal: expect.any(AbortSignal) }));
     expect(root.querySelector('.article-body > section')).toHaveStyle('font-size: 16px; line-height: 30px');
-    expect(root.querySelector('pre')).toHaveAttribute('data-pdf-atomic', 'true');
+    expect(root.querySelector('pre')).toHaveAttribute('data-print-atomic', 'true');
     expect(root.querySelector('pre')).toHaveStyle('background: #123456');
-    expect(root.querySelector('img')).toHaveAttribute('data-pdf-atomic', 'true');
+    expect(root.querySelector('img')).toHaveAttribute('data-print-atomic', 'true');
   } finally {
     global.fetch = originalFetch;
   }

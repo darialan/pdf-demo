@@ -1,9 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
-import { MiniPdfPreview } from './mini-pdf-preview';
-import { HtmlPreviewData } from './pdf-preview-modal';
+import { MiniPrintPreview } from './mini-print-preview';
+import { HtmlPreviewData } from './print-preview-modal';
 
-describe('MiniPdfPreview 组件 (带全屏与折叠控制)', () => {
+describe('MiniPrintPreview 组件 (带全屏与折叠控制)', () => {
   const mockData: HtmlPreviewData = {
     paperLabel: 'A4',
     pages: [
@@ -32,7 +32,7 @@ describe('MiniPdfPreview 组件 (带全屏与折叠控制)', () => {
 
   test('正确渲染小窗头部、页数标记与迷你切片纸张', () => {
     const onClose = jest.fn();
-    render(<MiniPdfPreview data={mockData} onClose={onClose} />);
+    render(<MiniPrintPreview data={mockData} onClose={onClose} />);
 
     expect(screen.getByText('📄 纸张预览')).toBeInTheDocument();
     expect(screen.getByText('2 页')).toBeInTheDocument();
@@ -47,7 +47,7 @@ describe('MiniPdfPreview 组件 (带全屏与折叠控制)', () => {
   });
 
   test('支持最小化与展开切换', () => {
-    render(<MiniPdfPreview data={mockData} />);
+    render(<MiniPrintPreview data={mockData} />);
 
     const toggleBtn = screen.getByTitle('折叠小窗');
     fireEvent.click(toggleBtn);
@@ -61,7 +61,7 @@ describe('MiniPdfPreview 组件 (带全屏与折叠控制)', () => {
   });
 
   test('支持一键切换全屏预览与退出全屏 (包含 Escape 快捷键)', () => {
-    const { container } = render(<MiniPdfPreview data={mockData} />);
+    const { container } = render(<MiniPrintPreview data={mockData} />);
 
     // 点击全屏按钮 (FullscreenOutlined)
     const fullscreenBtn = screen.getByTitle('全屏预览');

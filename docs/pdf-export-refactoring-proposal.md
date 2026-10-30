@@ -146,7 +146,7 @@ contentHeightPx = contentHeightPt / ptPerCssPx
 
 ### 6.2 内容语义
 
-业务通过 `data-pdf-keep-together`、`data-pdf-keep-with-next`、`data-pdf-break-before`、`data-pdf-repeat-header` 标记规则。原生 TR、P、标题等有默认适配器，第三方 UI 类名不是通用算法协议。
+业务通过 `data-print-keep-together`、`data-print-keep-with-next`、`data-print-break-before`、`data-print-repeat-header` 标记规则。原生 TR、P、标题等有默认适配器，第三方 UI 类名不是通用算法协议。
 
 | 内容类型 | 正常情况 | 高于一页时 |
 | --- | --- | --- |

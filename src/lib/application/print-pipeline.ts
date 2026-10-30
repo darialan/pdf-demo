@@ -24,7 +24,7 @@ export function createDeclarativeElement(
   width: number
 ): HTMLElement {
   const el = document.createElement('div');
-  el.className = `pdf-declarative-${type}`;
+  el.className = `print-declarative-${type}`;
   el.style.width = `${width}px`;
   el.style.boxSizing = 'border-box';
   el.style.padding = type === 'header' ? '8px 0 6px 0' : '6px 0 8px 0';

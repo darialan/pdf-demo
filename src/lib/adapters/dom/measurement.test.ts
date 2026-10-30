@@ -10,12 +10,12 @@ const setRect = (element: Element, top: number, height: number) => {
 test('classification is independent of Ant Design classes and can be extended', () => {
   const row = document.createElement('tr');
   expect(classifyPrintNode(row)).toMatchObject({ kind: 'atomic', overflow: 'split' });
-  row.setAttribute('data-pdf-keep-together', 'true');
+  row.setAttribute('data-print-keep-together', 'true');
   expect(classifyPrintNode(row)).toMatchObject({ kind: 'atomic', overflow: 'error' });
-  row.setAttribute('data-pdf-keep-together', 'split');
+  row.setAttribute('data-print-keep-together', 'split');
   expect(classifyPrintNode(row)).toMatchObject({ kind: 'atomic', overflow: 'split' });
   const ignored = document.createElement('div');
-  ignored.setAttribute('data-pdf-ignore', 'true');
+  ignored.setAttribute('data-print-ignore', 'true');
   expect(classifyPrintNode(ignored)).toEqual({ kind: 'ignore' });
   const quote = document.createElement('blockquote');
   expect(
@@ -40,7 +40,7 @@ test('depth-first traversal can stop at an atomic subtree without visiting its d
 test('collects rows, images and signature groups once, without remeasuring their internal text', () => {
   const root = document.createElement('div');
   root.innerHTML =
-    '<p style="line-height:16px">outside</p><table><tbody><tr><td>row</td></tr></tbody></table><img alt="凭证"><section data-pdf-keep-together="true">signature <span>date</span></section>';
+    '<p style="line-height:16px">outside</p><table><tbody><tr><td>row</td></tr></tbody></table><img alt="凭证"><section data-print-keep-together="true">signature <span>date</span></section>';
   setRect(root, 100, 900);
   setRect(root.querySelector('tr')!, 200, 70);
   setRect(root.querySelector('img')!, 500, 100);
@@ -88,7 +88,7 @@ test('an oversized table row descends into its text and still protects nested im
 
 test('an oversized explicit group reports the named region instead of silently cutting it', () => {
   const root = document.createElement('div');
-  root.innerHTML = '<section data-pdf-keep-together="true" data-pdf-label="审批签名与日期">signature</section>';
+  root.innerHTML = '<section data-print-keep-together="true" data-print-label="审批签名与日期">signature</section>';
   setRect(root, 0, 500);
   setRect(root.firstElementChild!, 100, 220);
   expect(() => measureDocument(root, 100)).toThrow('审批签名与日期');
@@ -97,7 +97,7 @@ test('an oversized explicit group reports the named region instead of silently c
 
 test('live measurements retain their DOM coordinate space; ignore removal belongs to snapshot layout', () => {
   const root = document.createElement('div');
-  root.innerHTML = '<div data-pdf-ignore="true" style="margin-bottom:16px">filters</div><table><tbody><tr><td>row</td></tr></tbody></table>';
+  root.innerHTML = '<div data-print-ignore="true" style="margin-bottom:16px">filters</div><table><tbody><tr><td>row</td></tr></tbody></table>';
   setRect(root, 100, 548);
   setRect(root.firstElementChild!, 100, 32);
   setRect(root.querySelector('tr')!, 248, 55);
@@ -108,10 +108,10 @@ test('live measurements retain their DOM coordinate space; ignore removal belong
 
 test('the selected root itself honors atomic and ignore protocols', () => {
   const root = document.createElement('section');
-  root.setAttribute('data-pdf-atomic', 'true');
+  root.setAttribute('data-print-atomic', 'true');
   setRect(root, 0, 300);
   expect(measureDocument(root, 500).ranges).toEqual([{ top: 0, bottom: 300 }]);
   expect(() => measureDocument(root, 200)).toThrow('超过');
-  root.setAttribute('data-pdf-ignore', 'true');
+  root.setAttribute('data-print-ignore', 'true');
   expect(() => measureDocument(root, 500)).toThrow('ignore');
 });

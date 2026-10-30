@@ -9,7 +9,7 @@ test('landing installs the package, demonstrates real responsive pagination and 
   await expect(page.getByRole('navigation', { name: '全局导航' }).getByRole('link', { name: '打开工作台' })).toHaveAttribute('href', '#/playground');
   await expect(page.getByRole('link', { name: 'GitHub Star', exact: true })).toHaveAttribute('href', 'https://github.com/darialan/web-pdf-printer');
   await page.getByRole('button', { name: '复制安装命令', exact: true }).click();
-  expect(await page.evaluate(() => window.copiedText)).toBe('npm install @darialan/web-pdf-printer');
+  expect(await page.evaluate(() => window.copiedText)).toBe('npm install @darialan/web-printer');
   await expect(page.locator('.command-block pre > code')).toHaveCount(2);
   const fragment = page.locator('.pagination-demo');
   await expect(fragment.locator('[role=status]')).toHaveText(/\d+ 页 · 同一份 HTML/);
@@ -22,7 +22,7 @@ test('landing installs the package, demonstrates real responsive pagination and 
   expect(sheet.width / sheet.height).toBeCloseTo(1, 2);
   await fragment.getByRole('button', { name: '下一页', exact: true }).click();
   await expect(fragment.locator('.pagination-pager')).toContainText('第 2 页起');
-  await expect(page.locator('[data-pdf-snapshot]')).toHaveCount(0);
+  await expect(page.locator('[data-print-snapshot]')).toHaveCount(0);
   await expect(page.locator('.scene-link')).toHaveCount(4);
   for (const image of await page.locator('.scene-link img').all()) {
     await image.scrollIntoViewIfNeeded();

@@ -31,7 +31,7 @@ export function measureDocument(
   const rootRule = classifyPrintNode(root, rules);
   if (rootRule.kind === 'ignore') throw new Error('打印区域已被 ignore 规则排除，请选择其他区域');
   if (rootRule.kind === 'atomic' && resolveAtomicOverflow(rootRule, height, capacity,
-    root.getAttribute('data-pdf-label') || root.getAttribute('alt')) === 'protect') {
+    root.getAttribute('data-print-label') || root.getAttribute('data-pdf-label') || root.getAttribute('alt')) === 'protect') {
     return { height, ranges: [{ top: 0, bottom: height }], stats: { ...stats, visitedNodes: 1, atomicElements: 1 } };
   }
   const add = (interval: Interval) => {
@@ -54,7 +54,7 @@ export function measureDocument(
     const element = node as Element;
     const rect = element.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) return 'skip';
-    const customLabel = element.getAttribute('data-pdf-label') || element.getAttribute('alt');
+    const customLabel = element.getAttribute('data-print-label') || element.getAttribute('data-pdf-label') || element.getAttribute('alt');
     if (resolveAtomicOverflow(rule, rect.height, capacity, customLabel) === 'descend') {
       return 'descend';
     }

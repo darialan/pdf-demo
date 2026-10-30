@@ -12,5 +12,5 @@ export function BusinessHeading({ path, title, status, meta }: { path: string; t
   </header>;
 }
 export function BusinessSection({ title, extra, children, atomic = false }: { title: string; extra?: ReactNode; children: ReactNode; atomic?: boolean }) {
-  return <Card className="business-section" title={<h2>{title}</h2>} extra={extra} size="small" {...(atomic ? { 'data-pdf-atomic': 'true' } : {})}>{children}</Card>;
+  return <Card className="business-section" title={<h2>{title}</h2>} extra={extra} size="small" {...(atomic ? { 'data-print-atomic': 'true' } : {})}>{children}</Card>;
 }

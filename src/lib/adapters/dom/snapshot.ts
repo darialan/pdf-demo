@@ -96,7 +96,7 @@ export function cloneWithResolvedStyles(source: HTMLElement, rules: readonly Pri
       copyResolvedStyle(node, copy as HTMLElement);
     }
   });
-  target.querySelectorAll('[data-pdf-debug], [data-pdf-ignore="true"]').forEach(node => node.remove());
+  target.querySelectorAll('[data-print-debug], [data-print-ignore="true"], [data-pdf-debug], [data-pdf-ignore="true"]').forEach(node => node.remove());
 
   // The root's margins position it in the source page (including resolved auto
   // centering margins). A page slice supplies its own origin and paper margins;
@@ -120,7 +120,7 @@ export function cloneWithResolvedStyles(source: HTMLElement, rules: readonly Pri
 /** Owns detached print DOM; callers dispose it on every success/error path. */
 export function createPrintSnapshot(width: number, rules: readonly PrintRule[] = getPrintRules()) {
   const host = document.createElement('div');
-  host.setAttribute('data-pdf-snapshot', 'true');
+  host.setAttribute('data-print-snapshot', 'true');
   host.setAttribute('aria-hidden', 'true');
   host.setAttribute('inert', '');
   host.style.cssText = `position:absolute;left:-100000px;top:0;width:${width}px;pointer-events:none;background:white;`;
