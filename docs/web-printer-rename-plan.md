@@ -25,13 +25,32 @@
 ## 顺序与完成标准
 
 1. [x] 本计划写入仓库，完成旧名出现位置清点与发布权限核实。
-2. [ ] 改品牌、包元数据、协议、内部名称、预览组件与 React 子入口；更新当前文档和迁移指引。
-3. [ ] 新旧协议兼容单测、Hook 的 PDF/PNG 导出及取消清理；类型检查、全量单测、库与前端生产构建。
-4. [ ] 全量浏览器回归，真实 PDF/PNG 文件校验、四场景、首页与主题；更新截图后冻结最终构建。
-5. [ ] npm pack 检查包名、版本、ESM/CJS、类型、/react；在临时空项目安装 tarball，验证无 React 环境下根入口可导入、React 子入口可导入、类型可编译。
-6. [ ] 提交已验证源码，发布新 npm 包；从官方 registry 下载，在全新临时目录安装并验证实际 API 与依赖。
-7. [ ] 发布现有 Vercel 生产项目；HTTP 与真实浏览器检查线上首页/工作台品牌、入口与资源；安装命令指向真实已发布包。
-8. [ ] 更新本计划实际结果、commit、版本、线上 URL 与验证证据后结束。
+2. [x] 改品牌、包元数据、协议、内部名称、预览组件与 React 子入口；更新当前文档和迁移指引。
+3. [x] 新旧协议兼容单测、Hook 的 PDF/PNG 导出及取消清理；类型检查、全量单测、库与前端生产构建。
+4. [x] 全量浏览器回归，真实 PDF/PNG 文件校验、四场景、首页与主题；更新截图后冻结最终构建。
+5. [x] npm pack 检查包名、版本、ESM/CJS、类型、/react；在临时空项目安装 tarball，验证无 React 环境下根入口可导入、React 子入口可导入、类型可编译。
+6. [x] 提交已验证源码，发布新 npm 包；从官方 registry 下载，在全新临时目录安装并验证实际 API 与依赖。
+7. [x] 发布现有 Vercel 生产项目；HTTP 与真实浏览器检查线上首页/工作台品牌、入口与资源；安装命令指向真实已发布包。
+8. [x] 更新本计划实际结果、commit、版本、线上 URL 与验证证据后结束。
+
+## 执行结果（2026-10-30）
+
+| 项 | 结果 |
+| --- | --- |
+| 提交 | `c454d8f refactor!: 项目更名为 Web Printer，npm 包改为 @darialan/web-printer`（更名）；`95287be`（首页二期与依赖调整）；`877c1d2`、`6726057`（输出设置） |
+| npm 包 | `@darialan/web-printer@1.0.0` 已发布，`dist-tags.latest = 1.0.0`；旧包 `@darialan/web-pdf-printer@1.0.2` 保持可下载 |
+| 线上站点 | https://pdf-demo-phi.vercel.app 已发布新品牌生产构建（Vercel 项目 `pdf-demo`，部署 `pdf-demo-re1kz9d1l`） |
+| 类型检查 / 单测 | `tsc --noEmit` 通过；24 个套件 103 项测试通过（含新旧协议兼容、Hook 导出与取消清理） |
+| 构建 | `build:lib` 产出 `index.mjs/index.cjs/react.mjs/react.cjs` 与 `dist/types`；前端 `build` 通过 |
+| 浏览器回归 | 24 项 Playwright 通过：四个场景真实下载 PDF 与 PNG ZIP、首页三档视口、暗色主题、错误重试、窄屏 |
+| 包校验 | `scripts/verify-package.mjs` 在空目录安装 tarball 与 registry 版本：ESM/CJS 根入口可导入且不含 React，安装 React 后 `/react` 子入口可导入，TypeScript 编译通过 |
+| 线上复核 | 真实浏览器打开线上首页与工作台：标题「Web Printer · 长网页，分好每一页」、安装命令 `npm install @darialan/web-printer`、四张场景截图 1440×1000 正常加载、分页预览可用、真实导出「长表格.pdf」成功，无失败请求与页面错误 |
+
+### 本轮确认保留的旧名
+
+- GitHub 仓库仍为 `darialan/web-pdf-printer`：本机无 GitHub 管理入口（`gh` 不可用），按计划保留已验证的旧地址作为稳定基础设施，GitHub 旧地址跳转不受影响。
+- 旧 npm 包 `@darialan/web-pdf-printer@1.0.2` 不下架。
+- `data-pdf-*` / `.pdf-*` 协议、`usePdfPrint` / `outputPDF` 等旧 API 作为兼容别名保留，由专门单测覆盖。
 
 ## 异常与恢复
 

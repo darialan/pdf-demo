@@ -1,0 +1,11 @@
+node_modules
+build
+dist
+scratch
+test-results
+playwright-report
+generated_images
+design
+docs
+*.tgz
+.git
