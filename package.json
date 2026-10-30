@@ -95,6 +95,7 @@
     "@types/node": "^16.18.60",
     "@types/react": "^18.2.33",
     "@types/react-dom": "^18.2.14",
+    "@vercel/analytics": "^2.0.1",
     "antd": "^5.10.3",
     "caniuse-lite": "^1.0.30001820",
     "pdfjs-dist": "^4.10.38",
@@ -108,7 +109,8 @@
   "jest": {
     "moduleNameMapper": {
       "^@darialan/web-printer$": "<rootDir>/src/lib/index.ts",
-      "^@darialan/web-printer/react$": "<rootDir>/src/lib/react.ts"
+      "^@darialan/web-printer/react$": "<rootDir>/src/lib/react.ts",
+      "^@vercel/analytics$": "<rootDir>/node_modules/@vercel/analytics/dist/index.js"
     }
   },
   "eslintConfig": {

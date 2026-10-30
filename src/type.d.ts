@@ -2,6 +2,8 @@ declare namespace NodeJS {
   interface ProcessEnv {
     readonly NODE_ENV: 'development' | 'production' | 'test';
     readonly PUBLIC_URL: string;
+    /** 设为 '1' 时关闭站点访问分析上报 */
+    readonly REACT_APP_DISABLE_ANALYTICS?: string;
   }
 }
 
