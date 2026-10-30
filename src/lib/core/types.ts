@@ -11,7 +11,18 @@ export interface PageSlice {
 
 export type Orientation = 'portrait' | 'landscape';
 
-export type Paper = 'a4' | 'a3' | 'a5' | 'letter' | 'custom';
+export type Paper =
+  | 'a4'
+  | 'a3'
+  | 'a5'
+  | 'letter'
+  // 社媒 / 图片画框（像素定义）
+  | 'card-3x4'
+  | 'square-1x1'
+  | 'card-4x5'
+  | 'story-9x16'
+  | 'ecom-750x1000'
+  | 'custom';
 
 /** 声明式页眉/页脚基础配置（开发者代码配置） */
 export interface DeclarativeHeaderFooterConfig {

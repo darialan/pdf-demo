@@ -44,3 +44,24 @@ test('cancellation before finalization cannot download a partial PDF', async () 
   expect(dispose).toHaveBeenCalledTimes(1);
   expect(finalize).not.toHaveBeenCalled();
 });
+
+test('image output uses the same layout and slice boundaries as PDF and releases resources on writer failure', async () => {
+  const { outputDocument } = await import('./print-service');
+  const { createImageWriter } = await import('../output/image-writer');
+  const { cleanup, dispose, release, capture } = arrange();
+  const addPageSlice = jest.fn().mockRejectedValue(new Error('encoding failed'));
+  (createImageWriter as jest.Mock).mockReturnValue({ addPageSlice, finalize: jest.fn() });
+  await expect(outputDocument({ element: null, filename: 'test', format: 'png' })).rejects.toThrow('encoding failed');
+  expect(capture).toHaveBeenCalledWith(expect.any(HTMLElement), 0, 100);
+  expect(addPageSlice).toHaveBeenCalledWith(0, expect.any(HTMLCanvasElement), 100);
+  expect(cleanup).toHaveBeenCalledTimes(1);
+  expect(dispose).toHaveBeenCalledTimes(1);
+  expect(release).toHaveBeenCalledTimes(1);
+});
+jest.mock('../output/image-writer', () => ({ createImageWriter: jest.fn() }));
+
+test('unknown output formats fail before allocating a snapshot', async () => {
+  const { outputDocument } = await import('./print-service');
+  await expect(outputDocument({ element: null, filename: 'test', format: 'toString' as any })).rejects.toThrow('不支持的输出格式');
+  expect(prepareLayout).not.toHaveBeenCalled();
+});

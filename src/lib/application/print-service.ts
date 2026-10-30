@@ -1,6 +1,6 @@
 import { createPageCapture } from '../adapters/canvas/page-capture';
 import { measureDocument } from '../adapters/dom/measurement';
-import { createPdfWriter } from '../adapters/pdf/jspdf-writer';
+import { createOutputWriter, OutputFormat, OutputWriter, validateOutputFormat } from '../output';
 import { validatePageBreaks } from '../core/pagination/paginator';
 import { buildPrintRules, getPrintRules } from '../core/rules/print-rules';
 import { Interval, MeasurementStats, PageSlice } from '../core/types';
@@ -11,6 +11,10 @@ export interface ExportOptions extends LayoutOptions {
   filename: string;
   download?: boolean;
   onProgress?: (completed: number, total: number) => void;
+}
+
+export interface DocumentExportOptions extends ExportOptions {
+  format?: OutputFormat;
 }
 
 export interface PreviewPaginationOptions extends Omit<LayoutOptions, 'element'> {
@@ -31,19 +35,22 @@ export interface PrintInspectionResult {
   };
 }
 
-/** Render bounded page canvases and compose PDF; never allocate one canvas for the whole document. */
-export async function outputPDF({ filename, download = true, onProgress, ...options }: ExportOptions) {
+/** Share snapshot, pagination and page capture across all output formats. */
+export async function outputDocument({ format = 'pdf', filename, download = true, onProgress, ...options }: DocumentExportOptions) {
+  validateOutputFormat(format);
   const started = performance.now();
   const layout = await prepareLayout(options);
   const { root, headerHeight, footerHeight, ratio, pages } = layout;
   const layoutMs = performance.now() - started;
   let renderer: ReturnType<typeof createPageCapture> | undefined;
+  let writer: OutputWriter | undefined;
   try {
     renderer = createPageCapture(layout.width, options.signal);
     const { capture, release } = renderer;
     const headerCanvas = layout.header ? await capture(layout.header, 0, headerHeight / ratio) : undefined;
     const footerCanvas = layout.footer ? await capture(layout.footer, 0, footerHeight / ratio) : undefined;
-    const pdfWriter = await createPdfWriter({
+    writer = await createOutputWriter(format, {
+      signal: options.signal,
       geometry: layout,
       settings: options.settings,
       headerCanvas,
@@ -55,13 +62,13 @@ export async function outputPDF({ filename, download = true, onProgress, ...opti
       checkCancelled(options.signal);
       const page = pages[i];
       const canvas = await capture(root, page.start, page.end - page.start);
-      pdfWriter.addPageSlice(i, canvas, (page.end - page.start) * ratio);
-      release(canvas);
+      try { await writer.addPageSlice(i, canvas, (page.end - page.start) * ratio); }
+      finally { release(canvas); }
       onProgress?.(i + 1, pages.length);
       await new Promise(resolve => setTimeout(resolve, 0));
     }
     checkCancelled(options.signal);
-    const blob = await pdfWriter.finalize(filename, download);
+    const blob = await writer.finalize(filename, download);
     return {
       blob,
       pages: pages.length,
@@ -70,9 +77,15 @@ export async function outputPDF({ filename, download = true, onProgress, ...opti
       bytes: blob.size,
     };
   } finally {
+    writer?.dispose?.();
     renderer?.dispose();
     layout.cleanup();
   }
+}
+
+/** Backward-compatible PDF entry point. */
+export function outputPDF(options: ExportOptions) {
+  return outputDocument({ ...options, format: 'pdf' });
 }
 
 /** Run full snapshot measurement and pagination validation, returning structured diagnostics. */

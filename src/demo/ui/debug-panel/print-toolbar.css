@@ -291,3 +291,32 @@
 /* The document canvas follows white paper in both shell themes. Keep this on
    the workbench surface; printable roots retain their original backgrounds. */
 .print-scene-content { background: #fff; color-scheme: light; }
+
+/* A single export control: the main action stays one click away; formats live in its menu. */
+.print-export-control { width: auto; }
+.print-export-control > .ant-btn:first-child { min-width: 88px; }
+@media (max-width: 700px) {
+  .print-export-control > .ant-btn:last-child { min-width: 44px; }
+}
+
+.print-toolbar-actions .ant-btn { box-shadow: none; text-shadow: none; }
+.print-export-control .ant-btn-primary:not(:disabled) {
+  background: var(--accent, #32745d);
+  border-color: var(--accent, #32745d);
+}
+.print-export-control .ant-btn-primary:not(:disabled):hover {
+  background: var(--accent-hover, #285e4c);
+  border-color: var(--accent-hover, #285e4c);
+}
+.print-tab-custom .ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn { text-shadow: none; }
+.print-export-control .ant-btn-compact-item.ant-btn-primary:not([disabled]) + .ant-btn-compact-item.ant-btn-primary:not([disabled])::before {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+.ant-dropdown.print-export-menu .ant-dropdown-menu { background: var(--card, #fff); }
+.ant-dropdown.print-export-menu .ant-dropdown-menu-item { color: var(--ink, #202321); }
+.ant-dropdown.print-export-menu .ant-dropdown-menu-item:hover { background: var(--bg2, #f1f5f9); }
+.ant-dropdown.print-export-menu .ant-dropdown-menu-item-selected,
+.ant-dropdown.print-export-menu .ant-dropdown-menu-item-selected:hover {
+  color: var(--accent, #32745d);
+  background: var(--accent-soft, #e9f2ed);
+}

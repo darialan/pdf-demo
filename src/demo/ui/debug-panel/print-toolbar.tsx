@@ -1,14 +1,19 @@
 import {
   ObservabilityStats,
+  OutputFormat,
   PrintInspectionResult,
   PrintSettings,
   resolvePaper,
 } from '../../../lib';
-import { Button } from 'antd';
+import { Button, Dropdown } from 'antd';
+import { DownOutlined } from '@ant-design/icons';
+import { cloneElement } from 'react';
 import { PrintSettingsButton } from '../config-panel/settings-panel';
 import './print-toolbar.css';
 
 export interface PrintToolbarActionsProps {
+  outputFormat?: OutputFormat;
+  onOutputFormatChange?: (format: OutputFormat) => void;
   ready?: boolean;
   progress?: string;
   previewOpen?: boolean;
@@ -24,6 +29,7 @@ export interface PrintToolbarActionsProps {
 }
 
 export function PrintToolbarActions({
+  outputFormat = 'pdf', onOutputFormatChange,
   ready = true, progress, previewOpen = true, onOpenPreview,
   loading,
   exporting,
@@ -85,9 +91,34 @@ export function PrintToolbarActions({
                 <Button onClick={onOpenPreview} disabled={loading}>打开预览</Button>
               )}
             </div>
-            <Button type="primary" onClick={onExport} disabled={!ready || loading}>
-              导出 PDF
-            </Button>
+            {onOutputFormatChange ? (
+              <Dropdown.Button
+                className="print-export-control"
+                overlayClassName="print-export-menu"
+                type="primary"
+                disabled={!ready || loading}
+                trigger={['click']}
+                placement="bottomRight"
+                icon={<DownOutlined />}
+                onClick={onExport}
+                buttonsRender={([action, toggle]) => [action, cloneElement(toggle as React.ReactElement, {
+                  'aria-label': '选择导出格式',
+                })]}
+                menu={{
+                  selectable: true,
+                  selectedKeys: [outputFormat],
+                  items: [
+                    { key: 'pdf', label: 'PDF 文档' },
+                    { key: 'png', label: 'PNG 分页图片' },
+                  ],
+                  onClick: ({ key }) => onOutputFormatChange(key as OutputFormat),
+                }}
+              >
+                {outputFormat === 'pdf' ? '导出 PDF' : '导出图片'}
+              </Dropdown.Button>
+            ) : (
+              <Button type="primary" onClick={onExport} disabled={!ready || loading}>导出 PDF</Button>
+            )}
           </>
         )}
       </div>

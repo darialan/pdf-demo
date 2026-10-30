@@ -39,3 +39,6 @@ export type {
   ExportPdfParams,
   InspectLayoutParams,
 } from './hooks/use-pdf-print';
+
+// Format-specific output writers and their extension contract.
+export * from './output';

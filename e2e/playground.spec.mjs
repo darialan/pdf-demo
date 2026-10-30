@@ -118,7 +118,7 @@ for (const width of [390, 768]) {
   test(`controls and fullscreen preview fit a ${width}px viewport and support keyboard escape`, async ({ page }, testInfo) => {
     await page.setViewportSize({ width, height: 844 });
     await page.goto('/#/playground?scene=long-article');
-    for (const name of ['检查分页', '打印设置', '导出 PDF']) {
+    for (const name of ['检查分页', '输出设置', '导出 PDF']) {
       const rect = await page.getByRole('button', { name, exact: true }).boundingBox();
       expect(rect.x).toBeGreaterThanOrEqual(0);
       expect(rect.x + rect.width).toBeLessThanOrEqual(width);
@@ -138,8 +138,8 @@ for (const width of [390, 768]) {
 
 test('invalid settings stay open with an actionable error and preserve applied settings', async ({ page }) => {
   await page.goto('/#/playground');
-  await page.getByRole('button', { name: '打印设置', exact: true }).click();
-  const dialog = page.getByRole('dialog', { name: '打印设置' });
+  await page.getByRole('button', { name: '输出设置', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: '输出设置' });
   await dialog.getByLabel('左边距（mm）').fill('400');
   await dialog.getByRole('button', { name: '应 用' }).click();
   await expect(dialog.getByText('页边距占满了页面，请减小边距')).toBeVisible();
@@ -161,4 +161,80 @@ test('dark shell keeps document text readable on the same white paper as the PDF
   await inspect(page);
   await page.getByRole('button', { name: '切换到亮色主题' }).click();
   await expect(page.getByRole('button', { name: '切换到暗色主题' })).toBeVisible();
+});
+
+for (const [label] of scenes) {
+  test(`${label}: PNG export downloads decodable numbered paper pages matching preview`, async ({ page }, testInfo) => {
+    await page.goto('/#/playground');
+    await page.getByRole('tab', { name: label, exact: true }).click();
+    await expect(page.getByRole('button', { name: '导出 PDF', exact: true })).toBeEnabled();
+    const preview = await inspect(page);
+    const count = await preview.locator('.mini-sheet-container').count();
+    await page.getByRole('button', { name: '选择导出格式', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'PNG 分页图片', exact: true }).click();
+    await expect(preview).toBeVisible();
+    const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: '导出图片', exact: true }).click()]);
+    expect(download.suggestedFilename()).toMatch(/-pages\.zip$/);
+    const zip = await readFile(await download.path());
+    let offset = 0, index = 0;
+    const dimensions = [];
+    while (zip.readUInt32LE(offset) === 0x04034b50) {
+      const size = zip.readUInt32LE(offset + 18), nameLength = zip.readUInt16LE(offset + 26);
+      const name = zip.subarray(offset + 30, offset + 30 + nameLength).toString();
+      expect(name).toBe(`page-${String(++index).padStart(3, '0')}.png`);
+      const start = offset + 30 + nameLength + zip.readUInt16LE(offset + 28);
+      const png = zip.subarray(start, start + size);
+      expect(png.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
+      const decoded = await page.evaluate(async base64 => {
+        const image = new Image(); image.src = `data:image/png;base64,${base64}`; await image.decode();
+        const canvas = document.createElement('canvas'); canvas.width = image.width; canvas.height = image.height;
+        const ctx = canvas.getContext('2d'); ctx.drawImage(image, 0, 0);
+        const pixels = ctx.getImageData(0, 0, image.width, image.height).data;
+        let ink = 0;
+        for (let i = 0; i < pixels.length; i += 4) if (pixels[i] < 220 && pixels[i + 3] > 0) ink++;
+        return { width: image.width, height: image.height, ink };
+      }, png.toString('base64'));
+      expect(decoded.ink).toBeGreaterThan(100);
+      expect(decoded.width / decoded.height).toBeCloseTo(210 / 297, 2);
+      dimensions.push([decoded.width, decoded.height]);
+      offset = start + size;
+    }
+    expect(index).toBe(count);
+    expect(dimensions.every(size => size[0] === dimensions[0][0] && size[1] === dimensions[0][1])).toBe(true);
+    await expect(page.locator('[data-pdf-snapshot]')).toHaveCount(0);
+    await expect(page.getByRole('button', { name: '导出图片', exact: true })).toBeEnabled();
+    await page.screenshot({ path: testInfo.outputPath('png-export.png') });
+    await page.getByRole('button', { name: '选择导出格式', exact: true }).click();
+    await page.getByRole('menuitem', { name: 'PDF 文档', exact: true }).click();
+    await expect(page.getByRole('button', { name: '导出 PDF', exact: true })).toBeEnabled();
+  });
+}
+
+test('compact export menu switches format without exporting and supports keyboard dismissal on mobile', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/#/playground?scene=long-article');
+  let downloads = 0;
+  page.on('download', () => downloads++);
+  await expect(page.getByRole('combobox', { name: '输出格式' })).toHaveCount(0);
+  const toggle = page.getByRole('button', { name: '选择导出格式', exact: true });
+  await toggle.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('menu')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('menu')).not.toBeVisible();
+  await toggle.click();
+  await page.getByRole('menuitem', { name: 'PNG 分页图片', exact: true }).click();
+  await expect(page.getByRole('button', { name: '导出图片', exact: true })).toBeEnabled();
+  expect(downloads).toBe(0);
+  const controls = page.locator('.print-toolbar-actions');
+  const rect = await controls.boundingBox();
+  expect(rect.x).toBeGreaterThanOrEqual(0);
+  expect(rect.x + rect.width).toBeLessThanOrEqual(390);
+  expect(rect.height).toBeLessThanOrEqual(44);
+  await toggle.click();
+  const menu = await page.getByRole('menu').boundingBox();
+  expect(menu.x).toBeGreaterThanOrEqual(0);
+  expect(menu.x + menu.width).toBeLessThanOrEqual(390);
+  await page.screenshot({ path: testInfo.outputPath('mobile-export-menu.png') });
+  await page.keyboard.press('Escape');
 });

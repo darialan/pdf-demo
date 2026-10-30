@@ -1,6 +1,6 @@
 import {
   clearPageBreaks, calculateGeometry, DEFAULT_SETTINGS, measureDocument, getPrintRules,
-  paginate, ObservabilityStats, outputPDF, PrintInspectionResult, PrintSettings,
+  paginate, ObservabilityStats, outputDocument, OutputFormat, PrintInspectionResult, PrintSettings,
   resolvePaper, resolvePrintElement,
 } from '../../lib';
 import { visualizePageBreaks } from '../../lib';
@@ -32,6 +32,7 @@ const errorText = (error: unknown) => error instanceof Error ? error.message : S
 export function PrintWorkbench({ scenes, initialSceneKey }: { scenes: PrintSceneItem[]; initialSceneKey?: string }) {
   const [tab, setTab] = useState(() => scenes.find(scene => scene.key === initialSceneKey)?.key || scenes[0]?.key || '');
   const [settings, setSettings] = useState<PrintSettings>(DEFAULT_SETTINGS);
+  const [outputFormat, setOutputFormat] = useState<OutputFormat>('pdf');
   const [exporting, setExporting] = useState(false);
   const [progress, setProgress] = useState('');
   const [exportError, setExportError] = useState<string | null>(null);
@@ -222,20 +223,22 @@ export function PrintWorkbench({ scenes, initialSceneKey }: { scenes: PrintScene
     if (!miniPreviewData) setPreviewOpen(false);
     const abort = new AbortController();
     controller.current = abort;
-    const hideLoading = message.loading('正在生成 PDF…', 0);
+    const outputLabel = outputFormat === 'pdf' ? 'PDF' : 'PNG 图片';
+    const hideLoading = message.loading(`正在生成 ${outputLabel}…`, 0);
     try {
       await previewTask.current;
       if (abort.signal.aborted) return;
-      const result = await outputPDF({
+      const result = await outputDocument({
+        format: outputFormat,
         element: resolveWorkbenchElement(scene.contentId),
         header: scene.headerId ? document.getElementById(scene.headerId) : null,
         footer: scene.footerId ? document.getElementById(scene.footerId) : null,
         settings, signal: abort.signal, filename: scene.label || 'document',
         onProgress: (completed, total) => {
-          if (mounted.current) setProgress(`正在生成 PDF：${completed} / ${total} 页`);
+          if (mounted.current) setProgress(`正在生成 ${outputLabel}：${completed} / ${total} 页`);
         },
       });
-      if (mounted.current) message.success(`已导出 ${result.pages} 页 PDF，用时 ${(result.totalMs / 1000).toFixed(1)} 秒`);
+      if (mounted.current) message.success(`已导出 ${result.pages} 页 ${outputLabel}，用时 ${(result.totalMs / 1000).toFixed(1)} 秒`);
     } catch (error) {
       if (mounted.current && !abort.signal.aborted) setExportError(errorText(error));
     } finally {
@@ -263,6 +266,7 @@ export function PrintWorkbench({ scenes, initialSceneKey }: { scenes: PrintScene
         </div> }))}
         onChange={handleTabChange}
         tabBarExtraContent={<PrintToolbarActions loading={exporting} exporting={exporting} ready={ready}
+          outputFormat={outputFormat} onOutputFormatChange={next => { setOutputFormat(next); setExportError(null); }}
           progress={progress} settings={settings} debugActive={debugActive} previewOpen={previewOpen}
           onOpenPreview={handleRetryPreview} onExport={handleExport} onToggleDebug={handleToggleDebug}
           onCancelExport={() => controller.current?.abort()}

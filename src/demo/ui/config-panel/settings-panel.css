@@ -17,6 +17,13 @@
 .print-settings-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 20px; }
 .print-settings-margins { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 12px; }
 .print-settings-hint { color: #8c8c8c; font-size: 12px; line-height: 1.6; margin-top: 2px; }
+.print-settings-derived {
+  margin: 2px 0 0;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.print-settings-derived strong { color: #334155; font-variant-numeric: tabular-nums; }
 @media (max-width: 420px) {
   .print-settings-dialog .ant-modal-content { padding: 16px; }
   .print-settings-margins { grid-template-columns: repeat(2, minmax(0, 1fr)); }

@@ -1,6 +1,8 @@
 import {
   DEFAULT_SETTINGS,
   getPresetDimensions,
+  getPresetUnit,
+  IMAGE_PAPER_SIZES,
   MM_PER_PX,
   PrintSettings,
   PX_PER_MM,
@@ -16,6 +18,38 @@ const formatDisplayNumber = (val: number | string | undefined) => {
   const num = Number(val);
   return Number.isFinite(num) ? String(Number(num.toFixed(2))) : String(val);
 };
+
+const pxDims = (key: keyof typeof IMAGE_PAPER_SIZES) => {
+  const { widthPx, heightPx } = IMAGE_PAPER_SIZES[key];
+  return `${widthPx}×${heightPx}`;
+};
+
+/** 预设分组：纸张（mm）与社媒图片（px）分开，用户按"我要 PDF 还是要图"来选 */
+const OUTPUT_PRESET_OPTIONS = [
+  {
+    label: '纸张',
+    options: [
+      { value: 'a4', label: 'A4 · 210×297 mm' },
+      { value: 'a3', label: 'A3 · 297×420 mm' },
+      { value: 'a5', label: 'A5 · 148×210 mm' },
+      { value: 'letter', label: 'Letter · 216×279 mm' },
+    ],
+  },
+  {
+    label: '社媒图片',
+    options: [
+      { value: 'card-3x4', label: `小红书 / 3:4 · ${pxDims('card-3x4')}` },
+      { value: 'card-4x5', label: `小红书竖版 / 4:5 · ${pxDims('card-4x5')}` },
+      { value: 'square-1x1', label: `方形 / 1:1 · ${pxDims('square-1x1')}` },
+      { value: 'story-9x16', label: `全屏 / 9:16 · ${pxDims('story-9x16')}` },
+      { value: 'ecom-750x1000', label: `电商详情 · ${pxDims('ecom-750x1000')}` },
+    ],
+  },
+  {
+    label: '其他',
+    options: [{ value: 'custom', label: '自定义尺寸' }],
+  },
+];
 
 export function PrintSettingsButton({
   value,
@@ -112,10 +146,12 @@ export function PrintSettingsButton({
       return;
     }
 
-    // 2. 纸张尺寸切换：加载对应预设的标准宽高与边距
+    // 2. 输出尺寸切换：加载预设的宽高与边距，并跟随预设切换单位（纸张 mm / 社媒图片 px）
     if (changed.paper) {
-      const preset = getPresetDimensions(changed.paper, allValues.orientation, currentUnit);
+      const nextUnit = changed.paper === 'custom' ? currentUnit : getPresetUnit(changed.paper);
+      const preset = getPresetDimensions(changed.paper, allValues.orientation, nextUnit);
       form.setFieldsValue({
+        unit: nextUnit,
         widthMm: preset.width,
         heightMm: preset.height,
         marginTopMm: preset.marginTop,
@@ -145,13 +181,13 @@ export function PrintSettingsButton({
           setOpen(true);
         }}
       >
-        打印设置
+        输出设置
       </Button>
       <Modal
         className="print-settings-dialog"
         centered
         width={560}
-        title="打印设置"
+        title="输出设置"
         open={open}
         onCancel={() => setOpen(false)}
         onOk={apply}
@@ -184,20 +220,12 @@ export function PrintSettingsButton({
             <Form.Item name="unit" label="尺寸单位">
               <Radio.Group options={[{ value: 'mm', label: 'mm' }, { value: 'px', label: 'px' }]} />
             </Form.Item>
-            <Form.Item name="paper" label="纸张尺寸" rules={[{ required: true }]}>
-              <Select
-                options={[
-                  { value: 'a4', label: 'A4' },
-                  { value: 'a3', label: 'A3' },
-                  { value: 'a5', label: 'A5' },
-                  { value: 'letter', label: 'Letter' },
-                  { value: 'custom', label: '自定义尺寸' },
-                ]}
-              />
+            <Form.Item name="paper" label="输出尺寸" rules={[{ required: true }]}>
+              <Select options={OUTPUT_PRESET_OPTIONS} />
             </Form.Item>
           </div>
           <div className="print-settings-grid">
-            <Form.Item name="widthMm" label={`页面宽（${unit}）`} rules={numberRules}>
+            <Form.Item name="widthMm" label={`宽度（${unit}）`} rules={numberRules}>
               <InputNumber
                 min={1}
                 step={1}
@@ -206,7 +234,7 @@ export function PrintSettingsButton({
                 disabled={paper !== 'custom'}
               />
             </Form.Item>
-            <Form.Item name="heightMm" label={`页面高（${unit}）`} rules={numberRules}>
+            <Form.Item name="heightMm" label={`高度（${unit}）`} rules={numberRules}>
               <InputNumber
                 min={1}
                 step={1}
@@ -218,7 +246,7 @@ export function PrintSettingsButton({
           </div>
           {paper !== 'custom' && (
             <div className="print-settings-grid">
-              <Form.Item name="orientation" label="纸张方向">
+              <Form.Item name="orientation" label="方向">
                 <Radio.Group
                   options={[
                     { value: 'portrait', label: '纵向' },
@@ -244,6 +272,22 @@ export function PrintSettingsButton({
               </Form.Item>
             ))}
           </div>
+          {/* 把推导结果直接写出来：画框 − 边距 = 正文内容区，用户不用自己算 */}
+          <Form.Item noStyle shouldUpdate>
+            {({ getFieldsValue }) => {
+              const v = getFieldsValue(['widthMm', 'heightMm', 'marginTopMm', 'marginRightMm', 'marginBottomMm', 'marginLeftMm']);
+              const show = (n: unknown) => (typeof n === 'number' ? Number(n.toFixed(1)) : NaN);
+              const contentWidth = show(v.widthMm) - show(v.marginLeftMm) - show(v.marginRightMm);
+              const contentHeight = show(v.heightMm) - show(v.marginTopMm) - show(v.marginBottomMm);
+              if (!(contentWidth > 0) || !(contentHeight > 0)) return null;
+              return (
+                <p className="print-settings-derived">
+                  正文内容区 <strong>{Number(contentWidth.toFixed(1))} × {Number(contentHeight.toFixed(1))} {unit}</strong>
+                  ，按每页这个高度分页
+                </p>
+              );
+            }}
+          </Form.Item>
 
           <div style={{ height: 1, background: '#f1f5f9', margin: '14px 0 12px 0' }} />
           <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', marginBottom: 10 }}>

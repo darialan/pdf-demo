@@ -219,7 +219,7 @@ export function LandingPage() {
         <section id="playground" className="studio-section landing-container">
           <div className="section-heading">
             <div><p className="section-label">场景演示</p><h2>用一份完整单据，试试分页。</h2></div>
-            <p className="section-description">工作台提供四个演示场景。调整打印设置，查看分页标线，再导出核对。</p>
+            <p className="section-description">工作台提供四个演示场景。调整输出设置，查看分页标线，再导出 PDF 或分页图片。</p>
           </div>
           <div className="scene-list">
             {scenes.map(scene => (

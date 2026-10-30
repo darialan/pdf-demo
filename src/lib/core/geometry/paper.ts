@@ -5,12 +5,43 @@ export const PT_PER_MM = 72 / 25.4;
 export const MM_PER_PX = 25.4 / 96;
 export const PX_PER_MM = 96 / 25.4;
 
+const pxToMm = (px: number) => Number((px * MM_PER_PX).toFixed(4));
+
+/** 社媒 / 图片画框：以像素定义，边距按画框宽度的内边距给默认值 */
+export const IMAGE_PAPER_SIZES = {
+  'card-3x4': { widthPx: 1242, heightPx: 1656, marginPx: 60 },
+  'square-1x1': { widthPx: 1080, heightPx: 1080, marginPx: 54 },
+  'card-4x5': { widthPx: 1080, heightPx: 1350, marginPx: 54 },
+  'story-9x16': { widthPx: 1080, heightPx: 1920, marginPx: 54 },
+  'ecom-750x1000': { widthPx: 750, heightPx: 1000, marginPx: 0 },
+} as const;
+
+export type ImagePaper = keyof typeof IMAGE_PAPER_SIZES;
+
+export const IMAGE_PAPERS = Object.keys(IMAGE_PAPER_SIZES) as ImagePaper[];
+
+export function isImagePaper(paper: Paper): paper is ImagePaper {
+  return paper in IMAGE_PAPER_SIZES;
+}
+
+/** 预设自带的自然单位：纸张用 mm，社媒图片用 px，选中时自动切换，避免出现 328.61 mm 这种数字 */
+export function getPresetUnit(paper: Paper): 'mm' | 'px' {
+  return isImagePaper(paper) ? 'px' : 'mm';
+}
+
 export const PAPER_SIZES: Record<Exclude<Paper, 'custom'>, [number, number]> = {
   a4: [210, 297],
   a3: [297, 420],
   a5: [148, 210],
   letter: [215.9, 279.4],
+  ...Object.fromEntries(
+    Object.entries(IMAGE_PAPER_SIZES).map(([key, preset]) => [
+      key,
+      [pxToMm(preset.widthPx), pxToMm(preset.heightPx)],
+    ])
+  ) as Record<ImagePaper, [number, number]>,
 };
+
 
 export interface PaperPreset {
   widthMm: number;
@@ -70,6 +101,19 @@ export const PAPER_PRESETS: Record<Paper, PaperPreset> = {
     marginBottomMm: Number((2 * MM_PER_PX).toFixed(2)),
     marginLeftMm: Number((2 * MM_PER_PX).toFixed(2)),
   },
+  ...Object.fromEntries(
+    Object.entries(IMAGE_PAPER_SIZES).map(([key, preset]) => [
+      key,
+      {
+        widthMm: pxToMm(preset.widthPx),
+        heightMm: pxToMm(preset.heightPx),
+        marginTopMm: pxToMm(preset.marginPx),
+        marginRightMm: pxToMm(preset.marginPx),
+        marginBottomMm: pxToMm(preset.marginPx),
+        marginLeftMm: pxToMm(preset.marginPx),
+      },
+    ])
+  ) as Record<ImagePaper, PaperPreset>,
 };
 
 export const DEFAULT_SETTINGS: PrintSettings = {
