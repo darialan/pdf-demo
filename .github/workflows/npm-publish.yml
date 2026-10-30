@@ -5,6 +5,7 @@ on:
     types: [published]
   push:
     tags:
+      - 'v*'
       - 'web-printer-v*'
   workflow_dispatch:
 
