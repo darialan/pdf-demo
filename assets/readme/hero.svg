@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="wp-title wp-desc">
+  <title id="wp-title">Web Printer：浏览器内 HTML 分页导出</title>
+  <desc id="wp-desc">左侧是项目名称与说明；右侧展示一个长页面按内容切分为多页 A4，并输出 PDF 或逐页 PNG。</desc>
+
+  <rect width="1200" height="360" fill="#f4f6f2"/>
+
+  <!-- identity -->
+  <g transform="translate(56 36) scale(0.66)" fill="#202321">
+    <path d="M3 8 23 2.5v12l-3-.8V6.6L6 10.4v16.1l7.5-2v3.3L3 30.6Z" stroke="#202321" stroke-width="1.9" stroke-linejoin="round"/>
+    <path d="m25.5 11 11.5 3.4v16L16 36V24.6l3 .8v6.5L34 28V16.8l-8.5-2.5Z" stroke="#202321" stroke-width="1.9" stroke-linejoin="round"/>
+    <path fill="#32745d" d="M9.5 17.5c5.8-2.7 9.1-2.1 14-.5l7 2.2v6.4l-10.1-3.3c-4.1-1.3-6.5-.8-10.9 1Z"/>
+  </g>
+  <text x="96" y="56" fill="#6f7a72" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" letter-spacing="1.3">CLIENT-SIDE HTML &#8594; PDF / PNG</text>
+
+  <text x="56" y="146" fill="#202321" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="64" font-weight="700" letter-spacing="-1.2">Web Printer</text>
+  <text x="56" y="197" fill="#3d453f" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="24">把长网页按内容分页，保留原有样式，</text>
+  <text x="56" y="231" fill="#3d453f" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="24">在浏览器里直接导出 PDF 或逐页 PNG。</text>
+
+  <rect x="56" y="264" width="42" height="2" fill="#32745d"/>
+  <text x="56" y="298" fill="#6f7a72" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" letter-spacing="0.4">A4 / Letter / 自定义尺寸   &#183;   文字行 &#183; 表格行 &#183; 图文保护   &#183;   零服务端</text>
+
+  <!-- source page -->
+  <g>
+    <rect x="664" y="64" width="214" height="232" fill="#ffffff" stroke="#cbd3cb"/>
+    <path d="M862 64h16v16Z" fill="#e6ece6"/>
+    <path d="M862 64 878 80" stroke="#cbd3cb"/>
+    <rect x="680" y="84" width="120" height="8" fill="#202321" opacity="0.78"/>
+    <rect x="680" y="100" width="82" height="5" fill="#b9c1b9"/>
+    <rect x="680" y="118" width="182" height="4" fill="#ccd4cc"/>
+    <rect x="680" y="128" width="164" height="4" fill="#ccd4cc"/>
+    <rect x="680" y="138" width="176" height="4" fill="#ccd4cc"/>
+    <rect x="680" y="148" width="128" height="4" fill="#ccd4cc"/>
+
+    <rect x="680" y="160" width="182" height="50" fill="#fbeceb" stroke="#cf4a4a"/>
+    <rect x="680" y="160" width="3" height="50" fill="#cf4a4a"/>
+    <text x="796" y="176" fill="#cf4a4a" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" letter-spacing="0.8">ATOMIC</text>
+    <rect x="692" y="182" width="122" height="4" fill="#e0b4b4"/>
+    <rect x="692" y="192" width="92" height="4" fill="#e0b4b4"/>
+
+    <rect x="680" y="220" width="182" height="42" fill="#eaf1fb" stroke="#3f7fd6" stroke-dasharray="5 4"/>
+    <text x="800" y="235" fill="#3f7fd6" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" letter-spacing="0.8">SPLIT</text>
+    <rect x="692" y="244" width="146" height="4" fill="#b9cdec"/>
+    <rect x="692" y="252" width="112" height="4" fill="#b9cdec"/>
+    <rect x="680" y="274" width="150" height="4" fill="#ccd4cc"/>
+    <rect x="680" y="284" width="170" height="4" fill="#ccd4cc"/>
+  </g>
+  <text x="664" y="320" fill="#6f7a72" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15">源页面 &#183; 1 个长文档</text>
+
+  <!-- split -->
+  <path d="M892 178h64" stroke="#32745d" stroke-width="2"/>
+  <polygon points="964,178 954,172 954,184" fill="#32745d"/>
+  <text x="890" y="158" fill="#6f7a72" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="15">按内容切分</text>
+
+  <!-- output pages -->
+  <g>
+    <rect x="1030" y="80" width="118" height="188" fill="#ffffff" stroke="#cbd3cb"/>
+    <rect x="1014" y="72" width="118" height="188" fill="#ffffff" stroke="#cbd3cb"/>
+    <rect x="998" y="64" width="118" height="188" fill="#ffffff" stroke="#cbd3cb"/>
+    <path d="M1104 64h12v12Z" fill="#e6ece6"/>
+    <path d="M1104 64 1116 76" stroke="#cbd3cb"/>
+
+    <rect x="1010" y="82" width="76" height="7" fill="#202321" opacity="0.78"/>
+    <rect x="1010" y="96" width="48" height="4" fill="#b9c1b9"/>
+    <rect x="1010" y="112" width="94" height="4" fill="#ccd4cc"/>
+    <rect x="1010" y="120" width="86" height="4" fill="#ccd4cc"/>
+    <rect x="1010" y="128" width="92" height="4" fill="#ccd4cc"/>
+    <rect x="1010" y="136" width="70" height="4" fill="#ccd4cc"/>
+
+    <rect x="1010" y="148" width="94" height="56" fill="#ffffff" stroke="#d8ded8"/>
+    <rect x="1010" y="148" width="94" height="12" fill="#eef1ed"/>
+    <rect x="1010" y="160" width="94" height="12" fill="#fbeceb"/>
+    <rect x="1010" y="160" width="2" height="12" fill="#cf4a4a"/>
+    <path d="M1010 172h94M1010 184h94" stroke="#d8ded8"/>
+
+    <text x="1072" y="238" fill="#6f7a72" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12">1 / 3</text>
+  </g>
+
+  <rect x="998" y="30" width="46" height="22" fill="#244c3a"/>
+  <text x="1011" y="45" fill="#ffffff" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14">PDF</text>
+  <rect x="1052" y="30" width="80" height="22" fill="none" stroke="#32745d"/>
+  <text x="1064" y="45" fill="#244c3a" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14">PNG &#215;3</text>
+
+  <text x="998" y="320" fill="#6f7a72" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15">3 &#215; A4 &#183; 同一份分页结果</text>
+</svg>

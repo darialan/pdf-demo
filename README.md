@@ -1,8 +1,27 @@
-# Web Printer
+<p align="center">
+  <img src="https://cdn.jsdelivr.net/gh/darialan/web-printer@master/assets/readme/hero.svg" width="100%" alt="Web Printer 分页导出示意图：一个长页面被切分为多页 A4，并输出 PDF 或逐页 PNG">
+</p>
 
-把已渲染的长网页按内容分页，保留现有样式，输出 PDF 或逐页 PNG。
+浏览器内的 HTML 分页引擎：保留现有样式，输出 PDF 或逐页 PNG。
 
-[在线工作台](https://pdf-demo-phi.vercel.app/#/playground) · [安装与迁移](docs/migration-to-web-printer.md) · [输出层说明](docs/output-formats.md)
+[在线工作台](https://pdf-demo-phi.vercel.app/#/playground) · [npm](https://www.npmjs.com/package/@darialan/web-printer) · [接入指南](https://github.com/darialan/web-printer/blob/master/docs/npm-package-guide.md)
+
+[特性](#特性) · [安装](#安装) · [快速开始](#快速开始) · [架构](#架构) · [API](#api) · [仓库结构](#仓库结构) · [开发](#开发) · [文档](#文档)
+
+<p align="center">
+  <img src="https://cdn.jsdelivr.net/gh/darialan/web-printer@master/assets/readme/workbench-table.webp" width="100%" alt="工作台在真实表格上标记 atomic 行保护，右侧显示导出的纸张预览">
+</p>
+
+工作台在真实页面上标出 `atomic` 区间与分页状态，右侧是同一份布局生成的纸张预览。
+
+## 特性
+
+- **按内容分页**：文字按行测量，表格优先按行换页，图片、代码块和公式整块保护，不会被拦腰截断。
+- **一套布局，两种输出**：PDF 单文件，或逐页 PNG 打包 ZIP；两种格式共用同一份分页结果。
+- **纯浏览器执行**：不需要服务端 PDF 服务，适合报表、单据、合同和长文章导出。
+- **不污染源页面**：测量和截图都在离屏快照里完成，导出前后源 DOM 的样式与内容不变。
+- **可控的导出过程**：支持 `AbortSignal` 取消、逐页进度、缩略图预览和分页检查。
+- **TypeScript 优先**：类型随包提供，核心入口无 React 依赖。
 
 ## 安装
 
@@ -10,30 +29,107 @@
 npm install @darialan/web-printer
 ```
 
-`html2canvas` 与 `jspdf` 随包安装。核心入口不依赖 React；React Hook 从可选的 `/react` 入口使用。
-
-## 导出 PDF 或分页图片
+## 快速开始
 
 ```ts
 import { outputDocument } from '@darialan/web-printer';
 
 await outputDocument({
-  element: document.getElementById('content'),
+  element: document.getElementById('report')!,
   filename: 'report',
-  format: 'pdf', // 'png'：逐页 PNG，打包为 ZIP 下载
-  settings: {
-    paper: 'a4',
-    marginTopMm: 12,
-    marginRightMm: 12,
-    marginBottomMm: 12,
-    marginLeftMm: 12,
-  },
+  format: 'pdf', // 'png'：逐页 PNG，打包为 ZIP
 });
 ```
 
-`download: false` 返回 Blob；`signal` 支持取消；`onProgress(completed, total)` 报告实际页进度。PDF 与图片共用布局、测量、分页和截图管线，由独立 writer 组装输出。旧 PDF 专用接口 `outputPDF()` 保留。
+`download: false` 只返回 Blob；`signal` 取消导出；`onProgress(completed, total)` 报告页进度。返回 `{ blob, pages, bytes, layoutMs, totalMs }`。
 
-## React
+## 架构
+
+分页与渲染分离：DOM 先被降维成受保护区间，再由纯函数算出分页计划，最后逐页执行截图。
+
+核心由 TypeScript 实现，库产物为 ESM / CJS / `.d.ts`；工作台与落地页使用 React。
+
+```mermaid
+flowchart TD
+  UI["hooks / overlay<br/>React 接入 · 分页线调试"]
+  APP["application<br/>流水线 · 导出服务 · 会话 · 取消"]
+  ADP["adapters<br/>DOM 测量 · 快照 · Canvas · jsPDF"]
+  OUT["output<br/>PDF / PNG writer · ZIP · 页码"]
+  CORE["core<br/>几何 · 规则 · 分页"]
+
+  UI --> APP
+  APP --> ADP
+  APP --> OUT
+  OUT --> ADP
+  ADP --> CORE
+  OUT --> CORE
+```
+
+| 层 | 职责 |
+| --- | --- |
+| `core` | 纯计算：纸张几何、保护规则、贪心避让分页；不依赖 DOM / React / html2canvas / jsPDF |
+| `adapters` | 唯一接触 `document`、`html2canvas`、`jsPDF` 的层：测量、快照、截图、PDF 组装 |
+| `application` | 定义阶段顺序与资源释放：准备布局、逐页导出、取消、会话 |
+| `output` | 把页面切片组装成 PDF 或 PNG 包；不测量 DOM、不重新分页 |
+| `hooks` / `overlay` | React 接入与分页线可视化，均为可选层 |
+
+一次导出依次经过：
+
+1. 解析打印区域，等待字体与图片就绪（15s 超时，可取消）。
+2. 克隆离屏快照并冻结计算样式，锁定源区域宽度。
+3. 计算纸张几何与正文容量，统一用 `ratio` 换算 pt 与 CSS px。
+4. 测量受保护区间：文字行、原子块；忽略节点直接移除。
+5. 用纯函数 `paginate()` 生成分页切片，切点穿过保护区时回退到其顶部。
+6. 逐页截图、组装页眉页脚与页码，写入 PDF 或 PNG 包。
+
+测量与渲染使用**同一份快照**，避免“预览能看、导出不一样”。
+
+## API
+
+### 导出
+
+| 参数 | 说明 |
+| --- | --- |
+| `element` | 打印区域；同源 `<iframe>` 可直接传入 |
+| `format` | `'pdf'`（默认）或 `'png'` |
+| `download` | 默认 `true`；`false` 时只返回 Blob |
+| `settings` | 纸张、方向、边距、页眉页脚、页码；默认 A4 纵向、四边 10mm |
+| `header` / `footer` | 每页重复渲染的独立 DOM 元素 |
+| `onProgress` | `(completed, total) => void`，每页完成后回调 |
+| `maxPages` | 默认 100，超出直接报错 |
+| `rules` / `ruleConfig` | 覆盖或追加分页规则 |
+| `signal` | `AbortSignal`，页面之间检查取消 |
+
+返回 `{ blob, pages, bytes, layoutMs, totalMs }`。只导出 PDF 时也可以用 `outputPDF()`。
+
+### 内容保护
+
+在 HTML 上直接标记，不绑定框架或组件库：
+
+```html
+<article data-print-splittable="true">长文章正文</article>
+<figure data-print-atomic="true">整块保护的配图与说明</figure>
+<div data-print-ignore="true">不参与导出的工具栏</div>
+```
+
+- `data-print-atomic="true"` / `.print-atomic`：整块换页；单块超过一页时明确报错
+- `data-print-splittable="true"` / `.print-splittable`：允许按文字行或子元素分割
+- `data-print-ignore="true"` / `.print-ignore`：从导出中排除，不占用纸张空间
+- `data-print-keep-together="split"` / `.print-keep-or-split`：优先整块换页，过高时降级拆分；表格行默认采用此规则
+
+也可以不修改模板，用 `ruleConfig` 或 `configurePrint()` 注册选择器。
+
+### 预览与检查
+
+| API | 用途 |
+| --- | --- |
+| `createPrintSession(options)` | 冻结一次布局，供 `thumbnail(index)`、`exportDocument()` 复用；用完调用 `dispose()` |
+| `inspectPrintLayout({ contentElement, ...options })` | 只测量与检查，返回页数、断点、受保护区间和耗时 |
+| `calculatePagesArray(options)` | 只返回分页断点数组 |
+| `configurePrint(config)` / `resetPrintRules()` | 全局注册或重置规则选择器 |
+| `visualizePageBreaks(pages, element)` / `clearPageBreaks()` | 在源页面绘制或清理分页线 |
+
+### React
 
 ```tsx
 import { useRef } from 'react';
@@ -41,69 +137,76 @@ import { useWebPrinter } from '@darialan/web-printer/react';
 
 export function Report() {
   const content = useRef<HTMLDivElement>(null);
-  const { exportDocument, isExporting, error, cancel } = useWebPrinter();
-  return <>
-    <button disabled={isExporting} onClick={() => {
-      exportDocument({ element: content.current, filename: 'report', format: 'png' })
-        .catch(() => { /* error 已记录，可在界面展示 */ });
-    }}>导出分页图片</button>
-    {isExporting && <button onClick={cancel}>取消导出</button>}
-    {error && <p role="alert">{error.message}</p>}
-    <div ref={content}>你的页面内容</div>
-  </>;
+  const { exportDocument, isExporting, progress, error, cancel } = useWebPrinter();
+
+  return (
+    <>
+      <button
+        disabled={isExporting}
+        onClick={() =>
+          exportDocument({
+            element: content.current,
+            filename: 'report',
+            format: 'pdf',
+          }).catch(() => {})
+        }
+      >
+        {isExporting ? `导出中 ${progress.percent}%` : '导出 PDF'}
+      </button>
+      {isExporting && <button onClick={cancel}>取消</button>}
+      {error && <p role="alert">{error.message}</p>}
+      <div ref={content}>页面内容</div>
+    </>
+  );
 }
 ```
 
-React 由宿主项目安装。旧名 `usePdfPrint` 在同一 `/react` 入口作为兼容别名保留；`exportPDF` 与 `isPrinting` 仍可使用。
+在 Next.js App Router 中，请在客户端组件（`'use client'`）里调用。
 
-## 内容保护与排除
+## 仓库结构
 
-```html
-<article data-print-splittable="true">长文章正文</article>
-<figure data-print-atomic="true">整块保护的配图与说明</figure>
-<div data-print-ignore="true">不参与输出的工具栏</div>
+<details>
+<summary>展开目录</summary>
+
+```text
+src/lib/
+├── core/          # 纯计算：分页、几何、规则
+├── adapters/      # DOM 测量、快照、Canvas 截图、jsPDF
+├── application/   # 流水线、导出服务、打印会话、取消
+├── output/        # PDF / PNG writer、ZIP、页码
+├── hooks/         # React 集成（仅 /react 入口）
+└── overlay/       # 分页线可视化调试
+src/demo/          # 工作台示例
+src/landing/       # 落地页
+e2e/               # Playwright 端到端用例
+docs/              # 对外文档
+assets/readme/     # README 视觉资产
 ```
 
-| 标记 | 行为 |
-| --- | --- |
-| `data-print-atomic="true"` / `.print-atomic` | 整块换页；整块高于一页时报错，提示调整布局或尺寸 |
-| `data-print-splittable="true"` / `.print-splittable` | 继续深入内容，按文字行与子元素分页 |
-| `data-print-ignore="true"` / `.print-ignore` | 快照排版前移除，不占用输出空间 |
-| `data-print-keep-together="split"` / `.print-keep-or-split` | 优先整体换页，过高时允许深入拆分；表格行默认采用该规则 |
+</details>
 
-`PRINT_ATTRIBUTES` 与 `PRINT_CLASSES` 提供协议常量。旧 `data-pdf-*` / `.pdf-*` 与旧常量继续可用，详见[迁移说明](docs/migration-to-web-printer.md)。
+## 依赖与运行环境
 
-`configurePrint()` 可注册组件库选择器；`inspectPrintLayout()` 只测量与检查，不导出；`visualizePageBreaks()` 显示 `atomic`、`splittable`、`ignore` 和 `page-break`，`clearPageBreaks()` 清理标记。
+- 无服务端依赖：分页、截图与组装全部在浏览器内完成。
+- 可选 React 16.8+：仅 `/react` 入口使用。
+- 现代浏览器：需要 Canvas 2D、Range 与 Font Loading API。
 
-## 四个真实场景
-
-| 场景 | 验证内容 |
-| --- | --- |
-| 长表格 | 45 行采购明细，行保护与超高单元格文字分页 |
-| 长文章 | 连续段落按实际文字行换页 |
-| 复杂图文 | 原样式文章中的配图、公式和代码整体保护 |
-| 自定义页眉页脚 | 品牌信息与页码跨页重复 |
-
-工作台支持尺寸、方向、边距、页码、纸张与社媒图片比例。检查包含页面标记和纸张预览，两部分独立失败与重试。
-
-## 支持边界
-
-核心为 TypeScript，接收 DOM，可在原生 JS、Vue、React 等客户端页面使用。图片和字体需完成加载，跨域图片需允许 CORS。复杂 CSS 的还原受 html2canvas 支持范围影响；跨域 iframe、Shadow DOM 和视频不属于无条件完整支持范围。PDF 正文为光栅图像，没有可搜索的文字层；PNG 像素尺寸受截图清晰度与画布预算影响，页面 px 用于布局。
-
-默认最多 100 页；采用逐页画布，避免创建整篇长画布。压缩图像字节仍会随总页数增长，不表示任意长度文档无内存成本。
-
-## 开发与验证
+## 开发
 
 ```sh
 npm ci
-npm start
-npm run check
+npm start            # 本地工作台
+npm run check        # 类型检查 + npm 包单测
+npm run check:full   # 单测 + 库/站点构建 + 浏览器 e2e
 ```
 
-`npm run check` 是提交时的门禁：先对全项目做 TypeScript 检查（`src/lib`、`src/landing`、`src/demo`、测试文件都在范围内），再只跑 npm 包（`src/lib`）的单元测试，不构建 landing 页和 demo。需要全量验证时运行 `npm run check:full`，额外执行全部单测、库与网页构建，以及 Chromium 引擎测试（在真实浏览器里验证分页、快照样式保留、页眉页脚、取消清理和 PDF 输出）。扩展目录不在 `tsconfig.json` 范围内，单独用 `npm run typecheck:extension` 检查。
+约定：`src/lib/core` 保持纯计算；依赖方向为 `demo / ui → application → adapters + core`，不要反向 import。提交前钩子、源码细节与文档维护约定见 [CONTRIBUTING.md](https://github.com/darialan/web-printer/blob/master/CONTRIBUTING.md)。
 
-提交前自动执行的钩子来自 `.githooks/pre-commit`，克隆后运行一次 `npm run setup:hooks` 启用。
+## 文档
 
-源码布局：`src/lib/core` 为分页与几何，`adapters` 为 DOM/画布/PDF 适配，`application` 编排生命周期，`output` 区分格式，`hooks` 提供可选 React 集成；`src/demo` 和 `src/landing` 分别为工作台与首页。
+- [接入指南](https://github.com/darialan/web-printer/blob/master/docs/npm-package-guide.md)：参数、规则、框架集成与实现原理
+- [输出层说明](https://github.com/darialan/web-printer/blob/master/docs/output-formats.md)：PDF / PNG writer 与失败语义
 
-MIT License。原包 `@darialan/web-pdf-printer@1.0.2` 保持可下载，新开发建议使用 `@darialan/web-printer`。
+## License
+
+MIT © darialan
