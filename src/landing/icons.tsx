@@ -1,4 +1,10 @@
 import { ReactComponent as PageFlowMark } from './brand-mark.svg';
+// Colored technology marks from Devicon (MIT): https://github.com/devicons/devicon
+import { ReactComponent as JavaScriptMark } from './tech-icons/javascript.svg';
+import { ReactComponent as TypeScriptMark } from './tech-icons/typescript.svg';
+import { ReactComponent as ReactMark } from './tech-icons/react.svg';
+import { ReactComponent as VueMark } from './tech-icons/vue.svg';
+import { ReactComponent as HtmlMark } from './tech-icons/html.svg';
 
 export function Icon({ name, size = 20 }: { name: 'arrow' | 'github' | 'copy' | 'check' | 'file' | 'grid' | 'sliders' | 'code' | 'expand' | 'sun' | 'moon' | 'sparkles' | 'external' | 'layers' | 'dom' | 'document' | 'universal' | 'link' | 'chevron'; size?: number }) {
   const paths = {
@@ -37,32 +43,16 @@ export function BrandWordmark() {
   return <span className="brand-wordmark">Web<span className="brand-suffix"> Printer</span></span>;
 }
 
-/**
- * Recognizable technology marks, drawn as one monoline family on a 24 grid so a row of them
- * reads as a single optical system rather than five different clip-arts.
- */
-export function TechnologyMark({ name, size = 28 }: { name: 'JavaScript' | 'TypeScript' | 'React' | 'Vue' | 'HTML'; size?: number }) {
-  const letters = name === 'JavaScript' ? 'JS' : 'TS';
-  const badge = name === 'JavaScript' || name === 'TypeScript';
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
-    {badge ? <>
-      <rect x="2.4" y="2.4" width="19.2" height="19.2" rx="5.4" strokeWidth="1.6" />
-      <text x="12" y="16.2" textAnchor="middle" fill="currentColor" stroke="none"
-        fontFamily="'Avenir Next', 'Helvetica Neue', Helvetica, Arial, sans-serif"
-        fontSize={name === 'JavaScript' ? 8.9 : 8.4} fontWeight="700" letterSpacing="-.3">{letters}</text>
-    </> : name === 'React' ? <g strokeWidth="1.5">
-      <ellipse cx="12" cy="12" rx="10.1" ry="4.1" />
-      <ellipse cx="12" cy="12" rx="10.1" ry="4.1" transform="rotate(60 12 12)" />
-      <ellipse cx="12" cy="12" rx="10.1" ry="4.1" transform="rotate(120 12 12)" />
-      <circle cx="12" cy="12" r="2.1" fill="currentColor" stroke="none" />
-    </g> : name === 'Vue' ? <>
-      <path d="M2.6 4.4 12 21.4 21.4 4.4" strokeWidth="1.6" />
-      <path d="M8.5 4.4 12 10.5l3.5-6.1" strokeWidth="1.6" />
-    </> : <>
-      <path d="M4.2 2.6h15.6l-1.32 17.9L12 22.4l-6.48-1.9z" strokeWidth="1.6" transform="translate(0 -.4)" />
-      <text x="12" y="16.3" textAnchor="middle" fill="currentColor" stroke="none"
-        fontFamily="'Avenir Next', 'Helvetica Neue', Helvetica, Arial, sans-serif"
-        fontSize="8.4" fontWeight="700">5</text>
-    </>}
-  </svg>;
+/** Official Devicon marks, kept on one optical size so the row reads as a set. */
+const technologyMarks = {
+  JavaScript: JavaScriptMark,
+  TypeScript: TypeScriptMark,
+  React: ReactMark,
+  Vue: VueMark,
+  HTML: HtmlMark,
+};
+
+export function TechnologyMark({ name, size = 28 }: { name: keyof typeof technologyMarks; size?: number }) {
+  const Mark = technologyMarks[name];
+  return <Mark width={size} height={size} aria-hidden="true" focusable="false" />;
 }

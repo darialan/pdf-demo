@@ -178,7 +178,7 @@ export function LandingPage() {
           <p className="hero-note">{t.note}</p>
         </div>
         <figure className="hero-visual">
-          <ProductPreview locale={locale} />
+          <ProductPreview />
           <figcaption>{t.caption}</figcaption>
         </figure>
       </header>

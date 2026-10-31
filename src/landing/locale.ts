@@ -6,9 +6,9 @@ const STORAGE_KEY = 'web-printer-locale';
 export const copy = {
   zh: {
     title: 'Web Printer · 网页分页导出', description: '框架无关的浏览器分页库。沿用网页样式，按文字行和内容块分页，导出 PDF 或逐页 PNG。',
-    skip: '跳至主要内容', nav: '全局导航', home: 'Web Printer 首页', features: '分页能力', examples: '场景示例', integration: '快速接入', faq: '常见问题', workbench: '打开工作台',
+    skip: '跳至主要内容', nav: '全局导航', home: 'Web Printer 首页', features: '分页规则', examples: '场景示例', integration: '快速接入', faq: '常见问题', workbench: '打开工作台',
     dark: '切换到暗色主题', light: '切换到亮色主题', github: '查看 GitHub 仓库', language: '切换到英文',
-    headline: ['长网页，', '分好再导出。'], lede: '框架无关的网页分页库。沿用页面样式，按内容换页，导出 PDF 或逐页 PNG。', try: '体验分页', viewCode: '查看接入代码', note: 'MIT 开源 · 浏览器内运行', caption: '真实引擎预览。换个尺寸，看看内容如何重新分页。',
+    headline: ['长网页，', '分好再导出。'], lede: '框架无关的网页分页库。沿用页面样式，按内容换页，导出 PDF 或逐页 PNG。', try: '体验分页', viewCode: '查看接入代码', note: 'MIT 开源 · 浏览器内运行', caption: '从一整页 HTML 到多页 PDF：文字按行续排，表格与图文整块保留。',
     stackTitle: '适配你的技术栈', stackBody: '独立的 JavaScript / TypeScript 核心，不绑定框架或组件库。', stackLabel: '技术栈接入示例',
     featureTitle: '分页，照顾到内容。', featureBody: '从现有页面开始，控制内容怎样换页，以及每一页长什么样。',
     rules: [
@@ -37,13 +37,12 @@ export const copy = {
       ['可以用于商业项目吗？', '可以。NPM 包采用 MIT 许可，分发时需保留版权和许可声明。'],
     ],
     footerLine: '让网页，成为可交付的每一页。', footerNote: 'MIT 开源许可',
-    preview: { size: '页面尺寸', a4: 'A4 纵向', square: '1:1 方形', status: (count: number) => `${count} 页 · 同一份 HTML`, unavailable: '预览暂不可用', loading: '正在分页…', open: '打开工作台', label: '实际分页预览', retry: '重试预览', measuring: '正在按页面尺寸测量内容…', previous: '上一页', next: '下一页', from: (n: number) => `第 ${n} 页起`, total: (n: number) => `共 ${n} 页`, page: (n: number) => `示例文档第 ${n} 页`, title: '示例文档.html', docTitle: '分页与导出', intro: '同一份网页内容，按文字行与内容块重新分页。表格按整行换页，段落按实际文字行延续。', columns: ['区块', '类型', '分页行为'], rows: [['概述', '段落', '按文字行延续'], ['范围', '段落', '按文字行延续'], ['术语', '列表', '按文字行延续'], ['目录', '列表', '按整行换页'], ['排版', '段落', '按文字行延续'], ['表格', '表格', '按整行换页'], ['图片', '图片', '整体保留'], ['图注', '段落', '按文字行延续'], ['代码', '代码', '整体保留'], ['引用', '段落', '按文字行延续'], ['页眉', '固定区域', '每页重复'], ['页脚', '固定区域', '每页重复'], ['页码', '固定区域', '每页重复'], ['边距', '设置', '整体保留'], ['纸张', '设置', '整体保留'], ['网格', '布局', '整体保留'], ['图表', '图片', '整体保留'], ['表单', '布局', '整体保留'], ['注释', '段落', '按文字行延续'], ['元数据', '设置', '整体保留'], ['附录', '段落', '按文字行延续'], ['版本', '段落', '按文字行延续'], ['链接', '行内元素', '按文字行延续'], ['列表', '列表', '按整行换页']], outcome: '导出结果', paragraphs: ['分页在浏览器内完成：先按目标尺寸测量内容，再决定每一页的起止位置，最后按页渲染。切换尺寸会重新测量同一份内容，因此页数和分页位置都会随之变化。', '文字按实际行高测量，段落可以跨页延续；表格行、代码块和图片被视为整体，尽量避免被页边界截断。', '导出结果与工作台共用同一套分页设置：页面尺寸、边距、页眉页脚和页码在导出时保持一致。'] },
   },
   en: {
     title: 'Web Printer · Paginated PDF & PNG export', description: 'A framework-independent browser pagination library. Keep your page styles, break around content, and export PDF or individual PNG pages.',
-    skip: 'Skip to content', nav: 'Main navigation', home: 'Web Printer home', features: 'Pagination', examples: 'Examples', integration: 'Quick start', faq: 'FAQ', workbench: 'Open workbench',
+    skip: 'Skip to content', nav: 'Main navigation', home: 'Web Printer home', features: 'Page breaks', examples: 'Examples', integration: 'Quick start', faq: 'FAQ', workbench: 'Open workbench',
     dark: 'Switch to dark theme', light: 'Switch to light theme', github: 'View GitHub repository', language: 'Switch to Chinese',
-    headline: ['Web to PDF.', 'Page by page.'], lede: 'Framework-independent page export for the browser. Keep your page styles, break around content, and export PDF or individual PNGs.', try: 'Try pagination', viewCode: 'View the code', note: 'MIT licensed · Runs in your browser', caption: 'The real pagination engine. Change the size to see the same content reflow.',
+    headline: ['Web to PDF.', 'Page by page.'], lede: 'Framework-independent page export for the browser. Keep your page styles, break around content, and export PDF or individual PNGs.', try: 'Try pagination', viewCode: 'View the code', note: 'MIT licensed · Runs in your browser', caption: 'From one HTML page to a paginated PDF: text flows by line; tables and figures stay whole.',
     stackTitle: 'Your stack. Your choice.', stackBody: 'A standalone JavaScript / TypeScript core, independent of frameworks and component libraries.', stackLabel: 'Framework integration examples',
     featureTitle: 'Page breaks that fit.', featureBody: 'Start with your existing page. Choose how content breaks and how each page is laid out.',
     rules: [
@@ -72,7 +71,6 @@ export const copy = {
       ['Can I use it commercially?', 'Yes. The NPM package uses the MIT license. Keep the copyright and license notice when distributing it.'],
     ],
     footerLine: 'From web content to pages you can share.', footerNote: 'MIT licensed',
-    preview: { size: 'Page size', a4: 'A4 portrait', square: '1:1 square', status: (count: number) => `${count} pages · Same HTML`, unavailable: 'Preview unavailable', loading: 'Paginating…', open: 'Open workbench', label: 'Live pagination preview', retry: 'Retry preview', measuring: 'Measuring content for this page size…', previous: 'Previous page', next: 'Next page', from: (n: number) => `From page ${n}`, total: (n: number) => `${n} pages total`, page: (n: number) => `Sample document page ${n}`, title: 'sample.html', docTitle: 'Pagination and export', intro: 'One web page, re-paginated by text line and content block. Tables break by row; paragraphs continue by measured text lines.', columns: ['Section', 'Type', 'Page break'], rows: [['Overview', 'Paragraph', 'Continues by line'], ['Scope', 'Paragraph', 'Continues by line'], ['Terms', 'List', 'Continues by line'], ['Contents', 'List', 'Breaks by row'], ['Layout', 'Paragraph', 'Continues by line'], ['Tables', 'Table', 'Breaks by row'], ['Images', 'Image', 'Kept together'], ['Captions', 'Paragraph', 'Continues by line'], ['Code', 'Code', 'Kept together'], ['Quotes', 'Paragraph', 'Continues by line'], ['Headers', 'Fixed region', 'Repeats per page'], ['Footers', 'Fixed region', 'Repeats per page'], ['Page numbers', 'Fixed region', 'Repeats per page'], ['Margins', 'Setting', 'Kept together'], ['Paper', 'Setting', 'Kept together'], ['Grid', 'Layout', 'Kept together'], ['Charts', 'Image', 'Kept together'], ['Forms', 'Layout', 'Kept together'], ['Notes', 'Paragraph', 'Continues by line'], ['Metadata', 'Setting', 'Kept together'], ['Appendix', 'Paragraph', 'Continues by line'], ['Versions', 'Paragraph', 'Continues by line'], ['Links', 'Inline', 'Continues by line'], ['Lists', 'List', 'Breaks by row']], outcome: 'Output', paragraphs: ['Pagination runs in the browser: the content is measured against the target size, page boundaries are decided, and each page is rendered. Changing the size re-measures the same content, so both page count and break positions change.', 'Text is measured by its rendered line boxes, so paragraphs may continue across pages. Table rows, code blocks and images are treated as atomic blocks and kept away from page boundaries where possible.', 'The export shares one set of pagination settings with the workbench: page size, margins, headers, footers and page numbers stay identical.'] },
   },
 };
 

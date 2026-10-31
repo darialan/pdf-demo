@@ -37,13 +37,8 @@
 .compat-mark { display:grid; place-items:center; width:56px; height:56px; color:var(--ink); transition:color .25s, transform .25s cubic-bezier(.2,.8,.3,1); }
 .compat-mark svg { display:block; width:38px; height:38px; }
 .compat-label { transition:color .25s; }
-.compat-item:hover .compat-mark { transform:translateY(-4px); color:var(--tech-ink,var(--ink)); }
+.compat-item:hover .compat-mark { transform:translateY(-4px); }
 .compat-item:hover .compat-label { color:var(--ink); }
-.compat-JavaScript { --tech-ink:#8a7000; }
-.compat-TypeScript { --tech-ink:#2b6cb0; }
-.compat-React { --tech-ink:#0e8fb5; }
-.compat-Vue { --tech-ink:#2c8a63; }
-.compat-HTML { --tech-ink:#c2452a; }
 .landing-page :is(.features-section,.studio-section) { padding-top:var(--section-gap); }
 .section-heading { display:flex; align-items:flex-end; justify-content:space-between; gap:48px; margin-bottom:40px; }
 .landing-page h2 { margin:0; font-size:clamp(32px,3.2vw,44px); line-height:1.25; letter-spacing:-.04em; font-weight:600; }
@@ -117,47 +112,29 @@
 .footer-note,.footer-links { font-size:14px; }
 .footer-links { margin-left:auto; gap:24px; }
 .footer-links a { display:inline-flex; align-items:center; gap:8px; }
-/* Real engine preview: the product shown as the application it is, not as a picture of paper. */
-.pagination-demo { background:transparent; }
-.preview-window { background:var(--card); border-radius:18px; overflow:hidden; box-shadow:0 1px 2px #1018140a, 0 22px 56px -24px #10181447, 0 0 0 1px #1018140f; }
-.preview-bar { display:flex; align-items:center; justify-content:space-between; gap:16px; height:50px; padding:0 13px 0 16px; border-bottom:1px solid var(--line); }
-.preview-bar-lead { display:flex; align-items:center; gap:10px; min-width:0; }
-.preview-doc-icon { display:grid; place-items:center; width:26px; height:26px; border-radius:8px; color:var(--accent); background:var(--accent-soft); flex-shrink:0; }
-.preview-doc-title { font-size:13px; font-weight:600; letter-spacing:-.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.preview-bar-trail { display:flex; align-items:center; gap:14px; }
-.preview-select { position:relative; display:inline-flex; align-items:center; }
-.preview-select svg { position:absolute; right:9px; pointer-events:none; color:var(--ink3); }
-.preview-select select { appearance:none; -webkit-appearance:none; min-height:30px; padding:5px 28px 5px 11px; border:0; border-radius:9px; background:var(--bg2); color:var(--ink); font:inherit; font-size:12px; font-weight:600; cursor:pointer; transition:background .18s; }
-.preview-select select:hover { background:var(--line); }
-.preview-status { font-size:12px; color:var(--ink2); font-variant-numeric:tabular-nums; white-space:nowrap; }
-.preview-canvas { position:relative; display:flex; justify-content:flex-start; align-items:flex-start; gap:16px; overflow:hidden; height:328px; padding:22px 24px 0; background:var(--canvas); }
-/* The page continues below the fold: a short fade tells the eye where to go. */
-.preview-canvas::after { content:''; position:absolute; left:0; right:0; bottom:0; height:46px; background:linear-gradient(to bottom,#0000,var(--canvas)); pointer-events:none; }
-/* The next page peeks in from the right and dissolves into the canvas instead of being cut. */
-.preview-canvas.has-peek::before { content:''; position:absolute; top:0; right:0; bottom:0; width:104px; z-index:3; background:linear-gradient(to right,#0000,var(--canvas)); pointer-events:none; }
-.landing-sheet { position:relative; flex-shrink:0; background:var(--paper); color-scheme:light; color:var(--paper-ink); overflow:hidden; border-radius:3px; box-shadow:0 1px 2px #1018141f, 0 10px 26px -14px #1018145c; }
-.pagination-empty { display:grid; place-content:center; width:100%; height:100%; font-size:14px; color:var(--ink2); }
-.pagination-empty button { padding:10px 14px; border:0; border-radius:9px; color:var(--ink); background:var(--card); cursor:pointer; }
-.preview-foot { display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:48px; padding:0 12px 0 16px; border-top:1px solid var(--line); }
-.preview-workbench { display:inline-flex; align-items:center; gap:7px; font-size:13px; font-weight:600; color:var(--ink); }
-.preview-workbench svg { transition:transform .2s; }
-.preview-workbench:hover svg { transform:translateX(4px); }
-.pagination-pager { display:flex; align-items:center; gap:8px; font-size:13px; }
-.pagination-pager > span { font-weight:600; font-variant-numeric:tabular-nums; letter-spacing:.01em; }
-.pager-total { font-weight:400; color:var(--ink2); }
-.landing-page .pagination-pager button { display:grid; place-items:center; width:30px; height:30px; border:0; border-radius:8px; color:var(--ink); background:transparent; cursor:pointer; transition:background .18s, transform .18s; }
-.landing-page .pagination-pager button:hover:not(:disabled) { background:var(--bg2); transform:translateY(-1px); }
-.landing-page .pagination-pager button:disabled { opacity:.35; cursor:default; }
-.previous-arrow { display:flex; transform:rotate(180deg); }
-.landing-source-host { position:absolute; top:0; left:-100000px; pointer-events:none; }
+/* The hero diagram: one source page, three output pages, one PDF. Shapes carry the story. */
+.page-concept { position:relative; padding:20px 16px; border-radius:26px; overflow:hidden;
+  background:radial-gradient(95% 80% at 18% 0%,#ffffffb3,transparent 58%),linear-gradient(150deg,#eef3ee 0%,#e3ebe5 62%,#eaf0ea 100%);
+  box-shadow:inset 0 1px 0 #ffffff8c,inset 0 0 0 1px #17231c0a; }
+:root[data-theme=dark] .page-concept { background:radial-gradient(95% 80% at 18% 0%,#26332b,transparent 58%),linear-gradient(150deg,#1b2620 0%,#151e19 100%);
+  box-shadow:inset 0 1px 0 #ffffff12,inset 0 0 0 1px #ffffff08; }
+.page-concept::before { content:''; position:absolute; inset:0; opacity:.5; pointer-events:none;
+  background-image:radial-gradient(circle,#28382d26 1px,transparent 1px); background-size:17px 17px;
+  -webkit-mask-image:radial-gradient(82% 82% at 48% 46%,#000 30%,transparent 100%);
+  mask-image:radial-gradient(82% 82% at 48% 46%,#000 30%,transparent 100%); }
+:root[data-theme=dark] .page-concept::before { background-image:radial-gradient(circle,#dfeae22b 1px,transparent 1px); }
+.page-concept svg { position:relative; display:block; width:100%; height:auto; }
+.concept-mono { font-family:'SFMono-Regular',Consolas,'Liberation Mono',monospace; letter-spacing:.08em; }
+.concept-display { font-family:'Avenir Next','Segoe UI','PingFang SC',sans-serif; font-weight:750; letter-spacing:-.01em; }
+.pdf-card { transition:transform .45s cubic-bezier(.2,.8,.3,1); }
+.page-concept:hover .pdf-card { transform:translateY(-5px); }
+
 .landing-page :is(a,button,summary) { transition:transform .2s,opacity .2s,background-color .2s; }
 .landing-page :is(.btn,.icon-btn,.theme-toggle,.language-toggle):hover { transform:translateY(-2px); }
 .landing-page :is(.btn,button):active { transform:translateY(1px); }
 @keyframes landing-arrive { from { opacity:.45; transform:translateY(22px); } to { opacity:1; transform:translateY(0); } }
-@keyframes paper-arrive { from { opacity:.6; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
 .hero-copy > *, .hero-visual { animation:landing-arrive .7s both; }
 .hero-copy > :nth-child(2) { animation-delay:70ms; }.hero-copy > :nth-child(3) { animation-delay:140ms; }.hero-copy > :nth-child(4) { animation-delay:210ms; }.hero-copy > :nth-child(5) { animation-delay:280ms; }.hero-visual { animation-delay:150ms; }
-.landing-sheet { animation:paper-arrive .6s both; }.landing-sheet:nth-child(2) { animation-delay:90ms; }
 [data-reveal].is-visible { animation:landing-arrive .65s both; }
 .rule-row:nth-child(2),.setup-steps li:nth-child(2) { animation-delay:70ms; }.rule-row:nth-child(3),.setup-steps li:nth-child(3) { animation-delay:140ms; }
 @media(max-width:1100px) {
@@ -174,9 +151,7 @@
  .landing-page .hero { grid-template-columns:1fr 1fr; padding-block:48px; gap:28px; }.hero h1 { font-size:48px; }.landing-page[data-locale=en] .hero h1 { font-size:44px; }
  .hero .lede { margin-top:28px; font-size:16px; }.cta-row { gap:18px; }.cta-row .text-link { font-size:14px; }.landing-page .btn { padding-inline:18px; }
  .hero-visual figcaption { font-size:13px; }
- .preview-canvas { height:300px; padding:18px 18px 0; }
- .preview-bar { height:46px; padding-inline:12px; }
- .preview-status { display:none; }
+ .page-concept { padding:16px 10px; border-radius:22px; }
  .hero-copy .command-block { margin-top:24px; }.command-block { padding-left:12px; gap:8px; }.hero-copy .command-block .copy-btn span { display:none; }
  .landing-page .compatibility { grid-template-columns:1fr; gap:22px; padding-block:28px; }.compat-copy p { max-width:none; }.compatibility-logos { justify-content:flex-start; gap:36px; flex-wrap:wrap; }.compat-item { flex-direction:row; gap:12px; align-items:center; }.compat-mark { width:44px; height:44px; }.compat-mark svg { width:30px; height:30px; }
  .section-heading { display:block; }.section-description { max-width:40em; margin-top:20px; }
@@ -191,10 +166,7 @@
  .landing-page .hero { grid-template-columns:1fr; padding-block:36px 24px; gap:32px; }.hero h1 { font-size:52px; }.landing-page[data-locale=en] .hero h1 { font-size:50px; }
  .hero .lede { margin:28px 0 24px; font-size:16px; max-width:26em; }.cta-row { gap:24px; }.cta-row .text-link { font-size:14px; }.hero-note { font-size:13px; }
  .hero-visual { margin-top:0; }.hero-visual figcaption { font-size:13px; }
- .preview-canvas { height:262px; padding:14px 14px 0; }
- .preview-bar { height:44px; padding-inline:8px 10px; gap:10px; }
- .preview-bar-lead { gap:8px; }.preview-doc-title { font-size:12px; }.preview-doc-icon { width:24px; height:24px; border-radius:7px; }
- .preview-foot { min-height:44px; padding-inline:10px 8px; }.preview-workbench { font-size:12px; }.pagination-pager { font-size:12px; gap:4px; }
+ .page-concept { padding:10px 6px; border-radius:18px; }
  .hero-copy .command-block .copy-btn span { display:inline; }.command-block { padding-left:12px; gap:6px; }.copy-btn { padding-inline:6px; }
  .landing-page .compatibility { padding-block:24px; gap:20px; }.compat-copy .compat-title { font-size:24px; }.compatibility-logos { flex-wrap:wrap; gap:14px 26px; }.compat-item { font-size:13px; }.compat-mark { width:40px; height:40px; }.compat-mark svg { width:26px; height:26px; }
  .landing-page h2 { font-size:32px; }.section-heading { margin-bottom:28px; }.section-description { font-size:16px; }
