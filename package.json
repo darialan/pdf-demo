@@ -1,6 +1,6 @@
 {
   "name": "@darialan/web-printer",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "保留网页样式的 HTML 分页引擎，支持文字行、表格与图文内容保护，输出 PDF 和逐页 PNG。",
   "author": "darialan",
   "license": "MIT",
