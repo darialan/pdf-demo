@@ -45,40 +45,22 @@ await outputDocument({
 
 ## 架构
 
-DOM 先被降维成受保护区间，再由纯函数算出分页计划，最后逐页执行截图。库由 7 个模块协作完成这条链路。
+分页与渲染分离：DOM 先被降维成受保护区间，再由纯函数算出分页计划，最后逐页执行截图。
 
-```mermaid
-C4Component
-  title Web Printer · 组件架构
-  Container_Boundary(lib, "Web Printer") {
-    Component(export, "导出编排", "TypeScript", "布局准备 · 会话 · 取消")
-    Component(classify, "内容分类", "TypeScript", "atomic / splittable / ignore")
-    Component(snapshot, "快照", "DOM", "样式冻结 · 资源就绪")
-    Component(measure, "布局测量", "DOM", "纸张几何 · 文字行 · 原子块")
-    Component(paginate, "分页引擎", "TypeScript", "贪心避让 → 页面切片")
-    Component(render, "页面渲染", "Canvas", "逐页截图")
-    Component(output, "输出组装", "PDF / PNG", "页眉页脚 · ZIP")
-  }
-  Rel(export, classify, "规则")
-  Rel(export, snapshot, "冻结")
-  Rel(classify, measure, "语义")
-  Rel(snapshot, measure, "快照")
-  Rel(measure, paginate, "区间")
-  Rel(paginate, render, "切片")
-  Rel(render, output, "Canvas")
-```
+<p align="center">
+  <img src="https://cdn.jsdelivr.net/gh/darialan/web-printer@master/assets/readme/architecture-layers.svg" width="100%" alt="Web Printer 四层架构：接入层、应用层、中间层、核心层">
+</p>
 
-| 模块 | 职责 |
-| --- | --- |
-| 导出编排 | 对外 API；准备布局，管理会话、取消与资源释放 |
-| 内容分类 | 判定 `atomic` / `splittable` / `ignore` |
-| 快照 | 克隆源 DOM、冻结计算样式、等待字体与图片 |
-| 布局测量 | 纸张几何、正文容量、文字行与原子块区间 |
-| 分页引擎 | 纯函数：受保护区间 + 容量 → 页面切片 |
-| 页面渲染 | 按切片逐页截图，复用同一份快照 |
-| 输出组装 | 页眉页脚与页码 → PDF；逐页 PNG → ZIP |
+| 层 | 模块 | 职责 |
+| --- | --- | --- |
+| 接入层 | React Hook · 分页调试 | 对外接入与可视化调试 |
+| 应用层 | 导出编排 · 会话 · 取消控制 | 编排流程、生命周期与资源释放 |
+| 中间层 | 快照 · 布局测量 · 页面渲染 · 输出组装 | 把 DOM 转成页面切片并组装输出 |
+| 核心层 | 内容分类 · 纸张几何 · 分页算法 | 纯计算，不依赖 DOM / React / 第三方 |
 
 测量与渲染复用**同一份快照**，避免“预览能看、导出不一样”。
+
+C4 视图（System Context / Container / Component）见[架构文档](https://github.com/darialan/web-printer/blob/master/docs/architecture/README.md)。
 
 ## API
 

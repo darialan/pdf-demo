@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="500" viewBox="0 0 1200 500" role="img" aria-labelledby="layers-title layers-desc">
+  <title id="layers-title">Web Printer 分层架构</title>
+  <desc id="layers-desc">四层结构：接入层、应用层、中间层、核心层。依赖方向向下，核心层只做纯计算。</desc>
+
+  <rect width="1200" height="500" fill="#f6f7f4"/>
+
+  <text x="60" y="42" fill="#6f7a72" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" letter-spacing="1.4">LAYERED VIEW</text>
+  <text x="1140" y="42" fill="#6f7a72" text-anchor="end" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15">依赖方向 ↓</text>
+
+  <rect x="60" y="324" width="1080" height="84" fill="#edf4ef"/>
+
+  <g stroke="#dde3dd">
+    <path d="M60 156h1080"/>
+    <path d="M60 240h1080"/>
+    <path d="M60 324h1080"/>
+    <path d="M60 408h1080"/>
+  </g>
+
+  <path d="M84 80v310" stroke="#32745d" stroke-width="1.5"/>
+  <polygon points="84,400 79,390 89,390" fill="#32745d"/>
+  <g fill="#32745d">
+    <circle cx="84" cy="114" r="3.5"/>
+    <circle cx="84" cy="198" r="3.5"/>
+    <circle cx="84" cy="282" r="3.5"/>
+    <circle cx="84" cy="366" r="3.5"/>
+  </g>
+
+  <text x="120" y="108" fill="#202321" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="26" font-weight="700">接入层</text>
+  <text x="120" y="130" fill="#6f7a72" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">ACCESS</text>
+  <text x="420" y="112" fill="#3d453f" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="19">React Hook　·　　分页调试</text>
+
+  <text x="120" y="192" fill="#202321" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="26" font-weight="700">应用层</text>
+  <text x="120" y="214" fill="#6f7a72" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">APPLICATION</text>
+  <text x="420" y="196" fill="#3d453f" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="19">导出编排　·　　会话　·　　取消控制</text>
+
+  <text x="120" y="276" fill="#202321" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="26" font-weight="700">中间层</text>
+  <text x="120" y="298" fill="#6f7a72" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">RUNTIME</text>
+  <text x="420" y="280" fill="#3d453f" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="19">快照　·　　布局测量　·　　页面渲染　·　　输出组装</text>
+
+  <text x="120" y="360" fill="#244c3a" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="26" font-weight="700">核心层</text>
+  <text x="120" y="382" fill="#4f6b5c" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13">CORE</text>
+  <text x="420" y="364" fill="#244c3a" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="19">内容分类　·　　纸张几何　·　　分页算法</text>
+
+  <text x="120" y="460" fill="#6f7a72" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="15">上层可以依赖任意下层；核心层只做纯计算，不依赖 DOM、React 或第三方库。</text>
+</svg>
