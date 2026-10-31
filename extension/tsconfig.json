@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2020",
+    "types": ["chrome", "node"],
+    "noEmit": true
+  },
+  "include": ["./**/*.ts", "./**/*.tsx", "../src/lib/**/*.ts"],
+  "exclude": ["../src/**/*.test.ts", "../src/**/*.test.tsx"]
+}

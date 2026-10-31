@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN">
+  <meta charset="utf-8" /><title>Web Printer 兼容性验收</title
+  ><style>
+    body {
+      margin: 30px;
+      font: 16px/1.8 system-ui;
+      color: #222;
+      background: #fff;
+    }
+    article {
+      padding: 24px;
+      width: 700px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 28px;
+    }
+    h2 {
+      font-size: 22px;
+    }
+    p {
+      margin: 18px 0;
+    }
+    .exclude-me {
+      background: #f2f3f2;
+      padding: 12px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    td,
+    th {
+      border-bottom: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    .scroller {
+      height: 90px;
+      overflow: auto;
+    }
+    .tall {
+      height: 3000px;
+    }
+    pre {
+      white-space: pre-wrap;
+      background: #eee;
+      padding: 12px;
+    }
+  </style>
+  <article id="article">
+    <h1>把时间留给步行</h1>
+    <aside class="exclude-me">广告：此区域应当可以排除</aside>
+    <p>
+      这是一篇用于验证网页分页的长文章。源页面的宽度、文字颜色、行高与段落间距，在选择、检查和导出之后应当保持一致。
+    </p>
+    <h2>从家门口开始</h2>
+    <p>
+      走路的时候，我们会看到细小的变化。清晨的街道上有人打开店门，有人在路边整理花草。这些普通的细节，在日常匆忙的路途中常常被忽略。把脚步慢下来之后，才能逐渐看清生活的轮廓。
+    </p>
+    <p>
+      沿着河岸继续向前，经过街角，走进居民熟悉的巷子。树影随风摇动，阳光从枝叶之间落下来。这里的时间似乎比车道上慢一些，每一个转角都可以成为新的发现。
+    </p>
+    <h2>保留页面本来的样子</h2>
+    <p>
+      打印工具应该理解已经渲染的页面，处理文字行和表格之间的分页。它不应该要求文章改写，也不应该在导出时静默漏掉资源。出现问题时，应当指出无法处理的区域，并允许用户排除后继续。
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>项目</th>
+          <th>数量</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>页面样式</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <td>连续分页</td>
+          <td>2</td>
+        </tr>
+        <tr>
+          <td>输出格式</td>
+          <td>2</td>
+        </tr>
+      </tbody>
+    </table>
+    <pre data-print-atomic="true">
+const result = await outputDocument({ format: 'png' });</pre
+    >
+    <p>
+      这份内容用于本地自动化测试，不会上传到任何服务。测试需要检查导出的每一页，以及失败之后是否可以重新选择并继续使用。
+    </p>
+  </article>
+</html>

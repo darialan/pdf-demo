@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="zh-CN">
+  <meta charset="utf-8" /><title>定位内容分页验收</title
+  ><style>
+    body {
+      margin: 32px;
+      font: 16px/1.8 system-ui;
+      background: white;
+      color: #252a26;
+    }
+    article {
+      box-sizing: border-box;
+      width: 720px;
+      margin: 0 auto;
+      padding: 28px;
+      border: 2px solid #ddd;
+      position: relative;
+    }
+    #sticky {
+      position: sticky !important;
+      top: 12px !important;
+      background: #e6f2ec;
+      padding: 10px;
+      font-weight: 600;
+      z-index: 2;
+    }
+    #fixed {
+      position: fixed !important;
+      left: 800px;
+      top: 160px;
+      width: 144px;
+      height: 48px;
+      box-sizing: border-box;
+      padding: 8px;
+      background: #225f48;
+      color: white;
+      transform: translate(-8px, 3px);
+    }
+    .relative {
+      position: relative;
+      transform: translateX(8px) scale(0.95);
+      border: 4px solid #b5c4ba;
+      padding: 16px;
+      margin: 16px 0;
+      height: 96px;
+    }
+    #nested {
+      position: fixed;
+      left: 80px;
+      top: 16px;
+      width: 180px;
+      height: 40px;
+      margin: 3px;
+      background: #dce9e0;
+      transform: translate(4px, 2px);
+    }
+    p {
+      margin: 18px 0;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th,
+    td {
+      padding: 8px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      position: sticky !important;
+      top: 64px !important;
+      background: #fff;
+    }
+    pre {
+      white-space: pre-wrap;
+      background: #1a1d21;
+      color: white;
+      padding: 16px;
+      font: 14px/1.8 monospace;
+    }
+  </style>
+  <article id="positioned">
+    <header id="sticky">采购明细 · 吸顶标题</header>
+    <div id="fixed">固定定位提示</div>
+    <div class="relative">
+      <div id="nested">有定位和变换祖先的固定元素</div>
+    </div>
+    <h1>保留页面，按内容分页</h1>
+    <p>
+      网页分页应该依据已经渲染的内容：文字行保持完整，表格以每一行作为保护单位。页面中的吸顶标题和固定提示也属于选中区域的一部分，不需要用户为了导出额外删除它们。快照保留字体、颜色和间距，分页结果同时用于预览、PDF
+      和分页图片。
+    </p>
+    <p>
+      网页分页应该依据已经渲染的内容：文字行保持完整，表格以每一行作为保护单位。页面中的吸顶标题和固定提示也属于选中区域的一部分，不需要用户为了导出额外删除它们。快照保留字体、颜色和间距，分页结果同时用于预览、PDF
+      和分页图片。
+    </p>
+    <p>
+      网页分页应该依据已经渲染的内容：文字行保持完整，表格以每一行作为保护单位。页面中的吸顶标题和固定提示也属于选中区域的一部分，不需要用户为了导出额外删除它们。快照保留字体、颜色和间距，分页结果同时用于预览、PDF
+      和分页图片。
+    </p>
+    <p>
+      网页分页应该依据已经渲染的内容：文字行保持完整，表格以每一行作为保护单位。页面中的吸顶标题和固定提示也属于选中区域的一部分，不需要用户为了导出额外删除它们。快照保留字体、颜色和间距，分页结果同时用于预览、PDF
+      和分页图片。
+    </p>
+    <p>
+      网页分页应该依据已经渲染的内容：文字行保持完整，表格以每一行作为保护单位。页面中的吸顶标题和固定提示也属于选中区域的一部分，不需要用户为了导出额外删除它们。快照保留字体、颜色和间距，分页结果同时用于预览、PDF
+      和分页图片。
+    </p>
+    <p>
+      网页分页应该依据已经渲染的内容：文字行保持完整，表格以每一行作为保护单位。页面中的吸顶标题和固定提示也属于选中区域的一部分，不需要用户为了导出额外删除它们。快照保留字体、颜色和间距，分页结果同时用于预览、PDF
+      和分页图片。
+    </p>
+    <p>
+      网页分页应该依据已经渲染的内容：文字行保持完整，表格以每一行作为保护单位。页面中的吸顶标题和固定提示也属于选中区域的一部分，不需要用户为了导出额外删除它们。快照保留字体、颜色和间距，分页结果同时用于预览、PDF
+      和分页图片。
+    </p>
+    <p>
+      网页分页应该依据已经渲染的内容：文字行保持完整，表格以每一行作为保护单位。页面中的吸顶标题和固定提示也属于选中区域的一部分，不需要用户为了导出额外删除它们。快照保留字体、颜色和间距，分页结果同时用于预览、PDF
+      和分页图片。
+    </p>
+    <pre>
+const result = await outputDocument({ format: 'png' });
+console.log(result.pages);</pre
+    >
+    <table>
+      <thead>
+        <tr>
+          <th>门店</th>
+          <th>用途</th>
+          <th>数量</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>门店 01</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>10</td>
+        </tr>
+        <tr>
+          <td>门店 02</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>11</td>
+        </tr>
+        <tr>
+          <td>门店 03</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>12</td>
+        </tr>
+        <tr>
+          <td>门店 04</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>13</td>
+        </tr>
+        <tr>
+          <td>门店 05</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>14</td>
+        </tr>
+        <tr>
+          <td>门店 06</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>15</td>
+        </tr>
+        <tr>
+          <td>门店 07</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>16</td>
+        </tr>
+        <tr>
+          <td>门店 08</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>17</td>
+        </tr>
+        <tr>
+          <td>门店 09</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>18</td>
+        </tr>
+        <tr>
+          <td>门店 10</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>19</td>
+        </tr>
+        <tr>
+          <td>门店 11</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>20</td>
+        </tr>
+        <tr>
+          <td>门店 12</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>21</td>
+        </tr>
+        <tr>
+          <td>门店 13</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>22</td>
+        </tr>
+        <tr>
+          <td>门店 14</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>23</td>
+        </tr>
+        <tr>
+          <td>门店 15</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>24</td>
+        </tr>
+        <tr>
+          <td>门店 16</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>25</td>
+        </tr>
+        <tr>
+          <td>门店 17</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>26</td>
+        </tr>
+        <tr>
+          <td>门店 18</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>27</td>
+        </tr>
+        <tr>
+          <td>门店 19</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>28</td>
+        </tr>
+        <tr>
+          <td>门店 20</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>29</td>
+        </tr>
+        <tr>
+          <td>门店 21</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>30</td>
+        </tr>
+        <tr>
+          <td>门店 22</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>31</td>
+        </tr>
+        <tr>
+          <td>门店 23</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>32</td>
+        </tr>
+        <tr>
+          <td>门店 24</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>33</td>
+        </tr>
+        <tr>
+          <td>门店 25</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>34</td>
+        </tr>
+        <tr>
+          <td>门店 26</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>35</td>
+        </tr>
+        <tr>
+          <td>门店 27</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>36</td>
+        </tr>
+        <tr>
+          <td>门店 28</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>37</td>
+        </tr>
+        <tr>
+          <td>门店 29</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>38</td>
+        </tr>
+        <tr>
+          <td>门店 30</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>39</td>
+        </tr>
+        <tr>
+          <td>门店 31</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>40</td>
+        </tr>
+        <tr>
+          <td>门店 32</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>41</td>
+        </tr>
+        <tr>
+          <td>门店 33</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>42</td>
+        </tr>
+        <tr>
+          <td>门店 34</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>43</td>
+        </tr>
+        <tr>
+          <td>门店 35</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>44</td>
+        </tr>
+        <tr>
+          <td>门店 36</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>45</td>
+        </tr>
+        <tr>
+          <td>门店 37</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>46</td>
+        </tr>
+        <tr>
+          <td>门店 38</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>47</td>
+        </tr>
+        <tr>
+          <td>门店 39</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>48</td>
+        </tr>
+        <tr>
+          <td>门店 40</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>49</td>
+        </tr>
+        <tr>
+          <td>门店 41</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>50</td>
+        </tr>
+        <tr>
+          <td>门店 42</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>51</td>
+        </tr>
+        <tr>
+          <td>门店 43</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>52</td>
+        </tr>
+        <tr>
+          <td>门店 44</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>53</td>
+        </tr>
+        <tr>
+          <td>门店 45</td>
+          <td>包装物料采购明细与收货安排</td>
+          <td>54</td>
+        </tr>
+      </tbody>
+    </table>
+  </article>
+</html>
