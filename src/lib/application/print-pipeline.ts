@@ -1,5 +1,5 @@
 import { measureDocument } from '../adapters/dom/measurement';
-import { createPrintSnapshot } from '../adapters/dom/snapshot';
+import { createPrintSnapshot, SnapshotNodeTransform } from '../adapters/dom/snapshot';
 import { waitForResources } from '../adapters/resources/resource-loader';
 import { calculateGeometry, PageGeometry } from '../core/geometry/page-geometry';
 import { DEFAULT_SETTINGS, resolvePaper } from '../core/geometry/paper';
@@ -53,6 +53,10 @@ export interface PaginationPipelineOptions {
 }
 
 export interface LayoutOptions {
+  /** Adjust only the detached copy, before measuring it. Source DOM stays untouched. */
+  transformSnapshotNode?: SnapshotNodeTransform;
+  /** Source resources replaced by transformSnapshotNode; decode the replacement in the snapshot instead. */
+  resourceExcludedElements?: readonly Element[];
   /** Omit selected source elements from snapshots without mutating the live page. */
   excludedElements?: readonly Element[];
   element: HTMLElement | null;
@@ -170,10 +174,10 @@ export async function prepareLayout(options: LayoutOptions): Promise<PreparedLay
   try {
     // Readiness must precede style freezing: otherwise an image still loading
     // can have its temporary 0px height frozen permanently into the snapshot.
-    await waitForResources(printElement, signal, rules, options.excludedElements);
+    await waitForResources(printElement, signal, rules, [...(options.excludedElements || []), ...(options.resourceExcludedElements || [])]);
     width = printElement.getBoundingClientRect().width;
     if (!Number.isFinite(width) || width <= 0) throw new Error('打印区域宽度为零，请先显示内容');
-    snapshot = createPrintSnapshot(width, rules, options.excludedElements);
+    snapshot = createPrintSnapshot(width, rules, options.excludedElements, options.transformSnapshotNode);
     const root = snapshot.clone(printElement);
 
     let headerClone: HTMLElement | undefined;

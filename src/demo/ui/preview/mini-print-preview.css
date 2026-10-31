@@ -3,7 +3,11 @@
   inset: 0;
   background: rgba(15, 23, 42, 0.65);
   backdrop-filter: blur(4px);
-  z-index: 1040;
+  /* Web Printer 扩展的分页标记层使用 2147483641–2147483643（见
+     src/lib/overlay/page-break-overlay.ts 的 MARKER_LAYER）。预览窗口必须
+     压在标记之上：用户在 playground 打开预览时不应看到分页线穿过预览窗口。
+     遮罩 2147483644 / 窗口 2147483645，仍低于扩展选区交互层的 2147483647。 */
+  z-index: 2147483644;
 }
 
 .mini-print-preview-widget {
@@ -14,7 +18,7 @@
   background: #0f172a;
   border-radius: 10px;
   box-shadow: 0 12px 36px rgba(15, 23, 42, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.12);
-  z-index: 1050;
+  z-index: 2147483645;
   overflow: hidden;
   display: flex;
   flex-direction: column;

@@ -184,16 +184,18 @@ export function PrintSettingsButton({
           initialValues={value}
           onValuesChange={handleValuesChange}
         >
-          <div className="print-settings-grid">
+          {/* 单位与输出尺寸同属"怎么读下面这些数字"，放同一行 */}
+          <div className="print-settings-grid print-settings-grid--head">
             <Form.Item name="unit" label="尺寸单位">
               <Radio.Group options={[{ value: 'mm', label: 'mm' }, { value: 'px', label: 'px' }]} />
             </Form.Item>
-            <Form.Item name="paper" label="输出尺寸" className="print-settings-span" rules={[{ required: true }]}>
+            <Form.Item name="paper" label="输出尺寸" rules={[{ required: true }]}>
               {/* 不锁定为触发器宽度：弹窗缩放动画首帧宽度会被误测，锁定会让下拉变成窄条 */}
               <Select options={OUTPUT_PRESET_OPTIONS} dropdownMatchSelectWidth={false} />
             </Form.Item>
           </div>
-          <div className="print-settings-grid">
+          {/* 宽高成对，方向跟着尺寸走 */}
+          <div className="print-settings-grid print-settings-grid--dims">
             <Form.Item name="widthMm" label={`宽度（${unit}）`} rules={numberRules}>
               <InputNumber
                 min={1}
@@ -212,10 +214,8 @@ export function PrintSettingsButton({
                 disabled={paper !== 'custom'}
               />
             </Form.Item>
-          </div>
-          {paper !== 'custom' && (
-            <div className="print-settings-grid">
-              <Form.Item name="orientation" label="方向">
+            {paper !== 'custom' && (
+              <Form.Item name="orientation" label="方向" className="print-settings-orient">
                 <Radio.Group
                   options={[
                     { value: 'portrait', label: '纵向' },
@@ -223,8 +223,8 @@ export function PrintSettingsButton({
                   ]}
                 />
               </Form.Item>
-            </div>
-          )}
+            )}
+          </div>
           <div className="print-settings-margins">
             {(['Top', 'Right', 'Bottom', 'Left'] as const).map((side, i) => (
               <Form.Item
@@ -258,54 +258,42 @@ export function PrintSettingsButton({
             }}
           </Form.Item>
 
-          <div style={{ height: 1, background: '#f1f5f9', margin: '14px 0 12px 0' }} />
-          <div style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', marginBottom: 10 }}>
-            页码设置
-          </div>
-          <div className="print-settings-grid">
-            <Form.Item name={['pageNumber', 'enabled']} label="显示页码" valuePropName="checked">
-              <Switch checkedChildren="开启" unCheckedChildren="关闭" />
-            </Form.Item>
-            <Form.Item
-              noStyle
-              shouldUpdate={(prev, curr) => prev.pageNumber?.enabled !== curr.pageNumber?.enabled}
-            >
-              {({ getFieldValue }) => {
-                const enabled = getFieldValue(['pageNumber', 'enabled']) ?? true;
-                if (!enabled) return null;
-                return (
-                  <Form.Item name={['pageNumber', 'position']} label="页码位置">
-                    <Select
-                      options={[
-                        { value: 'bottom-right', label: '底部靠右' },
-                        { value: 'bottom-center', label: '底部居中' },
-                        { value: 'top-right', label: '顶部靠右' },
-                        { value: 'top-center', label: '顶部居中' },
-                      ]}
-                    />
-                  </Form.Item>
-                );
-              }}
-            </Form.Item>
-          </div>
+          <div className="print-settings-divider" />
+          <div className="print-settings-section-title">页码设置</div>
           <Form.Item
             noStyle
             shouldUpdate={(prev, curr) => prev.pageNumber?.enabled !== curr.pageNumber?.enabled}
           >
             {({ getFieldValue }) => {
               const enabled = getFieldValue(['pageNumber', 'enabled']) ?? true;
-              if (!enabled) return null;
               return (
-                <div className="print-settings-grid">
-                  <Form.Item name={['pageNumber', 'format']} label="页码格式">
-                    <Select
-                      options={[
-                        { value: 'slash', label: '1 / 5 (数字斜杠)' },
-                        { value: 'chinese', label: '第 1 页 / 共 5 页 (中文标准)' },
-                        { value: 'hyphen', label: '- 1 - (中划线简洁)' },
-                      ]}
-                    />
+                <div className="print-settings-grid print-settings-grid--pagenum">
+                  <Form.Item name={['pageNumber', 'enabled']} label="显示页码" valuePropName="checked">
+                    <Switch checkedChildren="开启" unCheckedChildren="关闭" />
                   </Form.Item>
+                  {enabled && (
+                    <Form.Item name={['pageNumber', 'position']} label="页码位置">
+                      <Select
+                        options={[
+                          { value: 'bottom-right', label: '底部靠右' },
+                          { value: 'bottom-center', label: '底部居中' },
+                          { value: 'top-right', label: '顶部靠右' },
+                          { value: 'top-center', label: '顶部居中' },
+                        ]}
+                      />
+                    </Form.Item>
+                  )}
+                  {enabled && (
+                    <Form.Item name={['pageNumber', 'format']} label="页码格式" className="print-settings-format">
+                      <Select
+                        options={[
+                          { value: 'slash', label: '1 / 5 (数字斜杠)' },
+                          { value: 'chinese', label: '第 1 页 / 共 5 页 (中文标准)' },
+                          { value: 'hyphen', label: '- 1 - (中划线简洁)' },
+                        ]}
+                      />
+                    </Form.Item>
+                  )}
                 </div>
               );
             }}

@@ -1,6 +1,20 @@
 import { cloneWithResolvedStyles, copyResolvedStyle } from './snapshot';
 import { measureTextLines } from './text-range';
 
+test('whole-page body root is retagged as a div so the offscreen capture uses element bounds', () => {
+  const body = document.body;
+  const section = document.createElement('section');
+  section.textContent = '整个页面正文';
+  body.appendChild(section);
+  try {
+    const target = cloneWithResolvedStyles(body);
+    expect(target.tagName).not.toBe('BODY');
+    expect(target.textContent).toContain('整个页面正文');
+  } finally {
+    section.remove();
+  }
+});
+
 test('print root keeps ancestor-provided typography after moving to body', () => {
   const original = document.createElement('div');
   const target = document.createElement('div');

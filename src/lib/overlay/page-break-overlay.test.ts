@@ -99,7 +99,7 @@ test('媒体包装段落（<p> 里只有一张图）标为 atomic，而不是 sp
   container.remove();
 });
 
-test('标记层的 z-index 保持在吸顶工具栏与站点导航之下', () => {
+test('标记层的 z-index 保持在最顶层（高于任意站点元素）', () => {
   const container = document.createElement('div');
   container.innerHTML = '<p style="height: 40px;">段落</p>';
   document.body.appendChild(container);
@@ -113,8 +113,8 @@ test('标记层的 z-index 保持在吸顶工具栏与站点导航之下', () =>
   const debugNodes = Array.from(container.querySelectorAll<HTMLElement>('[data-print-debug="true"]'));
   const layerOf = (node: HTMLElement) => Number(node.style.zIndex || node.querySelector<HTMLElement>('span')?.style.zIndex || 0);
   const top = Math.max(...debugNodes.map(layerOf));
-  // 工具栏 z-index 20、站点导航 z-index 100：标记必须更低，否则会把它们盖住
-  expect(top).toBeLessThan(20);
+  // 用户明确要求标记在最顶层；max z-index 接近 2^31，所有站点导航都无法盖住标记
+  expect(top).toBeGreaterThan(2147483000);
 
   container.remove();
 });

@@ -188,12 +188,18 @@ const SPLIT_CONTAINER_SELECTOR =
   '[data-print-splittable="true"], .print-splittable, [data-print-break="split"], .print-force-split, [data-pdf-splittable="true"], .pdf-splittable, [data-pdf-break="split"], .pdf-force-split';
 
 /**
- * 标记层必须留在页面内容与站点外壳之间：
- * 打印根节点不会创建独立层叠上下文，若这里用 900+ 的 z-index，
- * 标记会盖住吸顶的工具条（z-index 20）与站点导航（z-index 100）。
- * 只要盖过文档正文即可，所以统一用一个很小的区间。
+ * 标记层必须保持在最顶层（用户明确要求）：
+ * 打印根节点不会创建独立层叠上下文，若 z-index 太低，
+ * 站点内创建了自己的层叠上下文的吸顶元素/TOC 按钮（z-index 10～100+）
+ * 会渲染到标记之上，调试标记就看不见了。
+ * pointer-events:none 且节点带 data-print-debug，html2canvas 截图时会剔除，
+ * 因此不会影响交互或导出。
  */
-const MARKER_LAYER = { box: 2, badge: 3, line: 4 } as const;
+const MARKER_LAYER = {
+  box: 2147483641,
+  badge: 2147483642,
+  line: 2147483643,
+} as const;
 
 /** 行内语义标签：即使是 flex/grid 子项被 blockify，也不该被当成一块独立可分割区域 */
 const INLINE_TAGS = new Set([

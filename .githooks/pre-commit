@@ -1,0 +1,8 @@
+#!/bin/sh
+# Commit-time gate: type-check the whole project, but only run unit tests
+# for the published npm package (src/lib). Landing page, demos and the
+# browser extension are type-checked, not tested, at commit time.
+set -e
+
+echo "→ 全项目类型检查 + npm 包单测"
+npm run check

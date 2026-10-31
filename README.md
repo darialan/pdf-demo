@@ -100,7 +100,9 @@ npm start
 npm run check
 ```
 
-`npm run check` 依次执行 TypeScript、单测、ESM/CJS 与类型构建、网页生产构建及 Chromium 自动化。浏览器测试覆盖真实 PDF/PNG 下载、预览一致性、取消、重试、主题、键盘与窄屏。
+`npm run check` 是提交时的门禁：先对全项目做 TypeScript 检查（`src/lib`、`src/landing`、`src/demo`、测试文件都在范围内），再只跑 npm 包（`src/lib`）的单元测试，不构建 landing 页和 demo。需要全量验证时运行 `npm run check:full`，额外执行全部单测、库与网页构建，以及 Chromium 引擎测试（在真实浏览器里验证分页、快照样式保留、页眉页脚、取消清理和 PDF 输出）。扩展目录不在 `tsconfig.json` 范围内，单独用 `npm run typecheck:extension` 检查。
+
+提交前自动执行的钩子来自 `.githooks/pre-commit`，克隆后运行一次 `npm run setup:hooks` 启用。
 
 源码布局：`src/lib/core` 为分页与几何，`adapters` 为 DOM/画布/PDF 适配，`application` 编排生命周期，`output` 区分格式，`hooks` 提供可选 React 集成；`src/demo` 和 `src/landing` 分别为工作台与首页。
 

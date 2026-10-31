@@ -3,6 +3,8 @@ import { waitForResources } from '../resources/resource-loader';
 import { classifyPrintNode, getPrintRules } from '../../core/rules/print-rules';
 import { PrintRule } from '../../core/types';
 
+export type SnapshotNodeTransform = (source: Element, clone: HTMLElement | SVGElement) => void;
+
 /** Freeze resolved CSS so moving the print root outside its original context does not change typography or layout. */
 export function copyResolvedStyle(source: Element, target: HTMLElement | SVGElement) {
   const win = source.ownerDocument?.defaultView || (typeof window !== 'undefined' ? window : null);
@@ -32,7 +34,7 @@ export function copyResolvedStyle(source: Element, target: HTMLElement | SVGElem
  * (e.g. inside detached print containers or preview widgets, or from an iframe) does not alter typography,
  * inherited line-heights, or layout dimensions.
  */
-export function cloneWithResolvedStyles(source: HTMLElement, rules: readonly PrintRule[] = getPrintRules(), excludedElements: readonly Element[] = []): HTMLElement {
+export function cloneWithResolvedStyles(source: HTMLElement, rules: readonly PrintRule[] = getPrintRules(), excludedElements: readonly Element[] = [], transformNode?: SnapshotNodeTransform): HTMLElement {
   const ownerDoc = typeof document !== 'undefined' ? document : source.ownerDocument;
   const target = (ownerDoc?.importNode ? ownerDoc.importNode(source, true) : source.cloneNode(true)) as HTMLElement;
 
@@ -102,42 +104,56 @@ export function cloneWithResolvedStyles(source: HTMLElement, rules: readonly Pri
         const anchor = freezePositioning(node, copy as HTMLElement, rootRect);
         if (anchor) anchors.push(anchor);
       }
+      transformNode?.(node, copy as HTMLElement | SVGElement);
     }
   });
   target.querySelectorAll('[data-print-debug], [data-print-ignore="true"], [data-pdf-debug], [data-pdf-ignore="true"]').forEach(node => node.remove());
+
+  // Retag a BODY print root as a DIV. html2canvas assumes a <body>/<html> target is the
+  // document itself: it takes bounds from the capturing document and ignores the
+  // caller's x/y options, so an offscreen snapshot of the whole page (rooted at a body
+  // clone placed at left:-100000px) renders instead from (0,0) and exports blank pages.
+  const isBodyTarget = /^BODY$/i.test(source.tagName || '');
+  if (isBodyTarget) {
+    const wrapper = ownerDoc.createElement('div');
+    wrapper.style.cssText = (target as HTMLElement).style.cssText;
+    while ((target as HTMLElement).firstChild) wrapper.appendChild((target as HTMLElement).firstChild!);
+    targets[0] = wrapper;
+  }
 
   // The root's margins position it in the source page (including resolved auto
   // centering margins). A page slice supplies its own origin and paper margins;
   // carrying those external offsets into it shifts/crops the captured document.
   // Descendant margins remain frozen above to preserve the internal layout.
-  target.style.setProperty('margin', '0', 'important');
-  target.style.setProperty('position', 'relative', 'important');
-  for (const property of ['inset', 'inset-inline', 'inset-block']) target.style.setProperty(property, 'auto', 'important');
-  target.style.setProperty('float', 'none', 'important');
-  target.style.setProperty('margin-inline', '0', 'important');
-  target.style.setProperty('margin-block', '0', 'important');
+  const result: HTMLElement = (targets[0] as HTMLElement) || (target as HTMLElement);
+  result.style.setProperty('margin', '0', 'important');
+  result.style.setProperty('position', 'relative', 'important');
+  for (const property of ['inset', 'inset-inline', 'inset-block']) result.style.setProperty(property, 'auto', 'important');
+  result.style.setProperty('float', 'none', 'important');
+  result.style.setProperty('margin-inline', '0', 'important');
+  result.style.setProperty('margin-block', '0', 'important');
 
   // Lock root target width to source element width so rendering outside original flow never shrink-wraps or alters line wrapping
   const sourceWidth = source.getBoundingClientRect().width;
   if (sourceWidth > 0) {
-    target.style.setProperty('width', `${sourceWidth}px`, 'important');
-    target.style.setProperty('max-width', 'none', 'important');
-    target.style.setProperty('box-sizing', 'border-box', 'important');
+    result.style.setProperty('width', `${sourceWidth}px`, 'important');
+    result.style.setProperty('max-width', 'none', 'important');
+    result.style.setProperty('box-sizing', 'border-box', 'important');
   }
 
-  registerFrozenPositions(target, anchors);
-  return target;
+  registerFrozenPositions(result, anchors);
+  return result;
 }
 
 /** Owns detached print DOM; callers dispose it on every success/error path. */
-export function createPrintSnapshot(width: number, rules: readonly PrintRule[] = getPrintRules(), excludedElements: readonly Element[] = []) {
+export function createPrintSnapshot(width: number, rules: readonly PrintRule[] = getPrintRules(), excludedElements: readonly Element[] = [], transformNode?: SnapshotNodeTransform) {
   const host = document.createElement('div');
   host.setAttribute('data-print-snapshot', 'true');
   host.setAttribute('aria-hidden', 'true');
   host.setAttribute('inert', '');
   host.style.cssText = `position:absolute;left:-100000px;top:0;width:${width}px;pointer-events:none;background:white;`;
   const clone = (source: HTMLElement) => {
-    const target = cloneWithResolvedStyles(source, rules, excludedElements);
+    const target = cloneWithResolvedStyles(source, rules, excludedElements, transformNode);
     target.style.setProperty('width', `${width}px`, 'important');
     target.style.setProperty('max-width', 'none', 'important');
     target.style.setProperty('box-sizing', 'border-box', 'important');

@@ -15,9 +15,15 @@
 .print-settings-dialog .ant-form-item-label { padding-bottom: 4px; }
 .print-settings-dialog .ant-input-number { width: 100%; }
 .print-settings-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 20px; }
-/* 预设标签带尺寸（1242×1656），窄屏放不下两列，单独占满一行 */
-.print-settings-span { grid-column: 1 / -1; }
+/* 单位贴着下拉框：两个都是"怎么读下面这些数字"的开关 */
+.print-settings-grid--head { grid-template-columns: auto minmax(0, 1fr); }
+/* 宽高成对，方向是窄控件，贴在右侧 */
+.print-settings-grid--dims { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; }
+/* 页码三项同排：开关最窄，格式文字最长，给它多一点宽度 */
+.print-settings-grid--pagenum { grid-template-columns: auto minmax(0, 1fr) minmax(0, 1.35fr); }
 .print-settings-margins { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 12px; }
+.print-settings-divider { height: 1px; background: #f1f5f9; margin: 14px 0 12px; }
+.print-settings-section-title { font-size: 13px; font-weight: 600; color: #1e293b; margin-bottom: 10px; }
 .print-settings-hint { color: #8c8c8c; font-size: 12px; line-height: 1.6; margin-top: 2px; }
 .print-settings-derived {
   margin: 2px 0 0;
@@ -30,4 +36,10 @@
   .print-settings-dialog .ant-modal-content { padding: 16px; }
   .print-settings-margins { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .print-settings-grid { gap: 0 12px; }
+  /* 窄屏放不下单位+下拉框的并排，改为上下堆叠 */
+  .print-settings-grid--head { grid-template-columns: minmax(0, 1fr); }
+  .print-settings-grid--dims { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .print-settings-orient { grid-column: 1 / -1; }
+  .print-settings-grid--pagenum { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .print-settings-format { grid-column: 1 / -1; }
 }
