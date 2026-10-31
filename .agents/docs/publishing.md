@@ -1,5 +1,7 @@
 # Web Printer (@darialan/web-printer) NPM 官方源发布与一键迭代指南
 
+> 适用版本：`@darialan/web-printer` 1.1.0 · 最后核对：2026-10-31 · 状态：现行
+
 本文档作为项目维护者专用指南，详细记录将 `@darialan/web-printer` 发布至 [NPM 官方注册表](https://www.npmjs.com/package/@darialan/web-printer) 的前置准备、**一键自动化发版（One-Click Release）** 机制，以及常见故障排查手册。
 
 ---
@@ -52,11 +54,14 @@ npm login
 
 ## 三、🚀 核心推荐：一键极速发版命令
 
-为彻底解放双手，项目内置了全自动化发版工具脚本 [`scripts/release.mjs`](../scripts/release.mjs)。当你修改了功能或修复了问题，**仅需在终端敲一行命令**即可完成全套发布：
+为彻底解放双手，项目内置了全自动化发版工具脚本 [`scripts/release.mjs`](../../scripts/release.mjs)。当你修改了功能或修复了问题，**仅需在终端敲一行命令**即可完成全套发布：
 
 ### 常用发版命令
 
 ```bash
+# 0. 只演练：跑测试、构建并执行 npm publish --dry-run，不改版本、不提交、不推送
+npm run release:dry
+
 # 1. 修复 Bug、细节微调（最常用：补丁发版，如 1.0.0 -> 1.0.1）
 npm run release
 # 或明确指定：
@@ -91,7 +96,9 @@ NPM 账号登录态校验 (npm whoami)
 打印发布成功报告与直接访问的 NPMJS 包地址
 ```
 
-全程无需手动修改 `package.json` 中的版本号，也无需手动敲 `git push --tags`，10 秒内全自动完成。
+全程无需手动修改 `package.json` 中的版本号，也无需手动敲 `git push --tags`，一条命令完成。实际耗时取决于单测与构建（本地约 30–120 秒）。
+
+> ⚠️ 脚本检测到当前使用镜像源时，会执行 `npm config set registry https://registry.npmjs.org/`，这会影响你本机的全局 npm 配置。发布结束后如需使用镜像，请手动改回；更稳妥的方式是把脚本改为命令级 `--registry` 参数。
 
 ---
 
@@ -120,7 +127,17 @@ npm run build:lib
 ```bash
 npm publish --dry-run
 ```
-确保仅包含 `dist/`、`README.md`、`LICENSE` 等核心必要文件。
+确保仅包含 `dist/`、`README.md`、`LICENSE`、必要的 `docs/` 等核心文件。
+
+### 步骤 3.5：在空消费者工程中校验产物（推荐）
+`scripts/verify-package.mjs` 会把打出来的 tarball 安装到一个临时项目里，验证 ESM / CJS / `/react` 子入口 / TypeScript 类型 / 依赖安装结果：
+
+```bash
+npm pack
+node scripts/verify-package.mjs ./darialan-web-printer-<version>.tgz
+```
+
+该脚本需要联网安装 `html2canvas`、`jspdf` 等运行时依赖。
 
 ### 步骤 4：升级版本号并生成 Tag
 ```bash
@@ -151,7 +168,15 @@ git push && git push --tags
 4. Name 填写 `NPM_TOKEN`，Secret 粘贴上述 Token 并保存。
 
 ### 2. 工作流配置文件
-项目已包含 `.github/workflows/npm-publish.yml`（可在 GitHub 触发：推送 `v*` 格式标签或手动点击 Run workflow 触发发布）。
+项目已包含 `.github/workflows/npm-publish.yml`，触发条件与 YAML 一致：
+
+- 推送 `v*` 或 `web-printer-v*` 标签；
+- 在 GitHub 发布 Release；
+- 手动执行 `workflow_dispatch`。
+
+工作流会先跑测试与 `build:lib`，再检查 npm 上是否已存在同版本；已存在则跳过发布。`npm publish` 还会触发 `prepublishOnly`，因此测试与构建会再执行一遍。
+
+> 安全建议：`NPM_TOKEN` 是长期凭证，泄露后可直接发布你的包。条件允许时改用 npm 的 Trusted Publishing（OIDC）+ `publishConfig.provenance`，避免把 token 存进 GitHub Secrets。
 
 ---
 

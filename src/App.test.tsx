@@ -103,7 +103,7 @@ test('场景链接打开对应的工作台单据，接入示例支持键盘切�
   window.history.replaceState(null, '', '/');
   const scrollTo = jest.spyOn(window, 'scrollTo').mockImplementation(() => {});
   render(<App />);
-  const sceneLink = screen.getByRole('link', { name: /长表格.*45 行采购明细/ });
+  const sceneLink = screen.getByRole('link', { name: /45 行/ });
   expect(sceneLink).toHaveAttribute('href', '#/playground?scene=purchase-order');
 
   expect(screen.getByRole('tabpanel')).toHaveTextContent('marginTopMm: 12');

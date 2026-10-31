@@ -49,29 +49,17 @@ await outputDocument({
 
 核心由 TypeScript 实现，库产物为 ESM / CJS / `.d.ts`；工作台与落地页使用 React。
 
-```mermaid
-flowchart TD
-  UI["hooks / overlay<br/>React 接入 · 分页线调试"]
-  APP["application<br/>流水线 · 导出服务 · 会话 · 取消"]
-  ADP["adapters<br/>DOM 测量 · 快照 · Canvas · jsPDF"]
-  OUT["output<br/>PDF / PNG writer · ZIP · 页码"]
-  CORE["core<br/>几何 · 规则 · 分页"]
-
-  UI --> APP
-  APP --> ADP
-  APP --> OUT
-  OUT --> ADP
-  ADP --> CORE
-  OUT --> CORE
-```
+<p align="center">
+  <img src="https://cdn.jsdelivr.net/gh/darialan/web-printer@master/assets/readme/architecture.svg" width="100%" alt="Web Printer 分层架构：接入层、应用层、输出层、适配层与内核，依赖单向向下">
+</p>
 
 | 层 | 职责 |
 | --- | --- |
-| `core` | 纯计算：纸张几何、保护规则、贪心避让分页；不依赖 DOM / React / html2canvas / jsPDF |
-| `adapters` | 唯一接触 `document`、`html2canvas`、`jsPDF` 的层：测量、快照、截图、PDF 组装 |
-| `application` | 定义阶段顺序与资源释放：准备布局、逐页导出、取消、会话 |
-| `output` | 把页面切片组装成 PDF 或 PNG 包；不测量 DOM、不重新分页 |
-| `hooks` / `overlay` | React 接入与分页线可视化，均为可选层 |
+| 接入层 · `hooks` / `overlay` | React Hook 与分页线调试；可选层，只依赖应用层与内核 |
+| 应用层 · `application` | 定义阶段顺序与资源释放：准备布局、逐页导出、取消、会话 |
+| 输出层 · `output` | 把页面切片组装成 PDF 或 PNG 包；不测量 DOM、不重新分页 |
+| 适配层 · `adapters` | 唯一接触 `document`、`html2canvas`、`jsPDF` 的层：测量、快照、截图、PDF 组装 |
+| 内核 · `core` | 纯计算：纸张几何、保护规则、贪心避让分页；不依赖 DOM / React / 第三方 |
 
 一次导出依次经过：
 
